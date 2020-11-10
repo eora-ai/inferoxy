@@ -309,4 +309,63 @@ def test_multi_stage_build_batch():
         existing_batches=result_value,
         uid_generator=build_batch_generator,
     )
-    assert expected_value == result_value
+    assert result_value == expected_value
+
+
+def test_batch_size_limit():
+    """
+    Test batch size limitation
+    """
+    model1 = dm.ModelObject(
+        "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=2
+    )
+    uid_generator = string_generator()
+    request_object1 = dm.RequestObject(
+        uid=next(uid_generator),
+        inputs=np.array(range(10)),
+        source_id="internal_123_123",
+        parameters={"gif_id": 12},
+        model=model1,
+    )
+    request_object2 = dm.RequestObject(
+        uid=next(uid_generator),
+        inputs=np.array(range(10)),
+        source_id="internal_123_123",
+        parameters={},
+        model=model1,
+    )
+    request_object3 = dm.RequestObject(
+        uid=next(uid_generator),
+        inputs=np.array(range(10)),
+        source_id="internal_123_123",
+        parameters={},
+        model=model1,
+    )
+
+    batch_uid_generator = string_generator()
+
+    expected_value = [
+        (
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object1.inputs, request_object2.inputs],
+                parameters=[request_object1.parameters, request_object2.parameters],
+                model=model1,
+            ),
+            [request_object1, request_object2],
+        ),
+        (
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object3.inputs],
+                parameters=[request_object3.parameters],
+                model=model1,
+            ),
+            [request_object3],
+        ),
+    ]
+    result_value = build_batch(
+        [request_object1, request_object2, request_object3],
+        uid_generator=string_generator(),
+    )
+    assert result_value == expected_value

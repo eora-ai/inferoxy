@@ -6,7 +6,7 @@ __email__ = "a.chertkov@eora.ru"
 import numpy as np
 
 import src.data_models as dm
-from src.builder import build_batch
+from src.builder import build_batch, build_mapping_batch
 
 
 def test_batch_build_empty():
@@ -369,3 +369,30 @@ def test_batch_size_limit():
         uid_generator=string_generator(),
     )
     assert result_value == expected_value
+
+
+def test_build_one_mapping_batch():
+    """
+    Test for build mapping batch for one case
+    """
+    model1 = dm.ModelObject(
+        "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=2
+    )
+    uid_generator = string_generator()
+    request_object1 = dm.RequestObject(
+        uid=next(uid_generator),
+        inputs=np.array(range(10)),
+        source_id="internal_123_123",
+        parameters={"gif_id": 12},
+        model=model1,
+    )
+    built_batch = build_batch([request_object1], uid_generator=string_generator())
+    batch, request_objects = built_batch[0]
+
+    expected_value = dm.BatchMapping(
+        batch_uid=next(string_generator()),
+        request_object_uids=[request_object1.uid],
+        source_ids=[request_object1.source_id],
+    )
+
+    assert build_mapping_batch(batch, request_objects) == expected_value

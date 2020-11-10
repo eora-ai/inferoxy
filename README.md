@@ -20,3 +20,9 @@ pip install -r requirements.txt
 ```bash=
 pip insatll -r requirements-dev.txt
 ```
+
+### How to run tests
+1. Pytest
+```bash=
+pytest
+```

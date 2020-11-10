@@ -10,6 +10,7 @@ from typing import Generator
 def uuid4_string_generator() -> Generator[str, None, None]:
     """
     Make from uuid4 generator of random strings
+
     Returns
     -------
     Generator[str]

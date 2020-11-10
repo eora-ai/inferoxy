@@ -14,6 +14,7 @@ import numpy as np
 class ModelObject:
     """
     Represents model. Need for Task manager to know which model and how to start it.
+
     Parameters
     ----------
     name:
@@ -36,6 +37,7 @@ class ModelObject:
 class RequestObject:
     """
     Format of input data.
+
     Parameters
     ----------
     uid:
@@ -71,6 +73,7 @@ class RequestObject:
 class BatchObject:
     """
     Format of BatchManager output data.
+
     Parameters
     ----------
     uid:
@@ -108,6 +111,7 @@ class BatchObject:
 class BatchMapping:
     """
     Mapping between RequestObjects and BatchObject
+
     Parameters
     ----------
     batch_uid:

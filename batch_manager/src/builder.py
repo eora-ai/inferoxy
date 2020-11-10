@@ -34,10 +34,12 @@ def build_batch(
 
     def aggregate_function(batch_request_objects, request_object):
         for (batch, request_objects) in batch_request_objects:
-            if batch.model == request_object.model and (
-                not batch.model.stateless
-                or request_objects[-1].source_id == request_object.source_id
-            ):
+            if batch.model == request_object.model:
+                if (
+                    not batch.model.stateless
+                    and request_objects[-1].source_id != request_object.source_id
+                ):
+                    continue
                 batch.inputs.append(request_object.inputs)
                 batch.parameters.append(request_object.parameters)
                 request_objects.append(request_object)

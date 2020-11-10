@@ -6,14 +6,15 @@ Main bussines logic of BatchManager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List
+from typing import List, Tuple, Generator
 
 import src.data_models as dm
 
 
 def build_batch(
     request_objets: List[dm.RequestObject],
-) -> List[(dm.BatchObject, List[dm.RequestObject])]:
+    uid_generator: Generator[str, None, None] = None,
+) -> List[Tuple[dm.BatchObject, List[dm.RequestObject]]]:
     """
     Aggregate request_objects by model. If model is statefull aggregate by source_id also.
 
@@ -34,6 +35,7 @@ def build_batch(
 def build_mapping_batch(
     batch: dm.BatchObject,
     request_objets: List[dm.RequestObject],
+    uid_generator: Generator[str, None, None] = None,
 ) -> dm.BatchMapping:
     """
     Connect list of request_objects with batch

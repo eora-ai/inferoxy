@@ -32,7 +32,7 @@ class ModelObject:
     batch_size: int
 
 
-@dataclass
+@dataclass(eq=False)
 class RequestObject:
     """
     Format of input data.
@@ -56,8 +56,18 @@ class RequestObject:
     parameters: dict
     model: ModelObject
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uid == other.uid
+            and np.array_equal(self.inputs, other.inputs)
+            and self.parameters == other.parameters
+            and self.model == other.model
+        )
 
-@dataclass
+
+@dataclass(eq=False)
 class BatchObject:
     """
     Format of BatchManager output data.
@@ -82,6 +92,16 @@ class BatchObject:
     def size(self) -> int:
         "Actual batch size"
         return len(self.inputs)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uid == other.uid
+            and map(np.array_equal, zip(self.inputs, other.inputs))
+            and self.parameters == other.parameters
+            and self.model == other.model
+        )
 
 
 @dataclass

@@ -6,11 +6,56 @@ Main bussines logic of BatchManager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Tuple, Generator
-from functools import reduce, partial
+from typing import List, Tuple, Generator, AsyncIterable
+from functools import reduce
 
 import src.data_models as dm
 from src.utils import uuid4_string_generator
+
+
+async def builder(
+    request_stream: AsyncIterable[dm.RequestObject],
+) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+    """
+    From async generator of request build two genrators:
+    first one is an async generator of BatchObject,
+    and second one is an async generator of BatchMapping
+
+    Parameters
+    ----------
+    request_stream
+        Infinite stream of request objects
+    """
+    completed_batch = []
+    batches = []
+    async for request_object in request_stream:
+        batches = build_batch(request_object, existing_batches=batches)
+        completed_batch = get_completed_batches(batches)
+        for completed_batch, request_objects in completed_batch:
+            batch_mapping = batch_mapping(completed_batch, request_objects)
+            yield (completed_batch, batch_mapping)
+
+
+def get_completed_batches(
+    batches: List[Tuple[dm.BatchObject, List[dm.RequestObject]]]
+) -> List[Tuple[dm.BatchObject, List[dm.RequestObject]]]:
+    """
+    Get full batch over all batches
+
+    Parameters
+    ----------
+    batches
+        List of batches
+
+    Returns
+    -------
+        Filtered list of batches
+    """
+
+    def filter_func(batch):
+        return batch.model.batch_size == batch.size
+
+    return list(filter(filter_func, batches))
 
 
 def build_batch(

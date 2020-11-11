@@ -11,6 +11,23 @@ import numpy as np
 
 
 @dataclass
+class Config:
+    """
+    Configuration of batch_manager
+
+    Parameters
+    ----------
+    zmq_input_address:
+        Address of zreomq socket ipc for input requests
+    zmq_output_address:
+        Address of zreomq socket ipc for result batches
+    """
+
+    zmq_input_address: str
+    zmq_output_address: str
+
+
+@dataclass
 class ModelObject:
     """
     Represents model. Need for Task manager to know which model and how to start it.

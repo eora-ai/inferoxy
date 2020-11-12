@@ -4,8 +4,9 @@ Data object definitions
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import json
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -142,3 +143,15 @@ class BatchMapping:
     batch_uid: str
     request_object_uids: List[str]
     source_ids: List[str]
+
+    def to_key_value(self) -> Tuple[bytes, bytes]:
+        """
+        Make key value tuple, that will be stored in LevelDB
+        """
+        key = self.batch_uid.encode("utf-8")
+        value = json.dumps(
+            dict(
+                request_object_uids=self.request_object_uids, source_ids=self.source_ids
+            )
+        ).encode("utf-8")
+        return key, value

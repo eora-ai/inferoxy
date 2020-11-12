@@ -13,6 +13,7 @@ import src.data_models as dm
 import src.receiver as rc
 from src.builder import builder
 import src.sender as snd
+from src.saver import save_mapping
 
 
 async def pipeline(config: dm.Config):
@@ -22,6 +23,7 @@ async def pipeline(config: dm.Config):
     mapping_batch_generator = builder(request_object_iterable)
     async for (batch, mapping) in mapping_batch_generator:
         await snd.send(output_socket, batch)
+        await save_mapping(mapping)
 
 
 def main():

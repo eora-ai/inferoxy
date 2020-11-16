@@ -8,6 +8,9 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import List, Tuple, Generator, AsyncIterable
 from functools import reduce
+import asyncio
+
+from aiostream import stream
 
 import src.data_models as dm
 from src.utils import uuid4_string_generator
@@ -26,21 +29,44 @@ async def builder(
     request_stream
         Infinite stream of request objects
     """
-    completed_batch = []
-    batches = []
-    async for request_object in request_stream:
-        batches = build_batch(request_object, existing_batches=batches)
-        completed_batch = get_completed_batches(batches)
-        for completed_batch, request_objects in completed_batch:
-            batch_mapping = batch_mapping(completed_batch, request_objects)
-            yield (completed_batch, batch_mapping)
+    batches = dm.Batches(batches=[])
+
+    async def result_time_interrupt(batches):
+        while True:
+            await asyncio.sleep(0.1)
+            _batches, batches.batches = batches[:], []
+            mappings = map(build_mapping_batch, _batches)
+            batches_and_mappings = list(zip(map(lambda x: x.batch, _batches), mappings))
+            for batch, mapping in batches_and_mappings:
+                yield (batch, mapping)
+
+    async def result_complete_batches(batches):
+        async for request_object in request_stream:
+            batches.batches = build_batches(
+                [request_object], existing_batches=batches
+            ).batches
+            (
+                completed_batch,
+                batches,
+            ) = split_on_complete_and_uncomplete_batches(batches)
+            for batch_with_requests in completed_batch.batches:
+                mapping = build_mapping_batch(batch_with_requests)
+                yield (batch_with_requests.batch, mapping)
+
+    combine = stream.merge(
+        result_time_interrupt(batches),
+        result_complete_batches(batches),
+    )
+    async with combine.stream() as streamer:
+        async for (batch, mapping) in streamer:
+            yield (batch, mapping)
 
 
-def get_completed_batches(
-    batches: List[Tuple[dm.BatchObject, List[dm.RequestObject]]]
-) -> List[Tuple[dm.BatchObject, List[dm.RequestObject]]]:
+def split_on_complete_and_uncomplete_batches(
+    batches: dm.Batches,
+) -> Tuple[dm.Batches, dm.Batches]:
     """
-    Get full batch over all batches
+    Separate batches on full batches and not full
 
     Parameters
     ----------
@@ -49,20 +75,30 @@ def get_completed_batches(
 
     Returns
     -------
-        Filtered list of batches
+        Tuple of filtered list of batches, first elem is completed batches
+            and second is uncompleted batches
     """
 
-    def filter_func(batch):
-        return batch.model.batch_size == batch.size
+    def filter_func(batch_with_requests):
+        return (
+            batch_with_requests.batch.model.batch_size == batch_with_requests.batch.size
+        )
 
-    return list(filter(filter_func, batches))
+    completed_batches = dm.Batches(list(filter(filter_func, batches.batches)))
+
+    batches.batches = list(filter(lambda x: not filter_func(x), batches.batches))
+
+    return (
+        completed_batches,
+        batches,
+    )
 
 
-def build_batch(
+def build_batches(
     request_objects: List[dm.RequestObject],
-    existing_batches: List[Tuple[dm.BatchObject, List[dm.RequestObject]]] = None,
+    existing_batches: dm.Batches = None,
     uid_generator: Generator[str, None, None] = None,
-) -> List[Tuple[dm.BatchObject, List[dm.RequestObject]]]:
+) -> dm.Batches:
     """
     Aggregate request_objects by model. If model is statefull aggregate by source_id also.
 
@@ -77,28 +113,32 @@ def build_batch(
 
     Returns
     -------
-    List[(dm.BatchObject, List[dm.RequestObject])]
-        List of tuples where first element is batch object
-        and second element is a list of request objects.
+    dm.Batches
+        List of dm.BatchWithRelatedRequestObjects,
+        that contains information of batch and related request objects
     """
 
     if uid_generator is None:
         uid_generator = uuid4_string_generator()
 
     def aggregate_function(batch_request_objects, request_object):
-        for (batch, request_objects) in batch_request_objects:
+        for batch_with_request_objects in batch_request_objects:
             if (
-                batch.model == request_object.model
-                and batch.size < batch.model.batch_size
+                batch_with_request_objects.batch.model == request_object.model
+                and batch_with_request_objects.batch.size
+                < batch_with_request_objects.batch.model.batch_size
             ):
                 if (
-                    not batch.model.stateless
-                    and request_objects[-1].source_id != request_object.source_id
+                    not batch_with_request_objects.batch.model.stateless
+                    and batch_with_request_objects.request_objects[-1].source_id
+                    != request_object.source_id
                 ):
                     continue
-                batch.inputs.append(request_object.inputs)
-                batch.parameters.append(request_object.parameters)
-                request_objects.append(request_object)
+                batch_with_request_objects.batch.inputs.append(request_object.inputs)
+                batch_with_request_objects.batch.parameters.append(
+                    request_object.parameters
+                )
+                batch_with_request_objects.request_objects.append(request_object)
                 break
         else:
             new_batch = dm.BatchObject(
@@ -107,31 +147,34 @@ def build_batch(
                 parameters=[request_object.parameters],
                 model=request_object.model,
             )
-            batch_request_objects.append((new_batch, [request_object]))
+            batch_request_objects.append(
+                dm.BatchWithRelatedRequestObjects(
+                    batch=new_batch, request_objects=[request_object]
+                )
+            )
         return batch_request_objects
 
-    return list(
-        reduce(
-            aggregate_function,
-            request_objects,
-            existing_batches if existing_batches else [],
+    return dm.Batches(
+        batches=list(
+            reduce(
+                aggregate_function,
+                request_objects,
+                existing_batches.batches if existing_batches else [],
+            )
         )
     )
 
 
 def build_mapping_batch(
-    batch: dm.BatchObject,
-    request_objects: List[dm.RequestObject],
+    batch_with_requests: dm.BatchWithRelatedRequestObjects,
 ) -> dm.BatchMapping:
     """
     Connect list of request_objects with batch
 
     Parameters
     ----------
-    batch:
-        Batch object, that contain request objects
-    request_objects:
-        Request Objects
+    batch_with_requests
+        pass
 
     Returns
     -------
@@ -143,6 +186,8 @@ def build_mapping_batch(
     ValueError
         If batch and request_objects are empty or None
     """
+    batch = batch_with_requests.batch
+    request_objects = batch_with_requests.request_objects
     if not isinstance(batch, dm.BatchObject):
         raise ValueError(f"batch must be of type {dm.BatchObject}")
     if not isinstance(request_objects, list) and len(request_objects) == 0:

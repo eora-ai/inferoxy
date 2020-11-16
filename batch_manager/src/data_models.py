@@ -26,6 +26,8 @@ class Config:
 
     zmq_input_address: str
     zmq_output_address: str
+    db_file: str
+    create_db_file: bool
 
 
 @dataclass
@@ -155,3 +157,28 @@ class BatchMapping:
             )
         ).encode("utf-8")
         return key, value
+
+
+@dataclass
+class BatchWithRelatedRequestObjects:
+    """
+    This data class needed for represent relation between batch and request objects
+    """
+
+    batch: BatchObject
+    request_objects: List[RequestObject]
+
+
+@dataclass
+class Batches:
+    """
+    This dataclass is needed for store list of batches
+    """
+
+    batches: List[BatchWithRelatedRequestObjects]
+
+    def __iter__(self):
+        return self.batches
+
+    def __getitem__(self, i):
+        return self.batches[i]

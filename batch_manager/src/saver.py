@@ -19,7 +19,7 @@ def create_db(config: dm.Config) -> plyvel.DB:
     config:
         Config object, required field is db_address
     """
-    return plyvel.DB(config["db_file"], create_if_missing=config["create_db_file"])
+    return plyvel.DB(config.db_file, create_if_missing=config.create_db_file)
 
 
 def save_mapping(database: plyvel.DB, mapping: dm.BatchMapping):

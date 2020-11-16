@@ -1,2 +1,4 @@
 zmq_input_address: "ipc:///tmp/batch_manager/input"
 zmq_output_address: "ipc:///tmp/batch_manager/result"
+db_file: "/tmp/batch_manager/db"
+create_db_file: True

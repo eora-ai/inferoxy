@@ -2,3 +2,4 @@ neovim
 black
 pylint
 pytest
+pytest-asyncio

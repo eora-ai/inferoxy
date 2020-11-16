@@ -8,6 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 
 import yaml
+from loguru import logger
 
 import src.data_models as dm
 import src.receiver as rc
@@ -22,9 +23,11 @@ async def pipeline(config: dm.Config):
     database = create_db(config=config)
     request_object_iterable = rc.receive(input_socket)
     mapping_batch_generator = builder(request_object_iterable)
+    logger.info("Start batch manager")
     async for (batch, mapping) in mapping_batch_generator:
+        logger.debug(f"Batch completed {batch=}, {mapping=}")
         await snd.send(output_socket, batch)
-        await save_mapping(database=database, mapping=mapping)
+        save_mapping(database=database, mapping=mapping)
 
 
 def main():

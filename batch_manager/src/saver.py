@@ -33,4 +33,4 @@ def save_mapping(database: plyvel.DB, mapping: dm.BatchMapping):
     mapping:
         BatchMapping object, that will be saved
     """
-    database.put(mapping.to_key_value())
+    database.put(*mapping.to_key_value())

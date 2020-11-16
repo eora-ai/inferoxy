@@ -5,10 +5,13 @@ This is test client for batch manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import sys
 
 import numpy as np
 import zmq
 import yaml
+
+sys.path.append("..")
 
 import src.data_models as dm
 from src.utils import uuid4_string_generator
@@ -30,7 +33,7 @@ stateful_model = dm.ModelObject(
 
 
 def main():
-    with open("config.yaml") as f:
+    with open("../config.yaml") as f:
         config_dict = yaml.full_load(f)
         config = dm.Config(**config_dict)
 

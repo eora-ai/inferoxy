@@ -5,15 +5,18 @@ This is test receiver for batch manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import sys
 
 import yaml
 import zmq
+
+sys.path.append("..")
 
 import src.data_models as dm
 
 
 def main():
-    with open("config.yaml") as f:
+    with open("../config.yaml") as f:
         config_dict = yaml.full_load(f)
         config = dm.Config(**config_dict)
 

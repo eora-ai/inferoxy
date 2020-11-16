@@ -37,4 +37,4 @@ async def send(sock: zmq.asyncio.Socket, batch: dm.BatchObject):
     sock:
         Socket is destination of batches
     """
-    sock.send_pyobj(batch)
+    sock.send_pyobj(batch.serialize)

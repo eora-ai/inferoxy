@@ -5,7 +5,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple
 
 import numpy as np
@@ -110,11 +110,23 @@ class BatchObject:
     inputs: List[np.ndarray]
     parameters: List[dict]
     model: ModelObject
+    request_objects: List[RequestObject] = field(default_factory=list)
 
     @property
     def size(self) -> int:
         "Actual batch size"
         return len(self.inputs)
+
+    def serialize(self):
+        """
+        Serialize BatchObject to dict, that will sent over zeromq
+        """
+        return dict(
+            uid=self.uid,
+            inputs=self.inputs,
+            parameters=self.parameters,
+            model=self.model,
+        )
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -124,6 +136,7 @@ class BatchObject:
             and map(np.array_equal, zip(self.inputs, other.inputs))
             and self.parameters == other.parameters
             and self.model == other.model
+            and self.request_objects == other.request_objects
         )
 
 
@@ -160,25 +173,29 @@ class BatchMapping:
 
 
 @dataclass
-class BatchWithRelatedRequestObjects:
-    """
-    This data class needed for represent relation between batch and request objects
-    """
-
-    batch: BatchObject
-    request_objects: List[RequestObject]
-
-
-@dataclass
 class Batches:
     """
     This dataclass is needed for store list of batches
     """
 
-    batches: List[BatchWithRelatedRequestObjects]
+    batches: List[BatchObject]
 
     def __iter__(self):
-        return self.batches
+        return iter(self.batches)
 
     def __getitem__(self, i):
         return self.batches[i]
+
+    def add(self, batch: BatchObject):
+        """
+        Add element to batches list
+        """
+        if not isinstance(batch, BatchObject):
+            raise ValueError("Batch must be BatchObject")
+        self.batches += [batch]
+
+    def set(self, batches: List[BatchObject]):
+        """
+        Set to internal batches
+        """
+        self.batches = batches

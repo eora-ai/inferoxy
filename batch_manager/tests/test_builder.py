@@ -35,17 +35,15 @@ def test_batch_build_one():
     )
 
     expected_batch = dm.BatchObject(
-        next(string_generator()), [np.array([1, 2, 3, 4])], [{}], model=model
+        next(string_generator()),
+        [np.array([1, 2, 3, 4])],
+        [{}],
+        model=model,
+        request_objects=[request_object],
     )
 
     result = build_batches([request_object], uid_generator=string_generator())
-    assert result == dm.Batches(
-        batches=[
-            dm.BatchWithRelatedRequestObjects(
-                batch=expected_batch, request_objects=[request_object]
-            )
-        ]
-    )
+    assert result == dm.Batches(batches=[expected_batch])
 
 
 def test_batch_stateless_many():
@@ -85,23 +83,19 @@ def test_batch_stateless_many():
 
     expected_value = dm.Batches(
         batches=[
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object1.inputs, request_object3.inputs],
-                    parameters=[request_object1.parameters, request_object3.parameters],
-                    model=model1,
-                ),
-                [request_object1, request_object3],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object1.inputs, request_object3.inputs],
+                parameters=[request_object1.parameters, request_object3.parameters],
+                model=model1,
+                request_objects=[request_object1, request_object3],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object2.inputs],
-                    parameters=[request_object2.parameters],
-                    model=model2,
-                ),
-                [request_object2],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object2.inputs],
+                parameters=[request_object2.parameters],
+                model=model2,
+                request_objects=[request_object2],
             ),
         ]
     )
@@ -149,23 +143,19 @@ def test_batch_stateful_many():
 
     expected_value = dm.Batches(
         batches=[
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object1.inputs, request_object3.inputs],
-                    parameters=[request_object1.parameters, request_object3.parameters],
-                    model=model1,
-                ),
-                [request_object1, request_object3],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object1.inputs, request_object3.inputs],
+                parameters=[request_object1.parameters, request_object3.parameters],
+                model=model1,
+                request_objects=[request_object1, request_object3],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object2.inputs],
-                    parameters=[request_object2.parameters],
-                    model=model2,
-                ),
-                [request_object2],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object2.inputs],
+                parameters=[request_object2.parameters],
+                model=model2,
+                request_objects=[request_object2],
             ),
         ]
     )
@@ -259,58 +249,48 @@ def test_multi_stage_build_batch():
     batch_uid_generator = string_generator()
     expected_value = dm.Batches(
         batches=[
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object1.inputs],
-                    parameters=[request_object1.parameters],
-                    model=model_stateless1,
-                ),
-                [request_object1],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object1.inputs],
+                parameters=[request_object1.parameters],
+                model=model_stateless1,
+                request_objects=[request_object1],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[
-                        request_object2.inputs,
-                        request_object5.inputs,
-                        request_object6.inputs,
-                    ],
-                    parameters=[
-                        request_object2.parameters,
-                        request_object5.parameters,
-                        request_object6.parameters,
-                    ],
-                    model=model_stateful2,
-                ),
-                [request_object2, request_object5, request_object6],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[
+                    request_object2.inputs,
+                    request_object5.inputs,
+                    request_object6.inputs,
+                ],
+                parameters=[
+                    request_object2.parameters,
+                    request_object5.parameters,
+                    request_object6.parameters,
+                ],
+                model=model_stateful2,
+                request_objects=[request_object2, request_object5, request_object6],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object3.inputs],
-                    parameters=[request_object3.parameters],
-                    model=model_stateful1,
-                ),
-                [request_object3],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object3.inputs],
+                parameters=[request_object3.parameters],
+                model=model_stateful1,
+                request_objects=[request_object3],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object4.inputs],
-                    parameters=[request_object4.parameters],
-                    model=model_stateful1,
-                ),
-                [request_object4],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object4.inputs],
+                parameters=[request_object4.parameters],
+                model=model_stateful1,
+                request_objects=[request_object4],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object7.inputs],
-                    parameters=[request_object7.parameters],
-                    model=model_stateless2,
-                ),
-                [request_object7],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object7.inputs],
+                parameters=[request_object7.parameters],
+                model=model_stateless2,
+                request_objects=[request_object7],
             ),
         ]
     )
@@ -362,23 +342,19 @@ def test_batch_size_limit():
 
     expected_value = dm.Batches(
         batches=[
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object1.inputs, request_object2.inputs],
-                    parameters=[request_object1.parameters, request_object2.parameters],
-                    model=model1,
-                ),
-                [request_object1, request_object2],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object1.inputs, request_object2.inputs],
+                parameters=[request_object1.parameters, request_object2.parameters],
+                model=model1,
+                request_objects=[request_object1, request_object2],
             ),
-            dm.BatchWithRelatedRequestObjects(
-                dm.BatchObject(
-                    uid=next(batch_uid_generator),
-                    inputs=[request_object3.inputs],
-                    parameters=[request_object3.parameters],
-                    model=model1,
-                ),
-                [request_object3],
+            dm.BatchObject(
+                uid=next(batch_uid_generator),
+                inputs=[request_object3.inputs],
+                parameters=[request_object3.parameters],
+                model=model1,
+                request_objects=[request_object3],
             ),
         ]
     )
@@ -404,11 +380,7 @@ def test_build_one_mapping_batch():
         parameters={"gif_id": 12},
         model=model1,
     )
-    built_batch = build_batches([request_object1], uid_generator=string_generator())
-    batch, request_objects = (
-        built_batch.batches[0].batch,
-        built_batch.batches[0].request_objects,
-    )
+    batches = build_batches([request_object1], uid_generator=string_generator())
 
     expected_value = dm.BatchMapping(
         batch_uid=next(string_generator()),
@@ -416,10 +388,7 @@ def test_build_one_mapping_batch():
         source_ids=[request_object1.source_id],
     )
 
-    assert (
-        build_mapping_batch(dm.BatchWithRelatedRequestObjects(batch, request_objects))
-        == expected_value
-    )
+    assert build_mapping_batch(batches[0]) == expected_value
 
 
 def test_split_batches():
@@ -437,21 +406,18 @@ def test_split_batches():
         inputs=[np.array(range(10)), np.array(range(10))],
         parameters=[{}, {}],
         model=model,
+        request_objects=[],
     )
     batch2 = dm.BatchObject(
         uid="01",
         inputs=[np.array(range(10))],
         parameters=[{}],
         model=model,
+        request_objects=[],
     )
 
     completed, uncompleted = split_on_complete_and_uncomplete_batches(
-        dm.Batches(
-            [
-                dm.BatchWithRelatedRequestObjects(batch1, []),
-                dm.BatchWithRelatedRequestObjects(batch2, []),
-            ]
-        )
+        dm.Batches([batch1, batch2])
     )
-    assert completed.batches[0].batch == batch1
-    assert uncompleted.batches[0].batch == batch2
+    assert completed.batches[0] == batch1
+    assert uncompleted.batches[0] == batch2

@@ -90,7 +90,7 @@ class RequestObject:
 
 
 @dataclass(eq=False)
-class BatchObject:
+class SuperBatchObject:
     """
     Format of BatchManager output data.
 
@@ -110,23 +110,11 @@ class BatchObject:
     inputs: List[np.ndarray]
     parameters: List[dict]
     model: ModelObject
-    request_objects: List[RequestObject] = field(default_factory=list)
 
     @property
     def size(self) -> int:
         "Actual batch size"
         return len(self.inputs)
-
-    def serialize(self):
-        """
-        Serialize BatchObject to dict, that will sent over zeromq
-        """
-        return dict(
-            uid=self.uid,
-            inputs=self.inputs,
-            parameters=self.parameters,
-            model=self.model,
-        )
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -136,8 +124,43 @@ class BatchObject:
             and map(np.array_equal, zip(self.inputs, other.inputs))
             and self.parameters == other.parameters
             and self.model == other.model
-            and self.request_objects == other.request_objects
         )
+
+
+@dataclass(eq=False)
+class BatchObject(SuperBatchObject):
+    """
+    Format of BatchManager output data.
+
+    Parameters
+    ----------
+    uid:
+        Uniq identifier of the batch
+    inputs:
+        List of tensors, that will be processed.
+    parameters:
+        List of meta information for processing. Order is equal to order of inputs
+    model:
+        Information about model
+    request_objects:
+        List of RequestObject
+    """
+
+    request_objects: List[RequestObject] = field(default_factory=list)
+
+    def serialize(self):
+        """
+        Serialize BatchObject to SuperBatchObject, that will sent over zeromq
+        """
+        return SuperBatchObject(
+            uid=self.uid,
+            inputs=self.inputs,
+            parameters=self.parameters,
+            model=self.model,
+        )
+
+    def __eq__(self, other):
+        return super().__eq__(other) and self.request_objects == other.request_objects
 
 
 @dataclass

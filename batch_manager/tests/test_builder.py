@@ -3,6 +3,8 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+from typing import Iterator
+
 import numpy as np  # type: ignore
 
 import src.data_models as dm
@@ -41,7 +43,10 @@ def test_batch_build_empty():
     assert build_batches([]) == dm.Batches(batches=[])
 
 
-def string_generator():
+def string_generator() -> Iterator[str]:
+    """
+    Ordered string generator
+    """
     i = 0
     while True:
         yield str(i)

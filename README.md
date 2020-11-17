@@ -30,18 +30,17 @@ pytest
 
 ### How to run test client for batch manager
 
+Run batch manager
+```bash=
+cd batch_manager
+python main.py
+```
+Run client
 ```bash=
 cd batch_manager/test_client
-python receiver.py
-^Z
-bg
-cd ..
 python main.py
-^Z
-bg
-cd test_client
-python sender.py
-fg 1
-^C
+```
+Check that db contains BatchMapping
+```bash=
 python db.py
 ```

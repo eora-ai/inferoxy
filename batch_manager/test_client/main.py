@@ -1,5 +1,5 @@
 """
-This is test sender for batch manager
+This is test client for batch manager
 """
 
 __author__ = "Andrey Chertkov"
@@ -40,6 +40,9 @@ def main():
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUB)
     sock_sender.connect(config.zmq_input_address)
+    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver.bind(config.zmq_output_address)
+    sock_receiver.subscribe(b"")
 
     model_num = int(input(f"Choose model\n1: {stub_model}\n2: {stateful_model}: "))
     if model_num == 1:
@@ -47,7 +50,7 @@ def main():
     else:
         model = stateful_model
 
-    number_of_request = int(input(f"Write number of requests: "))
+    number_of_request = int(input("Write number of requests: "))
     uid_generator = uuid4_string_generator()
     for _ in range(number_of_request):
         req = dm.RequestObject(
@@ -58,6 +61,10 @@ def main():
             model=model,
         )
         sock_sender.send_pyobj(req)
+    print("Start listenning")
+    while True:
+        result = sock_receiver.recv_pyobj()
+        print(f"Result batch {result}")
 
 
 if __name__ == "__main__":

@@ -18,6 +18,14 @@ from src.saver import save_mapping
 
 
 async def pipeline(config: dm.Config):
+    """
+    Main pipeline of batch manager
+
+    Parameters
+    ----------
+    config
+        Config object
+    """
     input_socket = rc.create_socket(config=config)
     output_socket = snd.create_socket(config=config)
     request_object_iterable = rc.receive(input_socket)
@@ -30,6 +38,9 @@ async def pipeline(config: dm.Config):
 
 
 def main():
+    """
+    Entry point run asyncio pipeline
+    """
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)

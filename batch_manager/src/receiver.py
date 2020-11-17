@@ -5,8 +5,7 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import AsyncIterable
 
-import zmq
-import zmq.asyncio
+import zmq  # type: ignore
 
 import src.data_models as dm
 

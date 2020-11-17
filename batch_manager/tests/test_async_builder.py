@@ -9,7 +9,7 @@ import time
 import asyncio
 from typing import AsyncIterable
 
-import numpy as np
+import numpy as np  # type: ignore
 import pytest
 
 

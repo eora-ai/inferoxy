@@ -5,7 +5,7 @@ This module is responsible for save mappings into LevelDB
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import plyvel
+import plyvel  # type: ignore
 
 import src.data_models as dm
 

@@ -1,5 +1,5 @@
 """
-This is test client for batch manager
+This is test sender for batch manager
 """
 
 __author__ = "Andrey Chertkov"

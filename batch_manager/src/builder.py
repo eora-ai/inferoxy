@@ -10,7 +10,7 @@ from typing import List, Tuple, Generator, AsyncIterable
 from functools import reduce
 import asyncio
 
-from aiostream import stream
+from aiostream import stream  # type: ignore
 
 import src.data_models as dm
 from src.utils import uuid4_string_generator

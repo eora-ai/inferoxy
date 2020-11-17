@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 
-import zmq
+import zmq  # type: ignore
 
 import src.data_models as dm
 
@@ -37,4 +37,4 @@ async def send(sock: zmq.asyncio.Socket, batch: dm.BatchObject):
     sock:
         Socket is destination of batches
     """
-    sock.send_pyobj(batch.serialize())
+    await sock.send_pyobj(batch.serialize())

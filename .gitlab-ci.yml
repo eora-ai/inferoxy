@@ -29,3 +29,4 @@ before_script:
 test:
   script:
     - pytest
+    - mypy batch_manager

@@ -45,7 +45,7 @@ async def test_by_time_interrupt():
 
     before = time.time()
     async for (_, _) in builder(async_request_generator()):
-        assert time.time() - before > 0.1
+        assert time.time() - before > 0.01
         break
     else:
         assert False

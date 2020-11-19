@@ -16,8 +16,52 @@ import src.data_models as dm
 from src.utils import uuid4_string_generator
 
 
-async def builder(
+async def yield_batches_each(
+    batches: dm.Batches, sleep_time: float = 0.01
+) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+    """
+    Yield each @sleep_time@ seconds batches. Batches may be not complete.
+
+    Parameters
+    ----------
+    batches:
+        Link to Batches object, that is auto expandable
+    sleep_time:
+        Batches will be sent each second
+    """
+    while True:
+        await asyncio.sleep(sleep_time)
+        _batches, batches.batches = batches[:], []
+        mappings = map(build_mapping_batch, _batches)
+        batches_and_mappings = list(zip(_batches, mappings))
+        for batch, mapping in batches_and_mappings:
+            yield (batch, mapping)
+
+
+async def yield_batches_if_complete(
     request_stream: AsyncIterable[dm.RequestObject],
+    batches: dm.Batches,
+) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+    """
+    Make batches. Yield batch, if it completed.
+
+    Parameters
+    ----------
+    request_stream:
+        Infinite async iterator over request objects
+    batches:
+        Batches object, in which make batch will be write results.
+    """
+    async for request_object in request_stream:
+        batches.set(build_batches([request_object], existing_batches=batches).batches)
+        completed_batch, batches = split_on_complete_and_uncomplete_batches(batches)
+        for batch in completed_batch:
+            mapping = build_mapping_batch(batch)
+            yield (batch, mapping)
+
+
+async def builder(
+    request_stream: AsyncIterable[dm.RequestObject], config: dm.Config = None
 ) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
     """
     From async generator of request build two genrators:
@@ -28,34 +72,18 @@ async def builder(
     ----------
     request_stream
         Infinite stream of request objects
+    config
+        Config object, required field default_sleep_time
     """
     batches = dm.Batches(batches=[])
 
-    async def result_time_interrupt(batches):
-        while True:
-            await asyncio.sleep(0.1)
-            _batches, batches.batches = batches[:], []
-            mappings = map(build_mapping_batch, _batches)
-            batches_and_mappings = list(zip(_batches, mappings))
-            for batch, mapping in batches_and_mappings:
-                yield (batch, mapping)
-
-    async def result_complete_batches(batches):
-        async for request_object in request_stream:
-            batches.set(
-                build_batches([request_object], existing_batches=batches).batches
-            )
-            (
-                completed_batch,
-                batches,
-            ) = split_on_complete_and_uncomplete_batches(batches)
-            for batch in completed_batch:
-                mapping = build_mapping_batch(batch)
-                yield (batch, mapping)
+    sleep_time = 0.01 if config is None else config.default_sleep_time
 
     combine = stream.merge(
-        result_time_interrupt(batches),
-        result_complete_batches(batches),
+        yield_batches_each(
+            batches,
+        ),
+        yield_batches_if_complete(request_stream, batches),
     )
     async with combine.stream() as streamer:
         async for (batch, mapping) in streamer:

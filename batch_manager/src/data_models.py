@@ -22,12 +22,19 @@ class Config:
         Address of zreomq socket ipc for input requests
     zmq_output_address:
         Address of zreomq socket ipc for result batches
+    db_file:
+        File path to leveldb
+    create_db_file:
+        Create db file if file doesnot exists
+    default_sleep_time:
+        How much time builder will be sleep before sending
     """
 
     zmq_input_address: str
     zmq_output_address: str
     db_file: str
     create_db_file: bool
+    default_sleep_time: float
 
 
 @dataclass

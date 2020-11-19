@@ -29,7 +29,7 @@ async def pipeline(config: dm.Config):
     input_socket = rc.create_socket(config=config)
     output_socket = snd.create_socket(config=config)
     request_object_iterable = rc.receive(input_socket)
-    mapping_batch_generator = builder(request_object_iterable)
+    mapping_batch_generator = builder(request_object_iterable, config=config)
     logger.info("Start batch manager")
     async for (batch, mapping) in mapping_batch_generator:
         logger.debug(f"Batch completed {batch=}, {mapping=}")

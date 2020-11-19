@@ -166,6 +166,7 @@ def test_batch_stateful_many():
                 parameters=[request_object1.parameters, request_object3.parameters],
                 model=stub_stateful_model,
                 request_objects=[request_object1, request_object3],
+                source_id=request_object1.source_id,
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
@@ -173,6 +174,7 @@ def test_batch_stateful_many():
                 parameters=[request_object2.parameters],
                 model=blur_stateful_model,
                 request_objects=[request_object2],
+                source_id=request_object2.source_id,
             ),
         ]
     )
@@ -261,6 +263,7 @@ def test_multi_stage_build_batch():
                     request_object5.parameters,
                     request_object6.parameters,
                 ],
+                source_id=request_object2.source_id,
                 model=blur_stateful_model,
                 request_objects=[request_object2, request_object5, request_object6],
             ),
@@ -269,6 +272,7 @@ def test_multi_stage_build_batch():
                 inputs=[request_object3.inputs],
                 parameters=[request_object3.parameters],
                 model=stub_stateful_model,
+                source_id=request_object3.source_id,
                 request_objects=[request_object3],
             ),
             dm.BatchObject(
@@ -276,6 +280,7 @@ def test_multi_stage_build_batch():
                 inputs=[request_object4.inputs],
                 parameters=[request_object4.parameters],
                 model=stub_stateful_model,
+                source_id=request_object4.source_id,
                 request_objects=[request_object4],
             ),
             dm.BatchObject(

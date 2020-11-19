@@ -97,9 +97,10 @@ class RequestObject:
 
 
 @dataclass(eq=False)
-class SuperBatchObject:
+class MinimalBatchObject:
     """
     Format of BatchManager output data.
+    This object will be sent over the zmq output socket
 
     Parameters
     ----------
@@ -135,9 +136,9 @@ class SuperBatchObject:
 
 
 @dataclass(eq=False)
-class BatchObject(SuperBatchObject):
+class BatchObject(MinimalBatchObject):
     """
-    Format of BatchManager output data.
+    Format of BatchManager output data. This object stores more information that minimal.
 
     Parameters
     ----------
@@ -149,17 +150,20 @@ class BatchObject(SuperBatchObject):
         List of meta information for processing. Order is equal to order of inputs
     model:
         Information about model
+    source_id:
+        Source id if model is stateful, if stateless source_id=None
     request_objects:
         List of RequestObject
     """
 
+    source_id: str = None
     request_objects: List[RequestObject] = field(default_factory=list)
 
     def serialize(self):
         """
-        Serialize BatchObject to SuperBatchObject, that will sent over zeromq
+        Serialize BatchObject to MinimalBatchObject, that will sent over zeromq
         """
-        return SuperBatchObject(
+        return MinimalBatchObject(
             uid=self.uid,
             inputs=self.inputs,
             parameters=self.parameters,
@@ -167,7 +171,11 @@ class BatchObject(SuperBatchObject):
         )
 
     def __eq__(self, other):
-        return super().__eq__(other) and self.request_objects == other.request_objects
+        return (
+            super().__eq__(other)
+            and self.request_objects == other.request_objects
+            and self.source_id == other.source_id
+        )
 
 
 @dataclass

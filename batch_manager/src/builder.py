@@ -158,7 +158,7 @@ def build_batches(
             ):
                 if (
                     not batch.model.stateless
-                    and batch.request_objects[-1].source_id != request_object.source_id
+                    and batch.source_id != request_object.source_id
                 ):
                     continue
                 batch.inputs.append(request_object.inputs)
@@ -172,6 +172,9 @@ def build_batches(
                 parameters=[request_object.parameters],
                 model=request_object.model,
                 request_objects=[request_object],
+                source_id=None
+                if request_object.model.stateless
+                else request_object.source_id,
             )
             batches.add(new_batch)
         return batches

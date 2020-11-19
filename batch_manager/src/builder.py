@@ -16,21 +16,21 @@ import src.data_models as dm
 from src.utils import uuid4_string_generator
 
 
-async def yield_batches_each(
-    batches: dm.Batches, sleep_time: float = 0.01
+async def yield_timeout_batches(
+    batches: dm.Batches, timeout: float = 0.01
 ) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
     """
-    Yield each @sleep_time@ seconds batches. Batches may be not complete.
+    Yield each @timeout@ seconds batches. Batches may be not complete.
 
     Parameters
     ----------
     batches:
         Link to Batches object, that is auto expandable
-    sleep_time:
+    timeout:
         Batches will be sent each second
     """
     while True:
-        await asyncio.sleep(sleep_time)
+        await asyncio.sleep(timeout)
         _batches, batches.batches = batches[:], []
         mappings = map(build_mapping_batch, _batches)
         batches_and_mappings = list(zip(_batches, mappings))
@@ -38,7 +38,7 @@ async def yield_batches_each(
             yield (batch, mapping)
 
 
-async def yield_batches_if_complete(
+async def yield_completed_batches(
     request_stream: AsyncIterable[dm.RequestObject],
     batches: dm.Batches,
 ) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
@@ -73,11 +73,11 @@ async def builder(
     request_stream
         Infinite stream of request objects
     config
-        Config object, required field default_sleep_time
+        Config object, required field send_batch_timeout
     """
     batches = dm.Batches(batches=[])
 
-    sleep_time = 0.01 if config is None else config.default_sleep_time
+    sleep_time = 0.01 if config is None else config.send_batch_timeout
 
     combine = stream.merge(
         yield_batches_each(batches, sleep_time),

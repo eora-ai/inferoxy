@@ -26,7 +26,7 @@ class Config:
         File path to leveldb
     create_db_file:
         Create db file if file doesnot exists
-    default_sleep_time:
+    send_batch_timeout:
         How much time builder will be sleep before sending
     """
 
@@ -34,7 +34,7 @@ class Config:
     zmq_output_address: str
     db_file: str
     create_db_file: bool
-    default_sleep_time: float
+    send_batch_timeout: float
 
 
 @dataclass

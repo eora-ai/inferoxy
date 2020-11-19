@@ -80,9 +80,7 @@ async def builder(
     sleep_time = 0.01 if config is None else config.default_sleep_time
 
     combine = stream.merge(
-        yield_batches_each(
-            batches,
-        ),
+        yield_batches_each(batches, sleep_time),
         yield_batches_if_complete(request_stream, batches),
     )
     async with combine.stream() as streamer:
@@ -172,7 +170,7 @@ def build_batches(
                 parameters=[request_object.parameters],
                 model=request_object.model,
                 request_objects=[request_object],
-                source_id=None
+                source_id=""
                 if request_object.model.stateless
                 else request_object.source_id,
             )

@@ -151,12 +151,12 @@ class BatchObject(MinimalBatchObject):
     model:
         Information about model
     source_id:
-        Source id if model is stateful, if stateless source_id=None
+        Source id if model is stateful, if stateless source_id=""
     request_objects:
         List of RequestObject
     """
 
-    source_id: str = None
+    source_id: str = ""
     request_objects: List[RequestObject] = field(default_factory=list)
 
     def serialize(self):

@@ -1,0 +1,6 @@
+neovim
+black
+pylint
+pytest
+pytest-asyncio
+mypy

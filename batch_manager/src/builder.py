@@ -80,8 +80,8 @@ async def builder(
     sleep_time = 0.01 if config is None else config.send_batch_timeout
 
     combine = stream.merge(
-        yield_batches_each(batches, sleep_time),
-        yield_batches_if_complete(request_stream, batches),
+        yield_timeout_batches(batches, sleep_time),
+        yield_completed_batches(request_stream, batches),
     )
     async with combine.stream() as streamer:
         async for (batch, mapping) in streamer:

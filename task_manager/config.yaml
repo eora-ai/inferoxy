@@ -1,0 +1,2 @@
+zmq_input_address: "ipc:///tmp/batch_manager/result"
+zmq_output_address: "ipc:///tmp/task_manager/result"

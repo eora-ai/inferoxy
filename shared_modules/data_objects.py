@@ -11,7 +11,7 @@ import json
 from dataclasses import dataclass
 from typing import List, Tuple
 
-import numpy as np
+import numpy as np  # type: ignore
 
 
 @dataclass

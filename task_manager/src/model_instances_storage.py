@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 from collections import defaultdict
 from typing import Set, Dict, AsyncIterator, List
 
-from src.response_to_batch import ResponseToBatch
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers import Receiver
 import src.data_models as dm
 
@@ -18,17 +18,17 @@ class ModelInstancesStorage:
     This class is store model instance, and process round robin select over it
     """
 
-    def __init__(self, response_to_batch_converter: ResponseToBatch):
+    def __init__(self, receiver_streams_combiner: ReceiverStreamsCombiner):
         self.models: Set[dm.ModelObject] = set()
         self.model_instances: Dict[
             dm.ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
-        self.response_to_batch_converter = response_to_batch_converter
+        self.receiver_streams_combiner = receiver_streams_combiner
 
     def add_model_instance(self, model_instance: dm.ModelInstance):
         self.models.add(model_instance.model)
         self.model_instances[model_instance.model].append(model_instance)
-        self.response_to_batch_converter.add_listener(
+        self.receiver_streams_combiner.add_listener(
             model_instance.receiver, model_instance.receiver.receive()
         )
 
@@ -36,7 +36,7 @@ class ModelInstancesStorage:
         if model_instance.model not in self.models:
             raise ValueError(f"{model_instance=} not in storage")
         self.model_instances[model_instance.model].remove(model_instance)
-        self.response_to_batch_converter.remove_listener(model_instance.receiver)
+        self.receiver_streams_combiner.remove_listener(model_instance.receiver)
         if not self.model_instances[model_instance.model]:
             self.models.remove(model_instance.model)
 

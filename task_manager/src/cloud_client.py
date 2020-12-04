@@ -77,7 +77,9 @@ class DockerCloudClient(BaseCloudClient):
         return True
 
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
-        return dm.ModelInstance(model=model, sender=Sender(), receiver=Receiver())
+        return dm.ModelInstance(
+            model=model, sender=Sender(), receiver=Receiver(), lock=False
+        )
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         pass

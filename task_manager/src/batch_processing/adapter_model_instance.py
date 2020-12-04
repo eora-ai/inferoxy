@@ -6,6 +6,8 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 
+from dataclasses import asdict
+
 import src.data_models as dm
 
 
@@ -22,12 +24,11 @@ class AdapterModelInstance:
         """
         Parse batches into v3 model request
         """
-        await self.sender.send(AdapterModelInstance.batch_to_v3_format(batch))
+        await self.sender.send(AdapterModelInstance.batch_to_send_dict(batch))
 
     @classmethod
-    def batch_to_v3_format(cls, batch: dm.RequestBatch) -> dict:
+    def batch_to_send_dict(cls, batch: dm.RequestBatch) -> dict:
         """
-        Convert batch to v3 format.
+        Convert batch to dict format.
         """
-        # TODO: recall v3 format
-        return {}
+        return asdict(batch)

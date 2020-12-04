@@ -16,7 +16,7 @@ from src.batch_processing.queue_processing import send_to_model
 from src.load_analyzer import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
-from src.response_to_batch import ResponseToBatch
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.cloud_client import DockerCloudClient
 
 
@@ -30,12 +30,12 @@ async def pipeline(
     """
     receiver_socket = rc.create_socket(config)
     receiver_task = rc.receive(receiver_socket, input_batch_queue)
-    response_to_batch_converter = ResponseToBatch(output_batch_queue)
-    model_instances_storage = ModelInstancesStorage(response_to_batch_converter)
+    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
+    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     send_to_model_task = send_to_model(
         input_batch_queue, model_instances_storage=model_instances_storage
     )
-    receive_from_model_task = response_to_batch_converter.converter()
+    receive_from_model_task = receiver_streams_combiner.converter()
     sender_socket = snd.create_socket(config)
     sender_task = snd.send(sender_socket, output_batch_queue)
     await asyncio.wait(

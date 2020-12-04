@@ -8,14 +8,22 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 from typing import AsyncIterator, Union, Dict, Optional
 
-from aiostream import stream  # type: ignore
+from aiostream.stream import merge  # type: ignore
 
 from src.batch_queue import OutputBatchQueue
 from src.utils.data_transfers.receiver import Receiver
 import src.data_models as dm
 
 
-class ResponseToBatch:
+class ReceiverStreamsCombiner:
+    """
+    Combine receiver streams and put result into output_batch_queue
+
+    Parameters
+    ----------
+    output_batch_queue:
+        Queue where will be placed result, ResponseBatch objects.
+    """
 
     BREAK = "BREAK"
 
@@ -24,21 +32,30 @@ class ResponseToBatch:
         self.sources: Dict[Optional[Receiver], AsyncIterator[Union[str, dict]]] = {
             None: self.check_source_interaptor()
         }
-        self.combined_streams = stream.merge(*self.sources.values())
+        self.combined_streams = merge(*self.sources.values())
         self.sourcers_updated = False
 
     def add_listener(
         self, receiver: Receiver, async_response_iter: AsyncIterator[dict]
     ) -> None:
+        """
+        Add receiver listener to sourcers
+        """
         self.sources[receiver] = async_response_iter
-        self.combined_streams = stream.merge(*self.sources.values())
+        self.combined_streams = merge(*self.sources.values())
         self.sourcers_updated = True
 
     def remove_listener(self, receiver: Receiver):
+        """
+        Remove receiver listener from combining sourcers
+        """
         del self.sources[receiver]
         self.sourcers_updated = True
 
     async def check_source_interaptor(self) -> AsyncIterator[str]:
+        """
+        Interaptor async iterator, needed to recombine receiver streamms.
+        """
         while True:
             await asyncio.sleep(0.001)
             if self.sourcers_updated:
@@ -46,6 +63,9 @@ class ResponseToBatch:
                 self.sourcers_updated = False
 
     async def converter(self):
+        """
+        Main method, convert dict to ResponseBatch, and put it to output_batch_queue
+        """
         while True:
             with self.combined_streams.stream() as stream:
                 async for response in stream:
@@ -53,6 +73,9 @@ class ResponseToBatch:
                         break
                     self.output_batch_queue.put(self._make_batch(response))
 
-    def _make_batch(self, result: dict) -> dm.ResponseBatch:
-        # TODO: recall v3 format
+    @classmethod
+    def _make_batch(cls, result: dict) -> dm.ResponseBatch:
+        """
+        Batch from dict format
+        """
         return dm.ResponseBatch(**result)

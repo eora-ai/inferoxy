@@ -47,7 +47,7 @@ def main():
     """
     Entry point
     1. Init internal multithreading queue
-    In one thread
+    In one thread:
     2. Start reciever
     3. Start processor
     4. Start sender

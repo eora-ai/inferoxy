@@ -11,7 +11,7 @@ from dataclasses import asdict
 import src.data_models as dm
 
 
-class AdapterModelInstance:
+class AdapterV1ModelInstance:
     """
     Make adapter between BatchRequest and model v3 format
     """
@@ -24,7 +24,7 @@ class AdapterModelInstance:
         """
         Parse batches into v3 model request
         """
-        await self.sender.send(AdapterModelInstance.batch_to_send_dict(batch))
+        await self.sender.send(AdapterV1ModelInstance.batch_to_send_dict(batch))
 
     @classmethod
     def batch_to_send_dict(cls, batch: dm.RequestBatch) -> dict:

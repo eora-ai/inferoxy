@@ -9,7 +9,7 @@ import asyncio
 from asyncio import QueueEmpty
 
 from src.batch_queue import InputBatchQueue
-from src.batch_processing.adapter_model_instance import AdapterModelInstance
+from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
 from src.model_instances_storage import ModelInstancesStorage
 
 
@@ -34,6 +34,6 @@ async def send_to_model(
             except QueueEmpty:
                 continue
             model_instance = model_instances_storage.get_next_running_instance(model)
-            adapter_model_instance = AdapterModelInstance(model_instance)
+            adapter_model_instance = AdapterV1ModelInstance(model_instance)
             tasks.append(adapter_model_instance.send(batch))
         await asyncio.wait(tasks)

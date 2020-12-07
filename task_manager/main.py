@@ -51,7 +51,7 @@ def main():
     2. Start reciever
     3. Start processor
     4. Start sender
-    In secodn thread load analyzer.
+    In second thread: load analyzer.
     """
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)

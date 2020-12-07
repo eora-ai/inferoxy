@@ -11,6 +11,7 @@ from asyncio import QueueEmpty
 from src.batch_queue import InputBatchQueue
 from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
 from src.model_instances_storage import ModelInstancesStorage
+from src.exceptions import TagDoesNotExists
 
 
 async def send_to_model(
@@ -31,7 +32,7 @@ async def send_to_model(
         for model in models:
             try:
                 batch = await input_batch_queue.get_nowait(tag=model)
-            except QueueEmpty:
+            except (QueueEmpty, TagDoesNotExists):
                 continue
             model_instance = model_instances_storage.get_next_running_instance(model)
             adapter_model_instance = AdapterV1ModelInstance(model_instance)

@@ -5,7 +5,7 @@ This module is responsible for transfer Batches from receiver to process and fro
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from asyncio import Queue
+from asyncio import Queue, QueueEmpty
 from typing import Optional, Dict, Set
 import datetime
 
@@ -75,9 +75,9 @@ class InputBatchQueue:
             raise TagDoesNotExists(f"Tag {tag} doesnot exists")
         try:
             batch = queue.get_nowait()
-        except Exception as e:
+        except QueueEmpty as exc:
             self.tags.remove(tag)
-            raise e
+            raise exc
         return batch
 
 

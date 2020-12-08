@@ -146,7 +146,10 @@ class OutputBatchQueue(Queue):
             and not item.done_at is None
             and not item.started_at is None
         ):
-            self.batches_time_processing[item] = item.processed_at - item.started_at
+            self.batches_time_processing[item] = {
+                "processing_time": item.processed_at - item.started_at,
+                "count": item.size,
+            }
         else:
             self.error_batches.append(item)
         item.queued_at = datetime.datetime.now()

@@ -22,8 +22,6 @@ class InputBatchQueue:
         self.queues: Dict[
             str, Dict[Tuple[Optional[str], dm.ModelObject], Queue]
         ] = dict(stateless={}, stateful={})
-        # self.queues: Dict[dm.ModelObject, Queue] = dict()
-        # self.tags: Set[dm.ModelObject] = set()
 
     async def put(
         self,
@@ -38,8 +36,8 @@ class InputBatchQueue:
         Parameters
         ----------
         item:
-            MinimalBatchObject item, that will transform into RequestBatchObject,
-            Set status=created and created_at, that will save into queue
+            MinimalBatchObject item, that will be transformed into RequestBatchObject,
+            Set status=created and created_at, this will be saved into queue
         """
         batch_object = dm.RequestBatch.from_minimal_batch_object(
             item, created_at=datetime.datetime.now(), status=dm.Status.CREATED

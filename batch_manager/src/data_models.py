@@ -6,8 +6,10 @@ __email__ = "a.chertkov@eora.ru"
 
 from dataclasses import dataclass, field
 from typing import List
+from loguru import logger
 
 from shared_modules.data_objects import (
+    Status,
     ModelObject,
     RequestObject,
     MinimalBatchObject,
@@ -62,10 +64,9 @@ class BatchObject(MinimalBatchObject):
         List of RequestObject
     """
 
-    source_id: str = ""
     request_objects: List[RequestObject] = field(default_factory=list)
 
-    def serialize(self):
+    def serialize(self) -> MinimalBatchObject:
         """
         Serialize BatchObject to MinimalBatchObject, that will sent over zeromq
         """
@@ -74,6 +75,9 @@ class BatchObject(MinimalBatchObject):
             inputs=self.inputs,
             parameters=self.parameters,
             model=self.model,
+            source_id=self.source_id,
+            status=self.status,
+            created_at=self.created_at,
         )
 
     def __eq__(self, other):

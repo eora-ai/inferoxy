@@ -170,9 +170,10 @@ def build_batches(
                 parameters=[request_object.parameters],
                 model=request_object.model,
                 request_objects=[request_object],
-                source_id=""
+                source_id=None
                 if request_object.model.stateless
                 else request_object.source_id,
+                status=dm.Status.CREATING,
             )
             batches.add(new_batch)
         return batches

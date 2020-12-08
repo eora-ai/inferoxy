@@ -15,7 +15,7 @@ import numpy as np  # type: ignore
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
-from shared_modules.data_objects import MinimalBatchObject, ModelObject
+from shared_modules.data_objects import MinimalBatchObject, ModelObject, Status
 
 
 @dataclass
@@ -41,53 +41,29 @@ class ModelInstance:
     lock: bool
 
 
-class Status(Enum):
-    """
-    Enum that represents status of the batch processing
-    """
-
-    CREATED = "CREATED"
-    STARTED = "STARTED"
-    DONE = "DONE"
-    SENT = "SENT"
-
-
-@dataclass
-class BatchWithTimesAndStatuses(MinimalBatchObject):
-    """
-    Data class which stores status and times of the batch
-    """
-
-    status: Status
-    created_at: Optional[datetime]
-    started_at: Optional[datetime]
-    done_at: Optional[datetime]
-    queued_at: Optional[datetime]
-    sent_at: Optional[datetime]
+RequestBatch = MinimalBatchObject
+# @dataclass
+# class RequestBatch(BatchWithTimesAndStatuses):
+#    """
+#    Request Batch Object
+#    """
+#
+#    @classmethod
+#    def from_minimal_batch_object(cls, batch: MinimalBatchObject, **kwargs):
+#        """
+#        Make Request object from MinimalBatchObject
+#        """
+#        return cls(
+#            uid=batch.uid,
+#            inputs=batch.inputs,
+#            parameters=batch.parameters,
+#            model=batch.model,
+#            **kwargs
+#        )
 
 
 @dataclass
-class RequestBatch(BatchWithTimesAndStatuses):
-    """
-    Request Batch Object
-    """
-
-    @classmethod
-    def from_minimal_batch_object(cls, batch: MinimalBatchObject, **kwargs):
-        """
-        Make Request object from MinimalBatchObject
-        """
-        return cls(
-            uid=batch.uid,
-            inputs=batch.inputs,
-            parameters=batch.parameters,
-            model=batch.model,
-            **kwargs
-        )
-
-
-@dataclass
-class ResponseBatch(BatchWithTimesAndStatuses):
+class ResponseBatch(MinimalBatchObject):
     """
     Response batch object, add output and pictures
     """

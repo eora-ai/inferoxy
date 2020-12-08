@@ -8,8 +8,10 @@ __email__ = "a.chertkov@eora.ru"
 
 
 import json
+from enum import Enum
+from datetime import datetime
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import numpy as np  # type: ignore
 
@@ -73,6 +75,21 @@ class RequestObject:
         )
 
 
+class Status(Enum):
+    """
+    Enum that represents status of the batch processing
+    """
+
+    CREATING = "CREATING"
+    CREATED = "CREATED"
+    IN_QUEUE = "IN_QUEUE"
+    SENT_TO_MODEL = "SENT_TO_MODEL"
+    PROCESSED = "PROCESSED"
+    FAILED = "FAILED"
+    ERROR = "ERROR"
+    DONE = "DONE"
+
+
 @dataclass(eq=False)
 class MinimalBatchObject:
     """
@@ -95,6 +112,15 @@ class MinimalBatchObject:
     inputs: List[np.ndarray]
     parameters: List[dict]
     model: ModelObject
+    status: Status = Status.CREATING
+    source_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+    queued_at: Optional[datetime] = None
+    started_at: Optional[datetime] = None
+    processed_at: Optional[datetime] = None
+    done_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    debached_at: Optional[datetime] = None
 
     @property
     def size(self) -> int:
@@ -109,6 +135,8 @@ class MinimalBatchObject:
             and map(np.array_equal, zip(self.inputs, other.inputs))
             and self.parameters == other.parameters
             and self.model == other.model
+            and self.source_id == other.source_id
+            and self.status == other.status
         )
 
 

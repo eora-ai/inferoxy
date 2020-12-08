@@ -40,7 +40,7 @@ class InputBatchQueue:
             Set status=created and created_at, this will be saved into queue
         """
         batch_object = dm.RequestBatch.from_minimal_batch_object(
-            item, created_at=datetime.datetime.now(), status=dm.Status.CREATED
+            item, created_at=datetime.datetime.now(), status=dm.Status.IN_QUEUE
         )
         queue = self.__select_queue(tag, is_stateless, source_id)
         if queue is None:
@@ -77,7 +77,20 @@ class InputBatchQueue:
                 (source_id, tag)
             ]
         except KeyError:
-            return None
+            return
+
+    def __delete_queue(
+        self,
+        tag: dm.ModelObject,
+        is_stateless: bool = True,
+        source_id: Optional[str] = None,
+    ):
+        try:
+            del self.queues["stateless" if is_stateless else "stateful"][
+                (source_id, tag)
+            ]
+        except KeyError:
+            return
 
     def get_nowait(
         self,
@@ -101,6 +114,7 @@ class InputBatchQueue:
         try:
             batch = queue.get_nowait()
         except QueueEmpty as exc:
+            self.__delete_queue(tag, is_stateless, source_id)
             raise exc
         return batch
 
@@ -125,14 +139,14 @@ class OutputBatchQueue(Queue):
         Parameters
         ----------
         item:
-            ResponseBatch item, that will save into queue, batch status is DONE
+            ResponseBatch item, that will save into queue, batch status is PROCESSED
         """
         if (
-            item.status == dm.Status.DONE
+            item.status == dm.Status.PROCESSED
             and not item.done_at is None
             and not item.started_at is None
         ):
-            self.batches_time_processing[item] = item.done_at - item.started_at
+            self.batches_time_processing[item] = item.processed_at - item.started_at
         else:
             self.error_batches.append(item)
         item.queued_at = datetime.datetime.now()

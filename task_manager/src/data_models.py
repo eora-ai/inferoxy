@@ -35,6 +35,7 @@ class ModelInstance:
     """
 
     model: ModelObject
+    source_id: Optional[str]
     sender: Sender
     receiver: Receiver
     lock: bool

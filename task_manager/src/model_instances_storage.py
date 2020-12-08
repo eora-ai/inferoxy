@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from collections import defaultdict
-from typing import Set, Dict, AsyncIterator, List
+from typing import Dict, List, Tuple, Optional
 
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers import Receiver
@@ -19,29 +19,38 @@ class ModelInstancesStorage:
     """
 
     def __init__(self, receiver_streams_combiner: ReceiverStreamsCombiner):
-        self.models: Set[dm.ModelObject] = set()
         self.model_instances: Dict[
             dm.ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
         self.receiver_streams_combiner = receiver_streams_combiner
 
     def add_model_instance(self, model_instance: dm.ModelInstance):
-        self.models.add(model_instance.model)
         self.model_instances[model_instance.model].append(model_instance)
         self.receiver_streams_combiner.add_listener(
             model_instance.receiver, model_instance.receiver.receive()
         )
 
     def remove_model_instance(self, model_instance: dm.ModelInstance):
-        if model_instance.model not in self.models:
-            raise ValueError(f"{model_instance=} not in storage")
         self.model_instances[model_instance.model].remove(model_instance)
         self.receiver_streams_combiner.remove_listener(model_instance.receiver)
-        if not self.model_instances[model_instance.model]:
-            self.models.remove(model_instance.model)
 
-    def get_running_models(self) -> List[dm.ModelObject]:
-        return list(self.models)
+    def get_running_models_with_source_ids(
+        self,
+    ) -> List[Tuple[dm.ModelObject, Optional[str]]]:
+        models_with_source_ids: List[Tuple[dm.ModelObject, Optional[str]]] = []
+        for model in self.model_instances.keys():
+            if model.stateless:
+                models_with_source_ids.append((model, None))
+            else:
+                model_with_source_ids = [
+                    (model, model_instance.source_id)
+                    for model_instance in self.model_instances[model]
+                ]
+                models_with_source_ids.extend(model_with_source_ids)
 
-    def get_next_running_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+        return models_with_source_ids
+
+    def get_next_running_instance(
+        self, model: dm.ModelObject, source_ids: Optional[str] = None
+    ) -> dm.ModelInstance:
         pass

@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from asyncio import Queue, QueueEmpty
-from typing import Optional, Dict, Set
+from typing import Optional, Dict, Tuple
 import datetime
 
 import src.data_models as dm
@@ -19,10 +19,19 @@ class InputBatchQueue:
     """
 
     def __init__(self):
-        self.queues: Dict[dm.ModelObject, Queue] = dict()
-        self.tags: Set[dm.ModelObject] = set()
+        self.queues: Dict[
+            str, Dict[Tuple[Optional[str], dm.ModelObject], Queue]
+        ] = dict(stateless={}, stateful={})
+        # self.queues: Dict[dm.ModelObject, Queue] = dict()
+        # self.tags: Set[dm.ModelObject] = set()
 
-    async def put(self, item: dm.MinimalBatchObject, tag: dm.ModelObject):
+    async def put(
+        self,
+        item: dm.MinimalBatchObject,
+        tag: dm.ModelObject,
+        is_stateless: bool = True,
+        source_id: Optional[str] = None,
+    ):
         """
         Put ResponseBatch into queue, save time processing for load analyzer
 
@@ -35,18 +44,28 @@ class InputBatchQueue:
         batch_object = dm.RequestBatch.from_minimal_batch_object(
             item, created_at=datetime.datetime.now(), status=dm.Status.CREATED
         )
-        queue = self.__select_queue(tag)
+        queue = self.__select_queue(tag, is_stateless, source_id)
         if queue is None:
-            queue = self.__create_queue(tag)
+            queue = self.__create_queue(tag, is_stateless, source_id)
         await queue.put(batch_object)
 
-    def __create_queue(self, tag: dm.ModelObject) -> Queue:
-        self.tags.add(tag)
+    def __create_queue(
+        self,
+        tag: dm.ModelObject,
+        is_stateless: bool = True,
+        source_id: Optional[str] = None,
+    ) -> Queue:
         queue: Queue = Queue()
-        self.queues[tag] = queue
+        sub_queue = self.queues["stateless" if is_stateless else "stateful"]
+        sub_queue[(source_id, tag)] = queue
         return queue
 
-    def __select_queue(self, tag: dm.ModelObject) -> Optional[Queue]:
+    def __select_queue(
+        self,
+        tag: dm.ModelObject,
+        is_stateless: bool = True,
+        source_id: Optional[str] = None,
+    ) -> Optional[Queue]:
         """
         Select queue by tag
 
@@ -55,11 +74,19 @@ class InputBatchQueue:
         tag:
             Tag of the queue
         """
-        if tag in self.tags:
-            return self.queues[tag]
-        return None
+        try:
+            return self.queues["stateless" if is_stateless else "stateful"][
+                (source_id, tag)
+            ]
+        except KeyError:
+            return None
 
-    def get_nowait(self, tag: dm.ModelObject):
+    def get_nowait(
+        self,
+        tag: dm.ModelObject,
+        is_stateless: bool = True,
+        source_id: Optional[str] = None,
+    ):
         """
         Get item using get_nowait from queue with tag=tag,
         Parameters
@@ -70,13 +97,12 @@ class InputBatchQueue:
         Returns:
             Request Batch object
         """
-        queue = self.__select_queue(tag)
+        queue = self.__select_queue(tag, is_stateless, source_id)
         if queue is None:
-            raise TagDoesNotExists(f"Tag {tag} doesnot exists")
+            raise TagDoesNotExists(f"Tag {(source_id, tag)} doesnot exists")
         try:
             batch = queue.get_nowait()
         except QueueEmpty as exc:
-            self.tags.remove(tag)
             raise exc
         return batch
 

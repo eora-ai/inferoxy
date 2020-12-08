@@ -26,9 +26,7 @@ class ModelInstancesStorage:
 
     def add_model_instance(self, model_instance: dm.ModelInstance):
         self.model_instances[model_instance.model].append(model_instance)
-        self.receiver_streams_combiner.add_listener(
-            model_instance.receiver, model_instance.receiver.receive()
-        )
+        self.receiver_streams_combiner.add_listener(model_instance.receiver)
 
     def remove_model_instance(self, model_instance: dm.ModelInstance):
         self.model_instances[model_instance.model].remove(model_instance)

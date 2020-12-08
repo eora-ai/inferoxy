@@ -39,13 +39,12 @@ class InputBatchQueue:
             MinimalBatchObject item, that will be transformed into RequestBatchObject,
             Set status=created and created_at, this will be saved into queue
         """
-        batch_object = dm.RequestBatch.from_minimal_batch_object(
-            item, created_at=datetime.datetime.now(), status=dm.Status.IN_QUEUE
-        )
+        item.queued_at = datetime.datetime.now()
+        item.status = dm.Status.IN_QUEUE
         queue = self.__select_queue(tag, is_stateless, source_id)
         if queue is None:
             queue = self.__create_queue(tag, is_stateless, source_id)
-        await queue.put(batch_object)
+        await queue.put(item)
 
     def __create_queue(
         self,
@@ -77,7 +76,7 @@ class InputBatchQueue:
                 (source_id, tag)
             ]
         except KeyError:
-            return
+            return None
 
     def __delete_queue(
         self,
@@ -143,7 +142,7 @@ class OutputBatchQueue(Queue):
         """
         if (
             item.status == dm.Status.PROCESSED
-            and not item.done_at is None
+            and not item.processed_at is None
             and not item.started_at is None
         ):
             self.batches_time_processing[item] = {

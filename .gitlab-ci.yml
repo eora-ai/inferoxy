@@ -30,3 +30,4 @@ test:
   script:
     - pytest
     - mypy batch_manager
+    - mypy task_manager

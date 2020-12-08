@@ -35,13 +35,11 @@ class ReceiverStreamsCombiner:
         self.combined_streams = merge(*self.sources.values())
         self.sourcers_updated = False
 
-    def add_listener(
-        self, receiver: Receiver, async_response_iter: AsyncIterator[dict]
-    ) -> None:
+    def add_listener(self, receiver: Receiver) -> None:
         """
         Add receiver listener to sourcers
         """
-        self.sources[receiver] = async_response_iter
+        self.sources[receiver] = receiver.receive()
         self.combined_streams = merge(*self.sources.values())
         self.sourcers_updated = True
 

@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional
 
@@ -42,24 +42,6 @@ class ModelInstance:
 
 
 RequestBatch = MinimalBatchObject
-# @dataclass
-# class RequestBatch(BatchWithTimesAndStatuses):
-#    """
-#    Request Batch Object
-#    """
-#
-#    @classmethod
-#    def from_minimal_batch_object(cls, batch: MinimalBatchObject, **kwargs):
-#        """
-#        Make Request object from MinimalBatchObject
-#        """
-#        return cls(
-#            uid=batch.uid,
-#            inputs=batch.inputs,
-#            parameters=batch.parameters,
-#            model=batch.model,
-#            **kwargs
-#        )
 
 
 @dataclass
@@ -68,8 +50,8 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    outputs: List[np.ndarray]
-    pictures: List[Optional[np.ndarray]]
+    outputs: List[np.ndarray] = field(default_factory=list)
+    pictures: List[Optional[np.ndarray]] = field(default_factory=list)
 
     @classmethod
     def from_request_batch_object(
@@ -80,7 +62,7 @@ class ResponseBatch(MinimalBatchObject):
         done_at: datetime,
     ):
         """
-        Make Request object from MinimalBatchObject
+        Make Response Batch object from RequestBactch
         """
         return cls(
             uid=batch.uid,

@@ -33,6 +33,7 @@ class ReceiverStreamsCombiner:
             None: self.check_source_interaptor()
         }
         self.combined_streams = merge(*self.sources.values())
+        self.running = True
         self.sourcers_updated = False
 
     def add_listener(self, receiver: Receiver) -> None:
@@ -60,16 +61,22 @@ class ReceiverStreamsCombiner:
                 yield self.BREAK
                 self.sourcers_updated = False
 
+    def stop(self):
+        """
+        Stop converter
+        """
+        self.running = False
+
     async def converter(self):
         """
         Main method, convert dict to ResponseBatch, and put it to output_batch_queue
         """
-        while True:
-            with self.combined_streams.stream() as stream:
+        while self.running:
+            async with self.combined_streams.stream() as stream:
                 async for response in stream:
                     if response == self.BREAK:
                         break
-                    self.output_batch_queue.put(self._make_batch(response))
+                    await self.output_batch_queue.put(self._make_batch(response))
 
     @classmethod
     def _make_batch(cls, result: dict) -> dm.ResponseBatch:

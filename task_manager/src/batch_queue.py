@@ -151,5 +151,4 @@ class OutputBatchQueue(Queue):
             }
         else:
             self.error_batches.append(item)
-        item.queued_at = datetime.datetime.now()
         await super().put(item)

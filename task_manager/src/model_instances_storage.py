@@ -30,18 +30,20 @@ class ModelInstancesStorage:
 
     def remove_model_instance(self, model_instance: dm.ModelInstance):
         self.model_instances[model_instance.model].remove(model_instance)
+        if not self.model_instances[model_instance.model]:
+            del self.model_instances[model_instance.model]
         self.receiver_streams_combiner.remove_listener(model_instance.receiver)
 
     def get_running_models_with_source_ids(
         self,
-    ) -> List[Tuple[dm.ModelObject, Optional[str]]]:
+    ) -> List[Tuple[Optional[str], dm.ModelObject]]:
         models_with_source_ids: List[Tuple[dm.ModelObject, Optional[str]]] = []
         for model in self.model_instances.keys():
             if model.stateless:
-                models_with_source_ids.append((model, None))
+                models_with_source_ids.append((None, model))
             else:
                 model_with_source_ids = [
-                    (model, model_instance.source_id)
+                    (model_instance.source_id, model)
                     for model_instance in self.model_instances[model]
                 ]
                 models_with_source_ids.extend(model_with_source_ids)

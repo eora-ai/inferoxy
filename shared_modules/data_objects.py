@@ -38,6 +38,9 @@ class ModelObject:
     stateless: bool
     batch_size: int
 
+    def __hash__(self):
+        return hash((self.name, self.address))
+
 
 @dataclass(eq=False)
 class RequestObject:

@@ -30,15 +30,17 @@ async def test_empty_queue():
     """
 
     async def stop():
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
-    await asyncio.wait(
-        [receiver_streams_combiner.converter(), stop()], return_when="FIRST_COMPLETED"
-    )
+    converter_task = asyncio.create_task(receiver_streams_combiner.converter())
+    stop_task = asyncio.create_task(stop())
+    await asyncio.wait([converter_task, stop_task], return_when="FIRST_COMPLETED")
     with pytest.raises(asyncio.QueueEmpty):
         output_batch_queue.get_nowait()
+
+    converter_task.cancel()
 
 
 async def test_one_element_in_output_queue():
@@ -61,19 +63,21 @@ async def test_one_element_in_output_queue():
     receiver = StubReceiver()
 
     async def stop():
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     receiver_streams_combiner.add_listener(receiver)
-    await asyncio.wait(
-        [receiver_streams_combiner.converter(), stop()], return_when="FIRST_COMPLETED"
-    )
+    converter_task = asyncio.create_task(receiver_streams_combiner.converter())
+    stop_task = asyncio.create_task(stop())
+    await asyncio.wait([converter_task, stop_task], return_when="FIRST_COMPLETED")
     response_batch = output_batch_queue.get_nowait()
     assert response_batch == dm.ResponseBatch(**batch_dict)
 
     with pytest.raises(asyncio.QueueEmpty):
         output_batch_queue.get_nowait()
+
+    converter_task.cancel()
 
 
 async def test_multiple_element_in_output_queue():
@@ -98,14 +102,14 @@ async def test_multiple_element_in_output_queue():
     receiver = StubReceiver()
 
     async def stop():
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
 
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     receiver_streams_combiner.add_listener(receiver)
-    await asyncio.wait(
-        [receiver_streams_combiner.converter(), stop()], return_when="FIRST_COMPLETED"
-    )
+    converter_task = asyncio.create_task(receiver_streams_combiner.converter())
+    stop_task = asyncio.create_task(stop())
+    await asyncio.wait([converter_task, stop_task], return_when="FIRST_COMPLETED")
     response_batch = output_batch_queue.get_nowait()
     assert response_batch == dm.ResponseBatch(**batch_dict)
     response_batch = output_batch_queue.get_nowait()
@@ -115,3 +119,5 @@ async def test_multiple_element_in_output_queue():
 
     with pytest.raises(asyncio.QueueEmpty):
         output_batch_queue.get_nowait()
+
+    converter_task.cancel()

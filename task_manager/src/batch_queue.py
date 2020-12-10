@@ -15,7 +15,7 @@ from src.exceptions import TagDoesNotExists
 
 class InputBatchQueue:
     """
-    Set of queues of taged input batches, between receiver and process
+    Set of queues of modeled input batches, between receiver and process
     """
 
     def __init__(self):
@@ -26,9 +26,7 @@ class InputBatchQueue:
     async def put(
         self,
         item: dm.MinimalBatchObject,
-        tag: dm.ModelObject,
-        is_stateless: bool = True,
-        source_id: Optional[str] = None,
+        model: dm.ModelObject,
     ):
         """
         Put ResponseBatch into queue, save time processing for load analyzer
@@ -39,81 +37,87 @@ class InputBatchQueue:
             MinimalBatchObject item, that will be transformed into RequestBatchObject,
             Set status=created and created_at, this will be saved into queue
         """
+        is_stateless = True
+        source_id = None
+        if not model.stateless:
+            is_stateless = False
+            source_id = item.source_id
+
         item.queued_at = datetime.datetime.now()
         item.status = dm.Status.IN_QUEUE
-        queue = self.__select_queue(tag, is_stateless, source_id)
+        queue = self.__select_queue(model, is_stateless, source_id)
         if queue is None:
-            queue = self.__create_queue(tag, is_stateless, source_id)
+            queue = self.__create_queue(model, is_stateless, source_id)
         await queue.put(item)
 
     def __create_queue(
         self,
-        tag: dm.ModelObject,
+        model: dm.ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Queue:
         queue: Queue = Queue()
         sub_queue = self.queues["stateless" if is_stateless else "stateful"]
-        sub_queue[(source_id, tag)] = queue
+        sub_queue[(source_id, model)] = queue
         return queue
 
     def __select_queue(
         self,
-        tag: dm.ModelObject,
+        model: dm.ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Optional[Queue]:
         """
-        Select queue by tag
+        Select queue by model
 
         Parameters
         ----------
-        tag:
+        model:
             Tag of the queue
         """
         try:
             return self.queues["stateless" if is_stateless else "stateful"][
-                (source_id, tag)
+                (source_id, model)
             ]
         except KeyError:
             return None
 
     def __delete_queue(
         self,
-        tag: dm.ModelObject,
+        model: dm.ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ):
         try:
             del self.queues["stateless" if is_stateless else "stateful"][
-                (source_id, tag)
+                (source_id, model)
             ]
         except KeyError:
             return
 
     def get_nowait(
         self,
-        tag: dm.ModelObject,
-        is_stateless: bool = True,
+        model: dm.ModelObject,
         source_id: Optional[str] = None,
     ):
         """
-        Get item using get_nowait from queue with tag=tag,
+        Get item using get_nowait from queue with model=model,
         Parameters
         ----------
-        tag:
-            tag of the queue
+        model:
+            model of the queue
 
         Returns:
             Request Batch object
         """
-        queue = self.__select_queue(tag, is_stateless, source_id)
+        is_stateless = model.stateless
+        queue = self.__select_queue(model, is_stateless, source_id)
         if queue is None:
-            raise TagDoesNotExists(f"Tag {(source_id, tag)} doesnot exists")
+            raise TagDoesNotExists(f"Tag {(source_id, model)} doesnot exists")
         try:
             batch = queue.get_nowait()
         except QueueEmpty as exc:
-            self.__delete_queue(tag, is_stateless, source_id)
+            self.__delete_queue(model, is_stateless, source_id)
             raise exc
         return batch
 

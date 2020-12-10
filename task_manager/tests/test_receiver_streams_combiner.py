@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 from typing import AsyncIterator
 
-import numpy as np
+import numpy as np  # type: ignore
 import pytest
 
 from src.batch_queue import OutputBatchQueue

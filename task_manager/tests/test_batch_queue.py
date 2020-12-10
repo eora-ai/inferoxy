@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 
 import pytest
-import numpy as np
+import numpy as np  # type: ignore
 
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 import src.data_models as dm

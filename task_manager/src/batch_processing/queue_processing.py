@@ -30,19 +30,17 @@ async def send_to_model(
     """
     while True:
         models_by_sources_ids: List[
-            Tuple[dm.ModelObject, Optional[str]]
+            Tuple[Optional[str], dm.ModelObject]
         ] = model_instances_storage.get_running_models_with_source_ids()
         tasks = []
-        for (model, source_id) in models_by_sources_ids:
+        for (source_id, model) in models_by_sources_ids:
             try:
                 if not model.stateless:
                     batch = await input_batch_queue.get_nowait(
-                        tag=model, is_stateless=model.stateless, source_id=source_id
+                        model=model, source_id=source_id
                     )
                 else:
-                    batch = await input_batch_queue.get_nowait(
-                        tag=model, is_stateless=model.stateless
-                    )
+                    batch = await input_batch_queue.get_nowait(model=model)
             except (QueueEmpty, TagDoesNotExists):
                 continue
             model_instance = model_instances_storage.get_next_running_instance(

@@ -44,4 +44,4 @@ async def receive(sock: zmq.asyncio.Socket, input_batch_queue: InputBatchQueue):
     while True:
         batch = await sock.recv_pyobj()
         if isinstance(batch, dm.MinimalBatchObject):
-            await input_batch_queue.put(batch, tag=batch.model)
+            await input_batch_queue.put(batch, model=batch.model)

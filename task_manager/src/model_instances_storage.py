@@ -37,7 +37,7 @@ class ModelInstancesStorage:
     def get_running_models_with_source_ids(
         self,
     ) -> List[Tuple[Optional[str], dm.ModelObject]]:
-        models_with_source_ids: List[Tuple[dm.ModelObject, Optional[str]]] = []
+        models_with_source_ids: List[Tuple[Optional[str], dm.ModelObject]] = []
         for model in self.model_instances.keys():
             if model.stateless:
                 models_with_source_ids.append((None, model))

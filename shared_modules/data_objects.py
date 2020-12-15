@@ -78,6 +78,39 @@ class RequestObject:
         )
 
 
+@dataclass(eq=False)
+class ResponseObject:
+    """
+    Format of ouput data.
+
+    Parameters:
+    __________
+    uid:
+        Uniq identifier of the request
+    model:
+        Inforamtion about model
+    parameters:
+        Meta information for processing
+    outputs:
+        Output tensor, which will be received
+    """
+
+    uid: str
+    model: ModelObject
+    parameters: dict
+    outputs: np.ndarray
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uid == other.uid
+            and self.model == other.model
+            and self.parameters == other.parameters
+            and np.array_equal(self.outputs, other.outputs)
+        )
+
+
 class Status(Enum):
     """
     Enum that represents status of the batch processing

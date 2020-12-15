@@ -124,3 +124,9 @@ async def test_stateful_models():
     await input_batch_queue.put(item, stub_stateful)
 
     result = input_batch_queue.get_nowait(stub_stateful, source_id="test")
+
+    assert result == item
+    assert result.status == dm.Status.IN_QUEUE
+
+    with pytest.raises(asyncio.QueueEmpty):
+        input_batch_queue.get_nowait(stub_stateful, source_id="test")

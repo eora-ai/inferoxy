@@ -26,7 +26,12 @@ before_script:
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
 
-test:
+batch_manager_tests:
   script:
-    - pytest
+    - pytest batch_manager
     - mypy batch_manager
+
+task_manager_tests:
+  script:
+    - pytest task_manager
+    - mypy task_manager

@@ -6,6 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
+from datetime import datetime
 
 import yaml
 from loguru import logger
@@ -32,6 +33,8 @@ async def pipeline(config: dm.Config):
     mapping_batch_generator = builder(request_object_iterable, config=config)
     logger.info("Start batch manager")
     async for (batch, mapping) in mapping_batch_generator:
+        batch.status = dm.Status.CREATED
+        batch.created_at = datetime.now()
         logger.debug(f"Batch completed {batch=}, {mapping=}")
         await snd.send(output_socket, batch)
         save_mapping(config=config, mapping=mapping)

@@ -11,7 +11,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 
 import numpy as np  # type: ignore
 
@@ -222,8 +222,9 @@ class ResponseBatch(MinimalBatchObject):
     def from_request_batch_object(
         cls,
         batch: MinimalBatchObject,
-        outputs: List[np.ndarray],
-        pictures: List[Optional[np.ndarray]],
+        outputs: List[Dict[str, np.ndarray]],
+        # TODO: Add parameters
+        source_id: str,
         done_at: datetime,
     ):
         """
@@ -240,6 +241,6 @@ class ResponseBatch(MinimalBatchObject):
             done_at=done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
-            pictures=pictures,
+            # pictures=pictures,
             outputs=outputs,
         )

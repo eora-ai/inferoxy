@@ -10,7 +10,7 @@ __email__ = "a.chertkov@eora.ru"
 import json
 from enum import Enum
 from datetime import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
 
 import numpy as np  # type: ignore
@@ -221,7 +221,7 @@ class ResponseBatch(MinimalBatchObject):
     @classmethod
     def from_request_batch_object(
         cls,
-        batch: RequestBatch,
+        batch: MinimalBatchObject,
         outputs: List[np.ndarray],
         pictures: List[Optional[np.ndarray]],
         done_at: datetime,

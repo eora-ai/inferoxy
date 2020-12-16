@@ -202,7 +202,44 @@ class BatchMapping:
         key = self.batch_uid.encode("utf-8")
         value = json.dumps(
             dict(
-                request_object_uids=self.request_object_uids, source_ids=self.source_ids
+                request_object_uids=self.request_object_uids,
+                source_ids=self.source_ids
             )
         ).encode("utf-8")
         return key, value
+
+
+@dataclass
+class ResponseBatch(MinimalBatchObject):
+    """
+    Response batch object, add output and pictures
+    """
+
+    outputs: List[np.ndarray] = field(default_factory=list)
+    pictures: List[Optional[np.ndarray]] = field(default_factory=list)
+
+    @classmethod
+    def from_request_batch_object(
+        cls,
+        batch: RequestBatch,
+        outputs: List[np.ndarray],
+        pictures: List[Optional[np.ndarray]],
+        done_at: datetime,
+    ):
+        """
+        Make Response Batch object from RequestBactch
+        """
+        return cls(
+            uid=batch.uid,
+            inputs=batch.inputs,
+            parameters=batch.parameters,
+            model=batch.model,
+            status=batch.status,
+            created_at=batch.created_at,
+            started_at=batch.started_at,
+            done_at=done_at,
+            queued_at=batch.queued_at,
+            sent_at=batch.queued_at,
+            pictures=pictures,
+            outputs=outputs,
+        )

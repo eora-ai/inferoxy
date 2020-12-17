@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ```
 3. Install dev requirements
 ```bash=
-pip insatll -r requirements-dev.txt
+pip install -r requirements-dev.txt
 ```
 
 ### How to run tests

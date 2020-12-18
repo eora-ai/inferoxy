@@ -43,8 +43,6 @@ def debatch(
             # TODO: Change params
             parameters=None,
             source_id=batch_mapping.source_ids[i],
-            # TODO: Change the outputs
-            # Should be List[Dict[str, np.ndarray]]
             output=response_output
         )
         response_objects.append(new_response_object)

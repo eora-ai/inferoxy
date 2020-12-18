@@ -15,10 +15,16 @@ from aiostream import stream  # type: ignore
 import src.data_models as dm
 from src.utils import uuid4_string_generator
 
+from shared_modules.data_objects import (
+    BatchMapping,
+    RequestObject,
+    Status,
+)
+
 
 async def yield_timeout_batches(
     batches: dm.Batches, timeout: float = 0.01
-) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
     """
     Yield each @timeout@ seconds batches. Batches may be not complete.
 
@@ -39,9 +45,9 @@ async def yield_timeout_batches(
 
 
 async def yield_completed_batches(
-    request_stream: AsyncIterable[dm.RequestObject],
+    request_stream: AsyncIterable[RequestObject],
     batches: dm.Batches,
-) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
     """
     Make batches. Yield batch, if it completed.
 
@@ -61,8 +67,8 @@ async def yield_completed_batches(
 
 
 async def builder(
-    request_stream: AsyncIterable[dm.RequestObject], config: dm.Config = None
-) -> AsyncIterable[Tuple[dm.BatchObject, dm.BatchMapping]]:
+    request_stream: AsyncIterable[RequestObject], config: dm.Config = None
+) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
     """
     From async generator of request build two genrators:
     first one is an async generator of BatchObject,
@@ -119,7 +125,7 @@ def split_on_complete_and_uncomplete_batches(
 
 
 def build_batches(
-    request_objects: List[dm.RequestObject],
+    request_objects: List[RequestObject],
     existing_batches: dm.Batches = None,
     uid_generator: Generator[str, None, None] = None,
 ) -> dm.Batches:
@@ -173,7 +179,7 @@ def build_batches(
                 source_id=None
                 if request_object.model.stateless
                 else request_object.source_id,
-                status=dm.Status.CREATING,
+                status=Status.CREATING,
             )
             batches.add(new_batch)
         return batches
@@ -191,7 +197,7 @@ def build_batches(
 
 def build_mapping_batch(
     batch: dm.BatchObject,
-) -> dm.BatchMapping:
+) -> BatchMapping:
     """
     Connect list of request_objects with batch
 
@@ -202,7 +208,7 @@ def build_mapping_batch(
 
     Returns
     -------
-    dm.BatchMapping
+    BatchMapping
         Mapping between batch and request objects
 
     Raises
@@ -216,7 +222,7 @@ def build_mapping_batch(
     if not isinstance(request_objects, list) and len(request_objects) == 0:
         raise ValueError("request_object must be of non empty list")
 
-    return dm.BatchMapping(
+    return BatchMapping(
         batch_uid=batch.uid,
         request_object_uids=list(map(lambda lo: lo.uid, request_objects)),
         source_ids=list(map(lambda lo: lo.source_id, request_objects)),

@@ -11,20 +11,25 @@ import numpy as np
 import zmq
 import yaml
 
-sys.path.append("..")
-
 import src.data_models as dm
+from shared_modules.data_objects import (
+    ModelObject,
+    RequestObject,
+)
 from src.utils import uuid4_string_generator
 
 
-stub_model = dm.ModelObject(
+sys.path.append("..")
+
+
+stub_model = ModelObject(
     name="stub",
     address="registry.visionhub.ru/models/stub:v3",
     stateless=True,
     batch_size=4,
 )
 
-stateful_model = dm.ModelObject(
+stateful_model = ModelObject(
     name="stateful_stub",
     address="registry.visionhub.ru/models/stateful_stub:v3",
     stateless=False,
@@ -53,7 +58,7 @@ def main():
     number_of_request = int(input("Write number of requests: "))
     uid_generator = uuid4_string_generator()
     for _ in range(number_of_request):
-        req = dm.RequestObject(
+        req = RequestObject(
             uid=next(uid_generator),
             inputs=np.array(range(10)),
             source_id="test_client_1",

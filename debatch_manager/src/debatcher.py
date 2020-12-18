@@ -30,13 +30,22 @@ def debatch(
     request_object_uids = batch_mapping.request_object_uids
     response_objects = []
     for i, request_object_uid in enumerate(request_object_uids):
+
+        # Merge outputs and pictures from response batch
+        outputs = batch.outputs[i]
+        pictures = batch.pictures[i]
+        response_output = [{'outputs': outputs, 'pictures': pictures}]
+
+        # Create response object
         new_response_object = ResponseObject(
             uid=request_object_uid,
             model=batch.model,
+            # TODO: Change params
             parameters=None,
-            # TODO: check it
-            source_id=batch_mapping.source_id[i],
-            outputs=batch.outputs[i]
+            source_id=batch_mapping.source_ids[i],
+            # TODO: Change the outputs
+            # Should be List[Dict[str, np.ndarray]]
+            output=response_output
         )
         response_objects.append(new_response_object)
 
@@ -59,7 +68,6 @@ def pull_batch_mapping(
     """
     database = plyvel.DB(
         config.db_file,
-        create_if_missing=config.create_db_file
     )
     # TODO: check ability to pop by property
     batch_mapping = database.pop(batch_uid=batch.uid)

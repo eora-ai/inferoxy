@@ -23,4 +23,3 @@ class Config:
     zmq_input_address: str
     zmq_output_address: str
     db_file: str
-    create_db_file: bool

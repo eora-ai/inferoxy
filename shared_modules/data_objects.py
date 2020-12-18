@@ -2,7 +2,6 @@
 This is shared data objects.
 """
 
-
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
@@ -98,7 +97,8 @@ class ResponseObject:
     uid: str
     model: ModelObject
     parameters: dict
-    outputs: np.ndarray
+    output: List[Dict[str, np.ndarray]]
+    source_id: str
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -215,6 +215,7 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
+    # TODO: merge outputs and pictures????
     outputs: List[np.ndarray] = field(default_factory=list)
     pictures: List[Optional[np.ndarray]] = field(default_factory=list)
 

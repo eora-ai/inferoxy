@@ -2,20 +2,22 @@
 Test client for debatcher manager
 """
 import sys
+import uuid
+from typing import Generator
 
 import zmq
 import yaml
 import numpy as np
+
+sys.path.append("..")
+
 import src.data_models as dm
-import uuid
-from typing import Generator
 from shared_modules.data_objects import (
     ModelObject,
     ResponseBatch,
     Status,
 )
 
-sys.path.append('..')
 
 stateful_model = ModelObject(
     name="stateful_stub",
@@ -62,11 +64,11 @@ def main():
             model=stateful_model,
             status=Status.CREATED,
             outputs=[np.array([1, 2, 3, 4])],
-            pictures=[np.array([1, 2, 3, 4])]
+            pictures=[np.array([1, 2, 3, 4])],
         )
         sock_sender.send_pyobj(response)
-    print('Start listenning')
+    print("Start listenning")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

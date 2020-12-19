@@ -13,7 +13,6 @@ from loguru import logger
 from shared_modules.data_objects import (
     Status
 )
-
 import src.data_models as dm
 import src.receiver as rc
 from src.builder import builder

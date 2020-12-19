@@ -9,15 +9,13 @@ import numpy as np
 import src.data_models as dm
 import uuid
 from typing import Generator
-
-
-sys.path.append('..')
-
 from shared_modules.data_objects import (
     ModelObject,
     ResponseBatch,
     Status,
 )
+
+sys.path.append('..')
 
 stateful_model = ModelObject(
     name="stateful_stub",

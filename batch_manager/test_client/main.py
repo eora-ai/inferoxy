@@ -11,15 +11,14 @@ import numpy as np
 import zmq
 import yaml
 
+sys.path.append("..")
+
 import src.data_models as dm
 from shared_modules.data_objects import (
     ModelObject,
     RequestObject,
 )
 from src.utils import uuid4_string_generator
-
-
-sys.path.append("..")
 
 
 stub_model = ModelObject(

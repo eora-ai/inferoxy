@@ -64,9 +64,14 @@ def pull_batch_mapping(
     batch:
         Response Batch object
     """
+    # try:
     database = plyvel.DB(
         config.db_file,
     )
+
     # TODO: check ability to pop by property
-    batch_mapping = database.pop(batch_uid=batch.uid)
+    batch_mapping = database.get(bytes(batch.uid, 'utf-8'))
+    database.close()
     return batch_mapping
+    # except IOError:
+    #     raise RuntimeError('Failed to open database')

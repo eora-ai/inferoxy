@@ -2,11 +2,13 @@
 Entry point of debatch manager
 """
 import yaml
+import asyncio
 import src.data_models as dm
 import src.reciever as rc
 import src.sender as snd
 
 from loguru import logger
+from shared_modules.data_objects import BatchMapping
 from src.debatcher import (
     debatch,
     pull_batch_mapping
@@ -23,10 +25,13 @@ def main():
         config = dm.Config(**config_dict)
     logger.info('done')
     logger.info('Run pipeline')
-    pipeline(config)
+
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(pipeline(config))
 
 
-def pipeline(config: dm.Config):
+async def pipeline(config: dm.Config):
 
     # Create sockets for recieving and sending data
     logger.info('Create socket')
@@ -40,10 +45,19 @@ def pipeline(config: dm.Config):
     logger.info('done')
 
     # Pulling batch mappings
-    for response_batch in response_batch_iterable:
+    async for response_batch in response_batch_iterable:
         logger.info(f'Pull batch mapping for batch {response_batch.uid}')
         batch_mapping = pull_batch_mapping(
-            config=config,
-            batch=response_batch
+             config=config,
+             batch=response_batch
+         )
+        print('Batch mapping: ', batch_mapping)
+        batch_mapping = BatchMapping.from_key_value(
+            (bytes(response_batch.uid, 'utf-8'),
+             batch_mapping)
         )
-        print(batch_mapping)
+        response_object = debatch(response_batch, batch_mapping)
+        print('Response object: ', response_object)
+
+if __name__ == '__main__':
+    main()

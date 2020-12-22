@@ -10,11 +10,11 @@ from typing import AsyncIterator
 
 import numpy as np  # type: ignore
 import pytest
+import src.data_models as dm
 
 from src.batch_queue import OutputBatchQueue
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers import Receiver
-import src.data_models as dm
 
 pytestmark = pytest.mark.asyncio
 

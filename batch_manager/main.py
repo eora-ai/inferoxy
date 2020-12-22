@@ -10,7 +10,6 @@ from datetime import datetime
 
 import yaml
 from loguru import logger
-
 import src.data_models as dm
 import src.receiver as rc
 from src.builder import builder

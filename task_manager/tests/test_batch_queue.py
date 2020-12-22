@@ -9,9 +9,9 @@ import asyncio
 
 import pytest
 import numpy as np  # type: ignore
+import src.data_models as dm
 
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
-import src.data_models as dm
 from src.exceptions import TagDoesNotExists
 
 pytestmark = pytest.mark.asyncio

@@ -15,7 +15,7 @@ import pytest
 
 import src.data_models as dm
 from src.builder import builder
-from src.utils import uuid4_string_generator
+from shared_modules.utils import uuid4_string_generator
 
 
 # All test coroutines will be treated as marked.

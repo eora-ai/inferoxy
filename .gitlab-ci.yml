@@ -35,3 +35,8 @@ task_manager_tests:
   script:
     - pytest task_manager
     - mypy task_manager
+
+debatch_manager_tests:
+  script:
+    - pytest debatch_manager
+    - mypy debatch_manager

@@ -29,12 +29,12 @@ class InputBatchQueue:
         model: dm.ModelObject,
     ):
         """
-        Put ResponseBatch into queue, save time processing for load analyzer
+        Put dm.ResponseBatch into queue, save time processing for load analyzer
 
         Parameters
         ----------
         item:
-            MinimalBatchObject item, that will be transformed into RequestBatchObject,
+            dm.MinimalBatchObject item, that will be transformed into RequestBatchObject,
             Set status=created and created_at, this will be saved into queue
         """
         is_stateless = True
@@ -137,12 +137,12 @@ class OutputBatchQueue(Queue):
         item: dm.ResponseBatch,
     ):
         """
-        Put ResponseBatch into queue, save time processing for load analyzer
+        Put dm.ResponseBatch into queue, save time processing for load analyzer
 
         Parameters
         ----------
         item:
-            ResponseBatch item, that will save into queue, batch status is PROCESSED
+            dm.ResponseBatch item, that will save into queue, batch status is PROCESSED
         """
         if (
             item.status == dm.Status.PROCESSED

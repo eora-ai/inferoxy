@@ -14,7 +14,8 @@ import yaml
 sys.path.append("..")
 
 import src.data_models as dm
-from src.utils import uuid4_string_generator
+
+from shared_modules.utils import uuid4_string_generator
 
 
 stub_model = dm.ModelObject(

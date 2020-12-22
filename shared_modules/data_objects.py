@@ -2,7 +2,6 @@
 This is shared data objects.
 """
 
-
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
@@ -10,8 +9,8 @@ __email__ = "a.chertkov@eora.ru"
 import json
 from enum import Enum
 from datetime import datetime
-from dataclasses import dataclass
-from typing import List, Tuple, Optional
+from dataclasses import dataclass, field
+from typing import List, Tuple, Optional, Dict
 
 import numpy as np  # type: ignore
 
@@ -75,6 +74,38 @@ class RequestObject:
             and np.array_equal(self.inputs, other.inputs)
             and self.parameters == other.parameters
             and self.model == other.model
+        )
+
+
+@dataclass(eq=False)
+class ResponseObject:
+    """
+    Format of ouput data.
+
+    Parameters:
+    __________
+    uid:
+        Uniq identifier of the request
+    model:
+        Inforamtion about model
+    parameters:
+        Meta information for processing
+    outputs:
+        Output tensor, which will be received
+    """
+
+    uid: str
+    model: ModelObject
+    output: List[Dict[str, np.ndarray]]
+    source_id: str
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uid == other.uid
+            and self.model == other.model
+            and np.array_equal(self.outputs, other.outputs)
         )
 
 
@@ -169,7 +200,61 @@ class BatchMapping:
         key = self.batch_uid.encode("utf-8")
         value = json.dumps(
             dict(
-                request_object_uids=self.request_object_uids, source_ids=self.source_ids
+                request_object_uids=self.request_object_uids,
+                source_ids=self.source_ids
             )
         ).encode("utf-8")
         return key, value
+
+    @classmethod
+    def from_key_value(
+        cls, data: Tuple[bytes, bytes]
+    ):
+        key = data[0].decode('utf-8')
+        value = json.loads(data[1])
+        request_object_uids = value['request_object_uids']
+        source_ids = value['source_ids']
+
+        return cls(
+            batch_uid=key,
+            request_object_uids=request_object_uids,
+            source_ids=source_ids
+        )
+
+
+@dataclass
+class ResponseBatch(MinimalBatchObject):
+    """
+    Response batch object, add output and pictures
+    """
+
+    # TODO: merge outputs and pictures????
+    outputs: List[np.ndarray] = field(default_factory=list)
+    pictures: List[Optional[np.ndarray]] = field(default_factory=list)
+
+    @classmethod
+    def from_request_batch_object(
+        cls,
+        batch: MinimalBatchObject,
+        outputs: List[Dict[str, np.ndarray]],
+        # TODO: Add parameters
+        source_id: str,
+        done_at: datetime,
+    ):
+        """
+        Make Response Batch object from RequestBactch
+        """
+        return cls(
+            uid=batch.uid,
+            inputs=batch.inputs,
+            parameters=batch.parameters,
+            model=batch.model,
+            status=batch.status,
+            created_at=batch.created_at,
+            started_at=batch.started_at,
+            done_at=done_at,
+            queued_at=batch.queued_at,
+            sent_at=batch.queued_at,
+            # pictures=pictures,
+            outputs=outputs,
+        )

@@ -24,3 +24,5 @@ def save_mapping(config: dm.Config, mapping: dm.BatchMapping):
     database = plyvel.DB(config.db_file, create_if_missing=config.create_db_file)
 
     database.put(*mapping.to_key_value())
+
+    database.close()

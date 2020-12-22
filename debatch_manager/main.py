@@ -8,7 +8,7 @@ __email__ = "m.gafarova@eora.ru"
 import yaml
 import asyncio
 import src.data_models as dm
-import src.reciever as rc
+import src.receiver as rc
 import src.sender as snd
 
 from loguru import logger
@@ -26,7 +26,7 @@ def main():
     logger.info("Configs loaded")
     logger.info("Run pipeline")
 
-    asyncio.run_until_complete(pipeline(config))
+    asyncio.run(pipeline(config))
 
 
 async def pipeline(config: dm.Config):

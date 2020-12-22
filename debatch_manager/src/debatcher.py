@@ -73,6 +73,9 @@ def pull_batch_mapping(config: dm.Config, batch: dm.ResponseBatch) -> dm.BatchMa
             (bytes(batch.uid, "utf-8"), batch_mapping_bytes)
         )
 
+        # Delete mapping
+        database.delete(bytes(batch.uid, "utf-8"))
+
         # Close connection
         database.close()
         return batch_mapping

@@ -11,6 +11,9 @@ from typing import Dict, List, Tuple, Optional
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers import Receiver
 import src.data_models as dm
+from shared_modules.data_objects import (
+    ModelObject,
+)
 
 
 class ModelInstancesStorage:
@@ -20,7 +23,7 @@ class ModelInstancesStorage:
 
     def __init__(self, receiver_streams_combiner: ReceiverStreamsCombiner):
         self.model_instances: Dict[
-            dm.ModelObject, List[dm.ModelInstance]
+            ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
         self.receiver_streams_combiner = receiver_streams_combiner
 
@@ -36,8 +39,8 @@ class ModelInstancesStorage:
 
     def get_running_models_with_source_ids(
         self,
-    ) -> List[Tuple[Optional[str], dm.ModelObject]]:
-        models_with_source_ids: List[Tuple[Optional[str], dm.ModelObject]] = []
+    ) -> List[Tuple[Optional[str], ModelObject]]:
+        models_with_source_ids: List[Tuple[Optional[str], ModelObject]] = []
         for model in self.model_instances.keys():
             if model.stateless:
                 models_with_source_ids.append((None, model))
@@ -51,6 +54,6 @@ class ModelInstancesStorage:
         return models_with_source_ids
 
     def get_next_running_instance(
-        self, model: dm.ModelObject, source_ids: Optional[str] = None
+        self, model: ModelObject, source_ids: Optional[str] = None
     ) -> dm.ModelInstance:
         pass

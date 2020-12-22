@@ -12,6 +12,13 @@ import datetime
 import src.data_models as dm
 from src.exceptions import TagDoesNotExists
 
+from shared_modules.data_objects import (
+    ModelObject,
+    MinimalBatchObject,
+    Status,
+    ResponseBatch,
+)
+
 
 class InputBatchQueue:
     """
@@ -20,13 +27,13 @@ class InputBatchQueue:
 
     def __init__(self):
         self.queues: Dict[
-            str, Dict[Tuple[Optional[str], dm.ModelObject], Queue]
+            str, Dict[Tuple[Optional[str], ModelObject], Queue]
         ] = dict(stateless={}, stateful={})
 
     async def put(
         self,
-        item: dm.MinimalBatchObject,
-        model: dm.ModelObject,
+        item: MinimalBatchObject,
+        model: ModelObject,
     ):
         """
         Put ResponseBatch into queue, save time processing for load analyzer
@@ -44,7 +51,7 @@ class InputBatchQueue:
             source_id = item.source_id
 
         item.queued_at = datetime.datetime.now()
-        item.status = dm.Status.IN_QUEUE
+        item.status = Status.IN_QUEUE
         queue = self.__select_queue(model, is_stateless, source_id)
         if queue is None:
             queue = self.__create_queue(model, is_stateless, source_id)
@@ -52,7 +59,7 @@ class InputBatchQueue:
 
     def __create_queue(
         self,
-        model: dm.ModelObject,
+        model: ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Queue:
@@ -63,7 +70,7 @@ class InputBatchQueue:
 
     def __select_queue(
         self,
-        model: dm.ModelObject,
+        model: ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Optional[Queue]:
@@ -84,7 +91,7 @@ class InputBatchQueue:
 
     def __delete_queue(
         self,
-        model: dm.ModelObject,
+        model: ModelObject,
         is_stateless: bool = True,
         source_id: Optional[str] = None,
     ):
@@ -97,7 +104,7 @@ class InputBatchQueue:
 
     def get_nowait(
         self,
-        model: dm.ModelObject,
+        model: ModelObject,
         source_id: Optional[str] = None,
     ):
         """
@@ -134,7 +141,7 @@ class OutputBatchQueue(Queue):
 
     async def put(
         self,
-        item: dm.ResponseBatch,
+        item: ResponseBatch,
     ):
         """
         Put ResponseBatch into queue, save time processing for load analyzer
@@ -145,7 +152,7 @@ class OutputBatchQueue(Queue):
             ResponseBatch item, that will save into queue, batch status is PROCESSED
         """
         if (
-            item.status == dm.Status.PROCESSED
+            item.status == Status.PROCESSED
             and not item.processed_at is None
             and not item.started_at is None
         ):

@@ -12,7 +12,8 @@ from aiostream.stream import merge  # type: ignore
 
 from src.batch_queue import OutputBatchQueue
 from src.utils.data_transfers.receiver import Receiver
-import src.data_models as dm
+
+from shared_modules.data_objects import ResponseBatch
 
 
 class ReceiverStreamsCombiner:
@@ -79,8 +80,8 @@ class ReceiverStreamsCombiner:
                     await self.output_batch_queue.put(self._make_batch(response))
 
     @classmethod
-    def _make_batch(cls, result: dict) -> dm.ResponseBatch:
+    def _make_batch(cls, result: dict) -> ResponseBatch:
         """
         Batch from dict format
         """
-        return dm.ResponseBatch(**result)
+        return ResponseBatch(**result)

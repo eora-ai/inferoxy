@@ -13,6 +13,8 @@ from loguru import logger
 import src.data_models as dm
 from src.batch_queue import InputBatchQueue
 
+from shared_modules.data_objects import MinimalBatchObject
+
 ctx = zmq.asyncio.Context()
 
 
@@ -43,5 +45,5 @@ async def receive(sock: zmq.asyncio.Socket, input_batch_queue: InputBatchQueue):
     """
     while True:
         batch = await sock.recv_pyobj()
-        if isinstance(batch, dm.MinimalBatchObject):
+        if isinstance(batch, MinimalBatchObject):
             await input_batch_queue.put(batch, model=batch.model)

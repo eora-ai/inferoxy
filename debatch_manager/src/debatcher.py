@@ -32,9 +32,12 @@ def debatch(
     for i, request_object_uid in enumerate(request_object_uids):
 
         # Merge outputs and pictures from response batch
-        outputs = batch.outputs[i]
-        pictures = batch.pictures[i]
-        response_output = [{'outputs': outputs, 'pictures': pictures}]
+        output = batch.outputs[i]
+        picture = batch.pictures[i]
+        if picture.size != 0:
+            response_output = [{'output': output, 'picture': picture}]
+        else:
+            response_output = [{'output': output}]
 
         # Create response object
         new_response_object = ResponseObject(
@@ -43,7 +46,6 @@ def debatch(
             source_id=batch_mapping.source_ids[i],
             output=response_output
         )
-
         response_objects.append(new_response_object)
 
     return response_objects

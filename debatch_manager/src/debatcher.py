@@ -40,11 +40,10 @@ def debatch(
         new_response_object = ResponseObject(
             uid=request_object_uid,
             model=batch.model,
-            # TODO: Change params
-            parameters=None,
             source_id=batch_mapping.source_ids[i],
             output=response_output
         )
+
         response_objects.append(new_response_object)
 
     return response_objects
@@ -64,14 +63,17 @@ def pull_batch_mapping(
     batch:
         Response Batch object
     """
-    # try:
-    database = plyvel.DB(
-        config.db_file,
-    )
+    try:
+        # Open conndection
+        database = plyvel.DB(
+            config.db_file,
+        )
 
-    # TODO: check ability to pop by property
-    batch_mapping = database.get(bytes(batch.uid, 'utf-8'))
-    database.close()
-    return batch_mapping
-    # except IOError:
-    #     raise RuntimeError('Failed to open database')
+        # Pull batch mapping from database
+        batch_mapping = database.get(bytes(batch.uid, 'utf-8'))
+
+        # Close connection
+        database.close()
+        return batch_mapping
+    except IOError:
+        raise RuntimeError('Failed to open database')

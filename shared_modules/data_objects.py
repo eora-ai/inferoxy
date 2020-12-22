@@ -96,7 +96,6 @@ class ResponseObject:
 
     uid: str
     model: ModelObject
-    parameters: dict
     output: List[Dict[str, np.ndarray]]
     source_id: str
 
@@ -106,7 +105,6 @@ class ResponseObject:
         return (
             self.uid == other.uid
             and self.model == other.model
-            and self.parameters == other.parameters
             and np.array_equal(self.outputs, other.outputs)
         )
 

@@ -3,7 +3,6 @@ Tests for src.debather module
 """
 
 import numpy as np
-import src.data_models as dm
 from shared_modules.data_objects import (
     ResponseBatch,
     Status,

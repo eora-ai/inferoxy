@@ -32,6 +32,13 @@ def main():
 
 
 async def pipeline(config: dm.Config):
+    """
+    Pipeline of debatcher manager
+    1) Receive reponse batches
+    2) Pull from database batch mapping
+    3) Generate from batch and mapping batch response object
+    4) Send response object
+    """
 
     # Create sockets for recieving and sending data
     logger.info('Create socket')
@@ -44,20 +51,25 @@ async def pipeline(config: dm.Config):
     response_batch_iterable = rc.receive(sock=input_socket)
     logger.info('done')
 
-    # Pulling batch mappings
+    # Pulling batch mapping, build response object
     async for response_batch in response_batch_iterable:
         logger.info(f'Pull batch mapping for batch {response_batch.uid}')
         batch_mapping = pull_batch_mapping(
              config=config,
              batch=response_batch
          )
-        print('Batch mapping: ', batch_mapping)
+
+        # Convert batch mapping from bytes to class object
         batch_mapping = BatchMapping.from_key_value(
             (bytes(response_batch.uid, 'utf-8'),
              batch_mapping)
         )
-        response_object = debatch(response_batch, batch_mapping)
-        print('Response object: ', response_object)
+
+        # Create response objects -> apply main function
+        response_objects = debatch(response_batch, batch_mapping)
+        for response_object in response_objects:
+            await snd.send(output_socket, response_object)
+
 
 if __name__ == '__main__':
     main()

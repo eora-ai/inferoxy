@@ -13,7 +13,7 @@ import asyncio
 from aiostream import stream  # type: ignore
 
 import src.data_models as dm
-from src.utils import uuid4_string_generator
+from shared_modules.utils import uuid4_string_generator
 
 from shared_modules.data_objects import (
     BatchMapping,

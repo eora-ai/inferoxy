@@ -19,6 +19,7 @@ from shared_modules.data_objects import (
     BatchMapping,
     Status,
 )
+from shared_modules.utils import uuid4_string_generator
 
 
 stateful_model = ModelObject(
@@ -29,64 +30,65 @@ stateful_model = ModelObject(
 )
 
 
-# TODO: Move to shared module file batch_manager.src.utils
-def uuid4_string_generator() -> Generator[str, None, None]:
-    """
-    Make from uuid4 generator of random strings
-
-    Returns
-    -------
-    Generator[str]
-        Infinite random strings generator
-    """
-    while True:
-        uid = uuid.uuid4()
-        yield str(uid)
-
-
 def main():
     with open("../config.yaml") as f:
         config_dict = yaml.full_load(f)
         config = dm.Config(**config_dict)
 
     ctx = zmq.Context()
-    print('Create socket...')
+
+    # Create sockets
     sock_sender = ctx.socket(zmq.PUB)
     sock_sender.connect(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.SUB)
-    print('Binding socket...')
     sock_receiver.bind(config.zmq_output_address)
-
     sock_receiver.subscribe(b"")
 
-    # try:
-    db = plyvel.DB(config.db_file, create_if_missing=True)
-#    except IOError:
-#        raise RuntimeError('Failed to open database')
-#
+    try:
+        db = plyvel.DB(config.db_file, create_if_missing=True)
+    except IOError:
+        raise RuntimeError('Failed to open database')
+
     uid_generator = uuid4_string_generator()
+
     responses = []
+
     for _ in range(10):
+        # Generate uid for batch mapping and batch response
         uid = next(uid_generator)
+
+        # Create batch mapping
         batch_mapping = BatchMapping(
             batch_uid=uid,
-            request_object_uids=['request-test-1'],
-            source_ids=['source-id-test-1']
+            request_object_uids=['request-test-1', 'request-test-2'],
+            source_ids=['source-id-test-1', 'source-id-test-2']
         )
-        print(f'Create batch mapping batch uid = {uid}')
+
+        # Create response batch and add to list of response batches
         responses += [ResponseBatch(
             uid=uid,
             inputs=np.array([1, 2, 3, 4]),
             parameters={},
             model=stateful_model,
             status=Status.CREATED,
-            outputs=[np.array([1, 2, 3, 4])],
-            pictures=[np.array([1, 2, 3, 4])],
+            outputs=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
+            pictures=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
         )]
+
+        # Put in database
         db.put(*batch_mapping.to_key_value())
+
+    # Close connection
     db.close()
+
+    # Send response batches to debatch manager
     for response in responses:
         sock_sender.send_pyobj(response)
+
+    # Receive response objects from debatch manager
+    while True:
+        response_object = sock_receiver.recv_pyobj()
+        print(response_object)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ from shared_modules.data_objects import (
     ModelObject,
     RequestObject,
 )
-from src.utils import uuid4_string_generator
+from shared_modules.utils import uuid4_string_generator
 
 
 stub_model = ModelObject(

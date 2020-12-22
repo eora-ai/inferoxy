@@ -8,12 +8,9 @@ __email__ = "a.chertkov@eora.ru"
 import plyvel  # type: ignore
 
 import src.data_models as dm
-from shared_modules.data_objects import (
-    BatchMapping,
-)
 
 
-def save_mapping(config: dm.Config, mapping: BatchMapping):
+def save_mapping(config: dm.Config, mapping: dm.BatchMapping):
     """
     Save mapping in LevelDB
 

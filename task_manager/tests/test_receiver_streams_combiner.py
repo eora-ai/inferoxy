@@ -10,20 +10,16 @@ from typing import AsyncIterator
 
 import numpy as np  # type: ignore
 import pytest
+import src.data_models as dm
 
 from src.batch_queue import OutputBatchQueue
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers import Receiver
-from shared_modules.data_objects import (
-    ModelObject,
-    Status,
-    ResponseBatch,
-)
 
 pytestmark = pytest.mark.asyncio
 
 
-stub_model = ModelObject(
+stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
 )
 
@@ -57,7 +53,7 @@ async def test_one_element_in_output_queue():
         inputs=[np.array(range(10))],
         parameters=[{}],
         model=stub_model,
-        status=Status.IN_QUEUE,
+        status=dm.Status.IN_QUEUE,
     )
 
     class StubReceiver(Receiver):
@@ -76,7 +72,7 @@ async def test_one_element_in_output_queue():
     stop_task = asyncio.create_task(stop())
     await asyncio.wait([converter_task, stop_task], return_when="FIRST_COMPLETED")
     response_batch = output_batch_queue.get_nowait()
-    assert response_batch == ResponseBatch(**batch_dict)
+    assert response_batch == dm.ResponseBatch(**batch_dict)
 
     with pytest.raises(asyncio.QueueEmpty):
         output_batch_queue.get_nowait()
@@ -94,7 +90,7 @@ async def test_multiple_element_in_output_queue():
         inputs=[np.array(range(10))],
         parameters=[{}],
         model=stub_model,
-        status=Status.IN_QUEUE,
+        status=dm.Status.IN_QUEUE,
     )
 
     class StubReceiver(Receiver):
@@ -115,11 +111,11 @@ async def test_multiple_element_in_output_queue():
     stop_task = asyncio.create_task(stop())
     await asyncio.wait([converter_task, stop_task], return_when="FIRST_COMPLETED")
     response_batch = output_batch_queue.get_nowait()
-    assert response_batch == ResponseBatch(**batch_dict)
+    assert response_batch == dm.ResponseBatch(**batch_dict)
     response_batch = output_batch_queue.get_nowait()
-    assert response_batch == ResponseBatch(**batch_dict)
+    assert response_batch == dm.ResponseBatch(**batch_dict)
     response_batch = output_batch_queue.get_nowait()
-    assert response_batch == ResponseBatch(**batch_dict)
+    assert response_batch == dm.ResponseBatch(**batch_dict)
 
     with pytest.raises(asyncio.QueueEmpty):
         output_batch_queue.get_nowait()

@@ -6,16 +6,11 @@ import src.data_models as dm
 import plyvel  # type: ignore
 
 from typing import List
-from shared_modules.data_objects import (
-    ResponseObject,
-    ResponseBatch,
-    BatchMapping
-)
 
 
 def debatch(
-    batch: ResponseBatch, batch_mapping: BatchMapping
-) -> List[ResponseObject]:
+    batch: dm.ResponseBatch, batch_mapping: dm.BatchMapping
+) -> List[dm.ResponseObject]:
     """
     Dissociate batch_object and update batch mapping
 
@@ -40,7 +35,7 @@ def debatch(
             response_output = [{'output': output}]
 
         # Create response object
-        new_response_object = ResponseObject(
+        new_response_object = dm.ResponseObject(
             uid=request_object_uid,
             model=batch.model,
             source_id=batch_mapping.source_ids[i],
@@ -53,10 +48,10 @@ def debatch(
 
 def pull_batch_mapping(
     config: dm.Config,
-    batch: ResponseBatch
-) -> BatchMapping:
+    batch: dm.ResponseBatch
+) -> dm.BatchMapping:
     """
-    Retrieve BatchMapping from database
+    Retrieve dm.BatchMapping from database
 
     Parameters
     ---------
@@ -73,7 +68,7 @@ def pull_batch_mapping(
 
         # Pull batch mapping from database
         batch_mapping_bytes = database.get(bytes(batch.uid, 'utf-8'))
-        batch_mapping = BatchMapping.from_key_value(
+        batch_mapping = dm.BatchMapping.from_key_value(
             (bytes(batch.uid, 'utf-8'),
              batch_mapping_bytes)
         )

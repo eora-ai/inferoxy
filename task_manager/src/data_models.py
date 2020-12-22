@@ -15,7 +15,12 @@ import numpy as np  # type: ignore
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
-from shared_modules.data_objects import MinimalBatchObject, ModelObject, Status
+from shared_modules.data_objects import (
+    ModelObject,
+    MinimalBatchObject,
+    Status,
+    ResponseBatch,
+)
 
 
 @dataclass

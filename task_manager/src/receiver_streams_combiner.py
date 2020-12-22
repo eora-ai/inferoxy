@@ -1,19 +1,20 @@
 """
-This module is responsible for listen the receiver and conver response to ResponseBatch
+This module is responsible for listen the receiver and conver response to dm.ResponseBatch
 """
 
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
+
+import src.data_models as dm
+
 from typing import AsyncIterator, Union, Dict, Optional
 
 from aiostream.stream import merge  # type: ignore
 
 from src.batch_queue import OutputBatchQueue
 from src.utils.data_transfers.receiver import Receiver
-
-from shared_modules.data_objects import ResponseBatch
 
 
 class ReceiverStreamsCombiner:
@@ -23,7 +24,7 @@ class ReceiverStreamsCombiner:
     Parameters
     ----------
     output_batch_queue:
-        Queue where will be placed result, ResponseBatch objects.
+        Queue where will be placed result, dm.ResponseBatch objects.
     """
 
     BREAK = "BREAK"
@@ -70,7 +71,7 @@ class ReceiverStreamsCombiner:
 
     async def converter(self):
         """
-        Main method, convert dict to ResponseBatch, and put it to output_batch_queue
+        Main method, convert dict to dm.ResponseBatch, and put it to output_batch_queue
         """
         while self.running:
             async with self.combined_streams.stream() as stream:
@@ -80,8 +81,8 @@ class ReceiverStreamsCombiner:
                     await self.output_batch_queue.put(self._make_batch(response))
 
     @classmethod
-    def _make_batch(cls, result: dict) -> ResponseBatch:
+    def _make_batch(cls, result: dict) -> dm.ResponseBatch:
         """
         Batch from dict format
         """
-        return ResponseBatch(**result)
+        return dm.ResponseBatch(**result)

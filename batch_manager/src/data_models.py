@@ -6,7 +6,6 @@ __email__ = "a.chertkov@eora.ru"
 
 from dataclasses import dataclass, field
 from typing import List
-from loguru import logger
 
 from shared_modules.data_objects import (
     Status,

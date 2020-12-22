@@ -5,9 +5,6 @@ import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
 
 import src.data_models as dm
-from shared_modules.data_objects import (
-    ResponseBatch
-)
 
 ctx = zmq.asyncio.Context()
 
@@ -29,7 +26,7 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
 
 async def receive(
     sock: zmq.asyncio.Socket
-) -> AsyncIterable[ResponseBatch]:
+) -> AsyncIterable[dm.ResponseBatch]:
     """
     Build an async iterable object. Infinite stream of ResponseBatch
 

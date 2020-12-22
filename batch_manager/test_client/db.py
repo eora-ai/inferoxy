@@ -9,9 +9,10 @@ import sys
 
 import plyvel
 import yaml
-import src.data_models as dm
 
 sys.path.append("..")
+
+import src.data_models as dm
 
 
 def main():

@@ -8,7 +8,6 @@ import src.reciever as rc
 import src.sender as snd
 
 from loguru import logger
-from shared_modules.data_objects import BatchMapping
 from src.debatcher import (
     debatch,
     pull_batch_mapping

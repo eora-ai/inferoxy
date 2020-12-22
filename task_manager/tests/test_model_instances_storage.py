@@ -10,11 +10,8 @@ from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.batch_queue import OutputBatchQueue
 import src.data_models as dm
 from src.utils.data_transfers import Sender, Receiver
-from shared_modules.data_objects import (
-    ModelObject,
-)
 
-stub_model = ModelObject(
+stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
 )
 

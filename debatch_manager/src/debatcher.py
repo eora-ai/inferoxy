@@ -34,7 +34,7 @@ def debatch(
         # Merge outputs and pictures from response batch
         output = batch.outputs[i]
         picture = batch.pictures[i]
-        if picture.size != 0:
+        if picture is not None and picture.size != 0:
             response_output = [{'output': output, 'picture': picture}]
         else:
             response_output = [{'output': output}]
@@ -72,7 +72,11 @@ def pull_batch_mapping(
         )
 
         # Pull batch mapping from database
-        batch_mapping = database.get(bytes(batch.uid, 'utf-8'))
+        batch_mapping_bytes = database.get(bytes(batch.uid, 'utf-8'))
+        batch_mapping = BatchMapping.from_key_value(
+            (bytes(batch.uid, 'utf-8'),
+             batch_mapping_bytes)
+        )
 
         # Close connection
         database.close()

@@ -2,7 +2,7 @@
 Tests for src.debather module
 """
 
-import numpy as np
+import numpy as np  # type: ignore
 from shared_modules.data_objects import (
     ResponseBatch,
     Status,
@@ -88,8 +88,8 @@ response_batch_empty = ResponseBatch(
     uid='test',
     inputs=[],
     parameters=[],
-    model=None,
-    status=None,
+    model=stub_model,
+    status=Status.CREATED,
     outputs=[],
     pictures=[]
 )

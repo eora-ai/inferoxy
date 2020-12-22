@@ -2,13 +2,11 @@
 Test client for debatcher manager
 """
 import sys
-import uuid
-from typing import Generator
 
-import zmq
+import zmq  # type: ignore
 import yaml
-import plyvel
-import numpy as np
+import plyvel   # type: ignore
+import numpy as np  # type: ignore
 
 sys.path.append("..")
 

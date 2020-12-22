@@ -2,8 +2,8 @@
 This module is needed for send ResponseObject to somewhere
 """
 
-import zmq
-import zmq.asyncio
+import zmq  # type: ignore
+import zmq.asyncio  # type: ignore
 
 import src.data_models as dm
 from shared_modules.data_objects import ResponseObject

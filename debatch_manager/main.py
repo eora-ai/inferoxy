@@ -59,12 +59,6 @@ async def pipeline(config: dm.Config):
              batch=response_batch
          )
 
-        # Convert batch mapping from bytes to class object
-        batch_mapping = BatchMapping.from_key_value(
-            (bytes(response_batch.uid, 'utf-8'),
-             batch_mapping)
-        )
-
         # Create response objects -> apply main function
         response_objects = debatch(response_batch, batch_mapping)
         for response_object in response_objects:

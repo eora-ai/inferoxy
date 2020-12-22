@@ -51,7 +51,19 @@ async def pipeline(config: dm.Config):
     # Pulling batch mapping, build response object
     async for response_batch in response_batch_iterable:
         logger.info(f"Pull batch mapping for batch {response_batch.uid}")
-        batch_mapping = pull_batch_mapping(config=config, batch=response_batch)
+
+        sleep_time = config.send_batch_mapping_timeout
+
+        while True:
+            try:
+                batch_mapping = pull_batch_mapping(
+                    config=config,
+                    batch=response_batch
+                )
+                break
+            except RuntimeError:
+                print("Failed to pull batch mappings")
+                await asyncio.sleep(sleep_time)
 
         # Create response objects -> apply main function
         response_objects = debatch(response_batch, batch_mapping)

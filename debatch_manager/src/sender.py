@@ -2,6 +2,9 @@
 This module is needed for send ResponseObject to somewhere
 """
 
+__author__ = "Madina Gafarova"
+__email__ = "m.gafarova@eora.ru"
+
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
 

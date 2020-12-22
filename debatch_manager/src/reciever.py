@@ -1,4 +1,8 @@
 """This module is responsible for receive message from zeromq ipc."""
+
+__author__ = "Madina Gafarova"
+__email__ = "m.gafarova@eora.ru"
+
 from typing import AsyncIterable
 
 import zmq  # type: ignore
@@ -24,9 +28,7 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
     return sock
 
 
-async def receive(
-    sock: zmq.asyncio.Socket
-) -> AsyncIterable[dm.ResponseBatch]:
+async def receive(sock: zmq.asyncio.Socket) -> AsyncIterable[dm.ResponseBatch]:
     """
     Build an async iterable object. Infinite stream of ResponseBatch
 

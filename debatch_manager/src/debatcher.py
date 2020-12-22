@@ -2,6 +2,10 @@
 This module needed to recieve response objects from batch
 """
 
+__author__ = "Madina Gafarova"
+__email__ = "m.gafarova@eora.ru"
+
+
 import src.data_models as dm
 import plyvel  # type: ignore
 
@@ -30,26 +34,23 @@ def debatch(
         output = batch.outputs[i]
         picture = batch.pictures[i]
         if picture is not None and picture.size != 0:
-            response_output = [{'output': output, 'picture': picture}]
+            response_output = [{"output": output, "picture": picture}]
         else:
-            response_output = [{'output': output}]
+            response_output = [{"output": output}]
 
         # Create response object
         new_response_object = dm.ResponseObject(
             uid=request_object_uid,
             model=batch.model,
             source_id=batch_mapping.source_ids[i],
-            output=response_output
+            output=response_output,
         )
         response_objects.append(new_response_object)
 
     return response_objects
 
 
-def pull_batch_mapping(
-    config: dm.Config,
-    batch: dm.ResponseBatch
-) -> dm.BatchMapping:
+def pull_batch_mapping(config: dm.Config, batch: dm.ResponseBatch) -> dm.BatchMapping:
     """
     Retrieve dm.BatchMapping from database
 
@@ -67,14 +68,13 @@ def pull_batch_mapping(
         )
 
         # Pull batch mapping from database
-        batch_mapping_bytes = database.get(bytes(batch.uid, 'utf-8'))
+        batch_mapping_bytes = database.get(bytes(batch.uid, "utf-8"))
         batch_mapping = dm.BatchMapping.from_key_value(
-            (bytes(batch.uid, 'utf-8'),
-             batch_mapping_bytes)
+            (bytes(batch.uid, "utf-8"), batch_mapping_bytes)
         )
 
         # Close connection
         database.close()
         return batch_mapping
     except IOError:
-        raise RuntimeError('Failed to open database')
+        raise RuntimeError("Failed to open database")

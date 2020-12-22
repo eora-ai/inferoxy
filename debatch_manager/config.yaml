@@ -1,4 +1,4 @@
-zmq_input_address: "ipc:///tmp/debatch_manager/input"
+zmq_input_address: "ipc:///tmp/task_manager/result"
 zmq_output_address: "ipc:///tmp/debatch_manager/result"
 db_file: "/tmp/debatch_manager/db"
 create_db_file: "True"

@@ -1,11 +1,15 @@
 """
 Test client for debatcher manager
 """
+
+__author__ = "Madina Gafarova"
+__email__ = "m.gafarova@eora.ru"
+
 import sys
 
 import zmq  # type: ignore
 import yaml
-import plyvel   # type: ignore
+import plyvel  # type: ignore
 import numpy as np  # type: ignore
 
 sys.path.append("..")
@@ -45,7 +49,7 @@ def main():
     try:
         db = plyvel.DB(config.db_file, create_if_missing=True)
     except IOError:
-        raise RuntimeError('Failed to open database')
+        raise RuntimeError("Failed to open database")
 
     uid_generator = uuid4_string_generator()
 
@@ -58,20 +62,22 @@ def main():
         # Create batch mapping
         batch_mapping = BatchMapping(
             batch_uid=uid,
-            request_object_uids=['request-test-1', 'request-test-2'],
-            source_ids=['source-id-test-1', 'source-id-test-2']
+            request_object_uids=["request-test-1", "request-test-2"],
+            source_ids=["source-id-test-1", "source-id-test-2"],
         )
 
         # Create response batch and add to list of response batches
-        responses += [ResponseBatch(
-            uid=uid,
-            inputs=np.array([1, 2, 3, 4]),
-            parameters={},
-            model=stateful_model,
-            status=Status.CREATED,
-            outputs=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
-            pictures=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
-        )]
+        responses += [
+            ResponseBatch(
+                uid=uid,
+                inputs=np.array([1, 2, 3, 4]),
+                parameters={},
+                model=stateful_model,
+                status=Status.CREATED,
+                outputs=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
+                pictures=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
+            )
+        ]
 
         # Put in database
         db.put(*batch_mapping.to_key_value())

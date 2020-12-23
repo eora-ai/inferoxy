@@ -7,8 +7,8 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import docker
-import yaml
 import sys
+from loguru import logger
 
 from abc import ABC, abstractmethod
 from typing import List
@@ -74,19 +74,15 @@ class DockerCloudClient(BaseCloudClient):
     """
 
     def __init__(self, config: dm.Config):
-        client = docker.DockerClient(base_url="unix://var/run/docker.sock")
-        client.login(
+        """
+        Authorize client
+        """
+        self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+        self.client.login(
             username=config.docker_login,
             password=config.docker_password,
             registry=config.docker_registry,
         )
-
-        image = client.images.pull("alpine")
-        model_object = dm.ModelObject(
-            name="kek", address="alpine", stateless=True, batch_size=24
-        )
-        res = self.start_instance(model_object, client)
-        print(res)
 
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         return []
@@ -94,31 +90,34 @@ class DockerCloudClient(BaseCloudClient):
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         return True
 
-    def start_instance(
-        self, model: dm.ModelObject, client: docker.client.DockerClient
-    ) -> dm.ModelInstance:
-        container = client.containers.run(model.address, detach=True)
+    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+        """
+        Start instance base on model image
+        """
+        try:
+            # Check that image exists
+            logger.info("Get model image")
+            self.client.images.get(model.address)
 
-        return dm.ModelInstance(
-            model=model,
-            sender=Sender(),
-            receiver=Receiver(),
-            lock=False,
-            source_id=None,
-            container_name=container.name,
-        )
+            # Pull image
+            logger.info("Pull model image")
+            self.client.images.pull(model.address)
+
+            # Run container
+            logger.info("Run container")
+            container = self.client.containers.run(model.address, detach=True)
+
+            # Construct model instanse
+            return dm.ModelInstance(
+                model=model,
+                sender=Sender(),
+                receiver=Receiver(),
+                lock=False,
+                source_id=None,
+                container_name=container.name,
+            )
+        except docker.errors.ImageNotFound:
+            raise RuntimeError("Image not found")
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         pass
-
-
-def run():
-    with open("../config.yaml") as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-    docker_client = DockerCloudClient(config)
-    docker_client.__init__(config)
-
-
-if __name__ == "__main__":
-    run()

@@ -56,10 +56,7 @@ async def pipeline(config: dm.Config):
 
         while True:
             try:
-                batch_mapping = pull_batch_mapping(
-                    config=config,
-                    batch=response_batch
-                )
+                batch_mapping = pull_batch_mapping(config=config, batch=response_batch)
                 break
             except RuntimeError:
                 print("Failed to pull batch mappings")

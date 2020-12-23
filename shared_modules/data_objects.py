@@ -200,25 +200,22 @@ class BatchMapping:
         key = self.batch_uid.encode("utf-8")
         value = json.dumps(
             dict(
-                request_object_uids=self.request_object_uids,
-                source_ids=self.source_ids
+                request_object_uids=self.request_object_uids, source_ids=self.source_ids
             )
         ).encode("utf-8")
         return key, value
 
     @classmethod
-    def from_key_value(
-        cls, data: Tuple[bytes, bytes]
-    ):
-        key = data[0].decode('utf-8')
+    def from_key_value(cls, data: Tuple[bytes, bytes]):
+        key = data[0].decode("utf-8")
         value = json.loads(data[1])
-        request_object_uids = value['request_object_uids']
-        source_ids = value['source_ids']
+        request_object_uids = value["request_object_uids"]
+        source_ids = value["source_ids"]
 
         return cls(
             batch_uid=key,
             request_object_uids=request_object_uids,
-            source_ids=source_ids
+            source_ids=source_ids,
         )
 
 

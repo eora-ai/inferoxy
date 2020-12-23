@@ -85,7 +85,29 @@ class DockerCloudClient(BaseCloudClient):
         )
 
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
-        return []
+        """
+        Get running instances
+
+        `docker ps`
+        """
+        containers = self.client.containers.list()
+        if len(containers) == 0:
+            return []
+
+        model_instances = []
+        for container in containers:
+            # TODO: заглушка Recevier and Sender
+            model_instances.append(
+                dm.ModelInstance(
+                    model=model,
+                    source_id=None,
+                    sender=Sender,
+                    receiver=Receiver,
+                    lock=False,
+                    container_name=container.name,
+                )
+            )
+        return model_instances
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         return True
@@ -93,12 +115,10 @@ class DockerCloudClient(BaseCloudClient):
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
         Start instance base on model image
+
+        `docker run`
         """
         try:
-            # Check that image exists
-            logger.info("Get model image")
-            self.client.images.get(model.address)
-
             # Pull image
             logger.info("Pull model image")
             self.client.images.pull(model.address)
@@ -116,8 +136,17 @@ class DockerCloudClient(BaseCloudClient):
                 source_id=None,
                 container_name=container.name,
             )
-        except docker.errors.ImageNotFound:
+        except docker.errors.APIError:
             raise RuntimeError("Image not found")
 
     def stop_instance(self, model_instance: dm.ModelInstance):
-        pass
+        """
+        Stop container
+
+        `docker stop`
+        """
+        try:
+            container = self.client.containers.get(model_instance.container_name)
+            container.stop()
+        except docker.errors.NotFound:
+            raise RuntimeError("Failed found container")

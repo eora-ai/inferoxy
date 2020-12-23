@@ -57,5 +57,18 @@ def test_stop_container():
     # TODO: think about how to check that container is stoped
 
 
+def test_list_containers():
+    with open("../config.yaml") as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config(**config_dict)
+
+    docker_client = DockerCloudClient(config)
+    model_instance = docker_client.start_instance(model_object_pass)
+
+    model_instances = docker_client.get_running_instances(model_object_pass)
+
+    assert model_instance.container_name == model_instances[0].container_name
+
+
 if __name__ == "__main__":
     test_stop_container()

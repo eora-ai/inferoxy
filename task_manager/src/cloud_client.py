@@ -9,6 +9,7 @@ __email__ = "a.chertkov@eora.ru"
 import docker
 import sys
 from loguru import logger
+import random
 
 from abc import ABC, abstractmethod
 from typing import List
@@ -83,6 +84,8 @@ class DockerCloudClient(BaseCloudClient):
             password=config.docker_password,
             registry=config.docker_registry,
         )
+        self.gpu_all = config.gpu_all
+        self.gpu_busy = []
 
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         """
@@ -113,6 +116,9 @@ class DockerCloudClient(BaseCloudClient):
         if not model.on_gpu:
             return True
         # TODO: check available gpu
+        if self.gpu_busy == self.gpu_all:
+            return False
+        return True
 
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
@@ -126,8 +132,18 @@ class DockerCloudClient(BaseCloudClient):
             self.client.images.pull(model.address)
 
             if model.on_gpu:
-                # TODO: run container on gpu
-                pass
+                # Geneerate gpu available
+                gpu_available = [
+                    num for num in self.gpu_all if num not in self.gpu_busy
+                ]
+                self.gpu_busy.append(random.choice(gpu_available))
+                # TODO: Install nvidia-docker
+                # https://github.com/NVIDIA/nvidia-docker/issues/1063
+                container = self.client.containers.run(
+                    model.address,
+                    detach=True,
+                    runtime="nvidia",
+                )
 
             # Run container
             logger.info("Run container")

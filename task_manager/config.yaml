@@ -4,3 +4,5 @@ zmq_output_address: "ipc:///tmp/task_manager/result"
 docker_registry: "https://registry.visionhub.ru"
 docker_login: "admin"
 docker_password: "6y4JgtsaNbDvQVCX"
+
+gpu_all: [1, 2, 3, 4]

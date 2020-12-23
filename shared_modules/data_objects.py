@@ -36,6 +36,7 @@ class ModelObject:
     address: str
     stateless: bool
     batch_size: int
+    on_gpu: bool
 
     def __hash__(self):
         return hash((self.name, self.address))

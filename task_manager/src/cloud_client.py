@@ -110,7 +110,9 @@ class DockerCloudClient(BaseCloudClient):
         return model_instances
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
-        return True
+        if not model.on_gpu:
+            return True
+        # TODO: check available gpu
 
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
@@ -122,6 +124,10 @@ class DockerCloudClient(BaseCloudClient):
             # Pull image
             logger.info("Pull model image")
             self.client.images.pull(model.address)
+
+            if model.on_gpu:
+                # TODO: run container on gpu
+                pass
 
             # Run container
             logger.info("Run container")

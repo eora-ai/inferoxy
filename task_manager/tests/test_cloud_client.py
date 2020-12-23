@@ -14,10 +14,14 @@ import src.data_models as dm
 
 
 model_object_fail = dm.ModelObject(
-    name="fail", address="akdfjka", stateless=True, batch_size=24
+    name="fail", address="akdfjka", stateless=True, batch_size=24, on_gpu=False
 )
 model_object_pass = dm.ModelObject(
-    name="run", address="nginx", stateless=True, batch_size=24
+    name="run", address="nginx", stateless=True, batch_size=24, on_gpu=False
+)
+
+model_object_gpu = dm.ModelObject(
+    name="run", address="nginx", stateless=True, batch_size=24, on_gpu=True
 )
 
 
@@ -34,15 +38,6 @@ def test_image_doesnt_exist():
     with pytest.raises(RuntimeError) as exc:
         docker_client.start_instance(model_object_fail)
     assert "Image not found" in str(exc.value)
-
-
-def run():
-    with open("../config.yaml") as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-
-    docker_client = DockerCloudClient(config)
-    docker_client.start_instance(model_object_pass)
 
 
 def test_stop_container():
@@ -70,5 +65,23 @@ def test_list_containers():
     assert model_instance.container_name == model_instances[0].container_name
 
 
+def run():
+    with open("../config.yaml") as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config(**config_dict)
+
+    docker_client = DockerCloudClient(config)
+    docker_client.start_instance(model_object_pass)
+
+
+def gpu():
+    with open("../config.yaml") as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config(**config_dict)
+
+    docker_client = DockerCloudClient(config)
+    docker_client.can_create_instance(model_object_gpu)
+
+
 if __name__ == "__main__":
-    test_stop_container()
+    gpu()

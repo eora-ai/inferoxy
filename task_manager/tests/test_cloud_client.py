@@ -1,6 +1,11 @@
 """
 Test cloud client
 """
+
+__author__ = "Madina Gafarova"
+__email__ = "m.gafarova@eora.ru"
+
+
 import sys
 import yaml
 import pytest
@@ -145,7 +150,3 @@ def test_cannot_run_gpu():
         test = "CANNOT"
 
     assert test == "CANNOT"
-
-
-if __name__ == "__main__":
-    test_stop_container()

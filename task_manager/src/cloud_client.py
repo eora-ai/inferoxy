@@ -6,7 +6,7 @@ Increase, decrease and get operations over model instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import docker
+import docker  # type: ignore
 import sys
 from loguru import logger
 import random
@@ -85,7 +85,7 @@ class DockerCloudClient(BaseCloudClient):
             registry=config.docker_registry,
         )
         self.gpu_all = config.gpu_all
-        self.gpu_busy = []
+        self.gpu_busy: List[int] = []
 
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         """
@@ -103,12 +103,14 @@ class DockerCloudClient(BaseCloudClient):
             # TODO: how to show model instance running on gpu
             if model.run_on_gpu:
                 logger.info(f"This instance {container.name} is running on gpu")
+            else:
+                logger.info(f"This instance {container.name} is running on cpu")
             model_instances.append(
                 dm.ModelInstance(
                     model=model,
                     source_id=None,
-                    sender=Sender,
-                    receiver=Receiver,
+                    sender=Sender(),
+                    receiver=Receiver(),
                     lock=False,
                     container_name=container.name,
                 )

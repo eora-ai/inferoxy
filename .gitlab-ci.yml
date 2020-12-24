@@ -2,7 +2,6 @@
 # Official language image. Look for the different tagged releases at:
 # https://hub.docker.com/r/library/python/tags/
 image: python:3.9
-include: "/task_manager/config.yaml"
 
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.

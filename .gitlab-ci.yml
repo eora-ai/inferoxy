@@ -33,7 +33,7 @@ batch_manager_tests:
 
 task_manager_tests:
   script:
-    - pytest task_manager
+    - pytest task_manager/tests
     - mypy task_manager
 
 debatch_manager_tests:

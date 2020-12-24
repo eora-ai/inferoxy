@@ -20,15 +20,6 @@ from src.utils.data_transfers.receiver import Receiver
 
 import src.data_models as dm
 
-config = {
-    "zmq_input_address": "ipc:///tmp/batch_manager/result",
-    "zmq_output_address": "ipc:///tmp/task_manager/result",
-    "docker_registry": "https://registry.visionhub.ru",
-    "docker_login": "admin",
-    "docker_password": "6y4JgtsaNbDvQVCX",
-    "gpu_all": [1, 2, 3, 4],
-}
-
 
 model_object_fail = dm.ModelObject(
     name="fail",
@@ -62,7 +53,7 @@ def test_image_doesnt_exist():
     Test function start_instance() on CPU
     Throw exceprion RuntimeError -> image does not exist
     """
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -76,7 +67,7 @@ def test_stop_container():
     """
     Test function stop_instance() on model running on gpu
     """
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -108,7 +99,7 @@ def test_list_containers():
     """
     Test function get_running_instances()
     """
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -125,7 +116,7 @@ def test_can_run_on_gpu():
     Test function can_create_instance()
     """
 
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -142,7 +133,7 @@ def test_run_on_gpu():
     Test function start_instance() on GPU
     """
 
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -157,7 +148,7 @@ def test_cannot_run_gpu():
     Test function can_create_instance() return False
     """
 
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
@@ -174,7 +165,7 @@ def test_cannot_run_gpu():
 
 
 def test_failed_stop():
-    with open("../config.yaml") as config_file:
+    with open("task_manager/config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 

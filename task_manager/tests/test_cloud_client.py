@@ -15,7 +15,19 @@ sys.path.append("..")
 
 from src.cloud_client import DockerCloudClient
 
+from src.utils.data_transfers.sender import Sender
+from src.utils.data_transfers.receiver import Receiver
+
 import src.data_models as dm
+
+config = {
+    "zmq_input_address": "ipc:///tmp/batch_manager/result",
+    "zmq_output_address": "ipc:///tmp/task_manager/result",
+    "docker_registry": "https://registry.visionhub.ru",
+    "docker_login": "admin",
+    "docker_password": "6y4JgtsaNbDvQVCX",
+    "gpu_all": [1, 2, 3, 4],
+}
 
 
 model_object_fail = dm.ModelObject(
@@ -33,6 +45,15 @@ model_object_pass = dm.ModelObject(
 
 model_object_gpu = dm.ModelObject(
     name="run", address="nginx", stateless=True, batch_size=24, run_on_gpu=True
+)
+
+model_instance_fail = dm.ModelInstance(
+    model=model_object_pass,
+    source_id=None,
+    sender=Sender(),
+    receiver=Receiver(),
+    lock=False,
+    container_name="kdjfskalf",
 )
 
 
@@ -150,3 +171,14 @@ def test_cannot_run_gpu():
         test = "CANNOT"
 
     assert test == "CANNOT"
+
+
+def test_failed_stop():
+    with open("../config.yaml") as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config(**config_dict)
+
+    docker_client = DockerCloudClient(config)
+    with pytest.raises(RuntimeError) as exc:
+        docker_client.stop_instance(model_instance_fail)
+    assert "Failed found container" in str(exc.value)

@@ -100,6 +100,9 @@ class DockerCloudClient(BaseCloudClient):
         model_instances = []
         for container in containers:
             # TODO: заглушка Recevier and Sender
+            # TODO: how to show model instance running on gpu
+            if model.run_on_gpu:
+                logger.info(f"This instance {container.name} is running on gpu")
             model_instances.append(
                 dm.ModelInstance(
                     model=model,
@@ -113,10 +116,9 @@ class DockerCloudClient(BaseCloudClient):
         return model_instances
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
-        if not model.on_gpu:
+        if not model.run_on_gpu:
             return True
-        # TODO: check available gpu
-        if self.gpu_busy == self.gpu_all:
+        if len(self.gpu_busy) == len(self.gpu_all):
             return False
         return True
 
@@ -131,18 +133,28 @@ class DockerCloudClient(BaseCloudClient):
             logger.info("Pull model image")
             self.client.images.pull(model.address)
 
-            if model.on_gpu:
+            if model.run_on_gpu:
                 # Geneerate gpu available
-                gpu_available = [
-                    num for num in self.gpu_all if num not in self.gpu_busy
-                ]
-                self.gpu_busy.append(random.choice(gpu_available))
-                # TODO: Install nvidia-docker
-                # https://github.com/NVIDIA/nvidia-docker/issues/1063
+                gpu_available = list(set(self.gpu_all) - set(self.gpu_busy))
+                num_gpu = random.choice(gpu_available)
+                self.gpu_busy.append(num_gpu)
+
+                # Run container
+                # TODO: Run on gpu
                 container = self.client.containers.run(
                     model.address,
                     detach=True,
-                    runtime="nvidia",
+                    # runtime="nvidia",
+                )
+                # Construct model instanse
+                return dm.ModelInstance(
+                    model=model,
+                    sender=Sender(),
+                    receiver=Receiver(),
+                    lock=False,
+                    source_id=None,
+                    container_name=container.name,
+                    num_gpu=num_gpu,
                 )
 
             # Run container
@@ -168,6 +180,9 @@ class DockerCloudClient(BaseCloudClient):
         `docker stop`
         """
         try:
+            # If run on gpu then remove gpu from busy gpu list
+            if model_instance.num_gpu != 0:
+                self.gpu_busy.remove(model_instance.num_gpu)
             container = self.client.containers.get(model_instance.container_name)
             container.stop()
         except docker.errors.NotFound:

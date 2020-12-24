@@ -20,7 +20,11 @@ pytestmark = pytest.mark.asyncio
 
 
 stub_model = dm.ModelObject(
-    "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
+    "stub",
+    "registry.visionhub.ru/models/stub:v3",
+    stateless=True,
+    batch_size=128,
+    run_on_gpu=False,
 )
 
 

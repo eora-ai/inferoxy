@@ -34,6 +34,7 @@ class Config:
     docker_registry: str
     docker_login: str
     docker_password: str
+    gpu_all: List[int]
 
 
 @dataclass
@@ -48,6 +49,7 @@ class ModelInstance:
     receiver: Receiver
     lock: bool
     container_name: str
+    num_gpu: int = 0
 
 
 RequestBatch = MinimalBatchObject

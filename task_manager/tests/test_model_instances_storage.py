@@ -12,7 +12,10 @@ import src.data_models as dm
 from src.utils.data_transfers import Sender, Receiver
 
 stub_model = dm.ModelObject(
-    "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
+    "stub",
+    "registry.visionhub.ru/models/stub:v3",
+    stateless=True,
+    batch_size=128,
 )
 
 

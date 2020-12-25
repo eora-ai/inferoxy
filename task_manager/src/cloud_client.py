@@ -105,16 +105,11 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
                 logger.info(f"This instance {container.name} is running on cpu")
-            model_instances.append(
-                dm.ModelInstance(
-                    model=model,
-                    source_id=None,
-                    sender=Sender(),
-                    receiver=Receiver(),
-                    lock=False,
-                    container_name=container.name,
-                )
+            model_instance = self.build_model_instance(
+                model=model,
+                container_name=container.name,
             )
+            model_instances.append(model_instance)
         return model_instances
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
@@ -141,40 +136,27 @@ class DockerCloudClient(BaseCloudClient):
                 num_gpu = random.choice(gpu_available)
                 self.gpu_busy.append(num_gpu)
 
-                # Run container
-                # TODO: Run on gpu
-                # container = self.client.containers.run(
-                #     model.address,
-                #     detach=True,
-                #     # runtime="nvidia",
-                # )
                 container = self.run_container(model.address)
                 # Construct model instanse
-                return dm.ModelInstance(
+                model_instance = self.build_model_instance(
                     model=model,
-                    sender=Sender(),
-                    receiver=Receiver(),
-                    lock=False,
-                    source_id=None,
                     container_name=container.name,
                     num_gpu=num_gpu,
                 )
+                return model_instance
 
             else:
                 # Run container on CPU
                 logger.info("Run container")
                 container = self.run_container(model.address)
-                # container = self.client.containers.run(model.address, detach=True)
 
                 # Construct model instanse
-                return dm.ModelInstance(
+                model_instance = self.build_model_instance(
                     model=model,
-                    sender=Sender(),
-                    receiver=Receiver(),
-                    lock=False,
-                    source_id=None,
                     container_name=container.name,
                 )
+                return model_instance
+
         except docker.errors.APIError:
             raise RuntimeError("Image not found")
 
@@ -186,13 +168,34 @@ class DockerCloudClient(BaseCloudClient):
         """
         try:
             # If run on gpu then remove gpu from busy gpu list
-            if model_instance.num_gpu != 0:
+            if model_instance.num_gpu is not None:
                 self.gpu_busy.remove(model_instance.num_gpu)
+
             container = self.client.containers.get(model_instance.container_name)
             container.stop()
+
         except docker.errors.NotFound:
             raise RuntimeError("Failed found container")
+        except docker.errors.APIError:
+            raise RuntimeError("Server error")
 
     def run_container(self, image, detach=True, run_time=None):
+        """
+        Create and run docker container
+        """
         # TODO: add in runtime oprion run on GPU
         return self.client.containers.run(image=image, detach=detach)
+
+    def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
+        """
+        Build and return model instance object
+        """
+        return dm.ModelInstance(
+            model=model,
+            sender=Sender(),
+            receiver=Receiver(),
+            lock=lock,
+            source_id=None,
+            container_name=container_name,
+            num_gpu=num_gpu,
+        )

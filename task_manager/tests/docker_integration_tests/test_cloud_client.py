@@ -176,4 +176,4 @@ def test_failed_stop():
 
 
 if __name__ == "__main__":
-    test_run_on_gpu()
+    test_list_containers()

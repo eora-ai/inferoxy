@@ -7,7 +7,6 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import docker  # type: ignore
-import sys
 import random
 import src.data_models as dm
 

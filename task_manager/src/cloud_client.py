@@ -143,11 +143,12 @@ class DockerCloudClient(BaseCloudClient):
 
                 # Run container
                 # TODO: Run on gpu
-                container = self.client.containers.run(
-                    model.address,
-                    detach=True,
-                    # runtime="nvidia",
-                )
+                # container = self.client.containers.run(
+                #     model.address,
+                #     detach=True,
+                #     # runtime="nvidia",
+                # )
+                container = self.run_container(model.address)
                 # Construct model instanse
                 return dm.ModelInstance(
                     model=model,
@@ -162,7 +163,8 @@ class DockerCloudClient(BaseCloudClient):
             else:
                 # Run container on CPU
                 logger.info("Run container")
-                container = self.client.containers.run(model.address, detach=True)
+                container = self.run_container(model.address)
+                # container = self.client.containers.run(model.address, detach=True)
 
                 # Construct model instanse
                 return dm.ModelInstance(
@@ -190,3 +192,7 @@ class DockerCloudClient(BaseCloudClient):
             container.stop()
         except docker.errors.NotFound:
             raise RuntimeError("Failed found container")
+
+    def run_container(self, image, detach=True, run_time=None):
+        # TODO: add in runtime oprion run on GPU
+        return self.client.containers.run(image=image, detach=detach)

@@ -16,6 +16,7 @@ from typing import List, Set
 from abc import ABC, abstractmethod
 
 from src.utils.data_transfers import Receiver, Sender
+import src.exceptions as exc
 
 
 class BaseCloudClient(ABC):
@@ -156,7 +157,7 @@ class DockerCloudClient(BaseCloudClient):
                 return model_instance
 
         except docker.errors.APIError:
-            raise RuntimeError("Image not found")
+            raise exc.ImageNotFound()
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -173,9 +174,9 @@ class DockerCloudClient(BaseCloudClient):
             container.stop()
 
         except docker.errors.NotFound:
-            raise RuntimeError("Failed found container")
+            raise exc.ContainerNotFound()
         except docker.errors.APIError:
-            raise RuntimeError("Server error")
+            raise exc.DockerAPIError()
 
     def run_container(self, image, detach=True, run_time=None):
         """

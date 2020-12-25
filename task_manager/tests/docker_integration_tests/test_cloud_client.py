@@ -19,6 +19,7 @@ from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
 import src.data_models as dm
+import src.exceptions as ex
 
 
 model_object_fail = dm.ModelObject(
@@ -58,9 +59,8 @@ def test_image_doesnt_exist():
         config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
-    with pytest.raises(RuntimeError) as exc:
+    with pytest.raises(ex.ImageNotFound):
         docker_client.start_instance(model_object_fail)
-    assert "Image not found" in str(exc.value)
 
 
 def test_stop_container():
@@ -170,10 +170,5 @@ def test_failed_stop():
         config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
-    with pytest.raises(RuntimeError) as exc:
+    with pytest.raises(ex.ContainerNotFound):
         docker_client.stop_instance(model_instance_fail)
-    assert "Failed found container" in str(exc.value)
-
-
-if __name__ == "__main__":
-    test_list_containers()

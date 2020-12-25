@@ -14,8 +14,6 @@ import random
 from abc import ABC, abstractmethod
 from typing import List
 
-sys.path.append("..")
-
 import src.data_models as dm
 from src.utils.data_transfers import Receiver, Sender
 

@@ -49,7 +49,7 @@ class ModelInstance:
     receiver: Receiver
     lock: bool
     container_name: str
-    num_gpu: int = 0
+    num_gpu: Optional[int] = None
 
 
 RequestBatch = MinimalBatchObject

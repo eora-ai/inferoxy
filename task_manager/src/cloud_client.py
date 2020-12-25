@@ -159,19 +159,20 @@ class DockerCloudClient(BaseCloudClient):
                     num_gpu=num_gpu,
                 )
 
-            # Run container
-            logger.info("Run container")
-            container = self.client.containers.run(model.address, detach=True)
+            else:
+                # Run container on CPU
+                logger.info("Run container")
+                container = self.client.containers.run(model.address, detach=True)
 
-            # Construct model instanse
-            return dm.ModelInstance(
-                model=model,
-                sender=Sender(),
-                receiver=Receiver(),
-                lock=False,
-                source_id=None,
-                container_name=container.name,
-            )
+                # Construct model instanse
+                return dm.ModelInstance(
+                    model=model,
+                    sender=Sender(),
+                    receiver=Receiver(),
+                    lock=False,
+                    source_id=None,
+                    container_name=container.name,
+                )
         except docker.errors.APIError:
             raise RuntimeError("Image not found")
 

@@ -8,15 +8,13 @@ __email__ = "a.chertkov@eora.ru"
 
 import docker  # type: ignore
 import sys
-from loguru import logger
 import random
-
-from abc import ABC, abstractmethod
-from typing import List
-
-sys.path.append("..")
-
 import src.data_models as dm
+
+from loguru import logger
+from typing import List, Set
+from abc import ABC, abstractmethod
+
 from src.utils.data_transfers import Receiver, Sender
 
 
@@ -84,8 +82,8 @@ class DockerCloudClient(BaseCloudClient):
             password=config.docker_password,
             registry=config.docker_registry,
         )
-        self.gpu_all = config.gpu_all
-        self.gpu_busy: List[int] = []
+        self.gpu_all = set(config.gpu_all)
+        self.gpu_busy: Set[int] = set()
 
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         """
@@ -132,9 +130,9 @@ class DockerCloudClient(BaseCloudClient):
 
             if model.run_on_gpu:
                 # Geneerate gpu available
-                gpu_available = list(set(self.gpu_all) - set(self.gpu_busy))
-                num_gpu = random.choice(gpu_available)
-                self.gpu_busy.append(num_gpu)
+                gpu_available = self.gpu_all.difference(self.gpu_busy)
+                num_gpu = random.sample(gpu_available, 1)[0]
+                self.gpu_busy.add(num_gpu)
 
                 container = self.run_container(model.address)
                 # Construct model instanse

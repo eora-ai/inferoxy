@@ -20,11 +20,15 @@ import src.exceptions as exc
 
 class BaseCloudClient(ABC):
     """
-    Operation over cloud, Base class needed because want different cloud client, for k8s and for docker-compose/docker
+    Operation over cloud, Base class needed because want different cloud
+    client, for k8s and for docker-compose/docker
     """
 
     @abstractmethod
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
+    def get_running_instances(
+        self,
+        model: dm.ModelObject
+    ) -> List[dm.ModelInstance]:
         """
         Get all running model instances by model
 
@@ -63,7 +67,8 @@ class BaseCloudClient(ABC):
         Parameters
         ----------
         model_instance:
-            Information of the model instance, name of the pod/container and address
+            Information of the model instance, name of
+            the pod/container and address
         """
 
 
@@ -76,7 +81,9 @@ class DockerCloudClient(BaseCloudClient):
         """
         Authorize client
         """
-        self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
+        self.client = docker.DockerClient(
+            base_url="unix://var/run/docker.sock"
+        )
         self.client.login(
             username=config.docker_login,
             password=config.docker_password,
@@ -85,7 +92,10 @@ class DockerCloudClient(BaseCloudClient):
         self.gpu_all = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
+    def get_running_instances(
+        self,
+        model: dm.ModelObject
+    ) -> List[dm.ModelInstance]:
         """
         Get running instances
 
@@ -100,9 +110,13 @@ class DockerCloudClient(BaseCloudClient):
             # TODO: заглушка Recevier and Sender
             # TODO: how to show model instance running on gpu
             if model.run_on_gpu:
-                logger.info(f"This instance {container.name} is running on gpu")
+                logger.info(
+                    f"This instance {container.name} is running on gpu"
+                )
             else:
-                logger.info(f"This instance {container.name} is running on cpu")
+                logger.info(
+                    f"This instance {container.name} is running on cpu"
+                )
             model_instance = self.build_model_instance(
                 model=model,
                 container_name=container.name,
@@ -132,9 +146,17 @@ class DockerCloudClient(BaseCloudClient):
                 # Geneerate gpu available
                 gpu_available = self.gpu_all.difference(self.gpu_busy)
                 num_gpu = random.sample(gpu_available, 1)[0]
+                print("GPU NUMBER: ", num_gpu)
                 self.gpu_busy.add(num_gpu)
 
-                container = self.run_container(model.address)
+                # Run container on GPU
+                logger.info("Run container on GPU")
+                container = self.run_container(
+                    image=model.address,
+                    on_gpu=True,
+                    num_gpu=num_gpu,
+                )
+
                 # Construct model instanse
                 model_instance = self.build_model_instance(
                     model=model,
@@ -145,7 +167,7 @@ class DockerCloudClient(BaseCloudClient):
 
             else:
                 # Run container on CPU
-                logger.info("Run container")
+                logger.info("Run container on CPU")
                 container = self.run_container(model.address)
 
                 # Construct model instanse
@@ -169,7 +191,9 @@ class DockerCloudClient(BaseCloudClient):
             if model_instance.num_gpu is not None:
                 self.gpu_busy.remove(model_instance.num_gpu)
 
-            container = self.client.containers.get(model_instance.container_name)
+            container = self.client.containers.get(
+                model_instance.container_name
+            )
             container.stop()
 
         except docker.errors.NotFound:
@@ -177,14 +201,30 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError:
             raise exc.DockerAPIError()
 
-    def run_container(self, image, detach=True, run_time=None):
+    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """
         Create and run docker container
         """
-        # TODO: add in runtime oprion run on GPU
+
+        # Run on GPU
+        if on_gpu:
+            return self.client.containers.run(
+                image=image,
+                detach=detach,
+                runtime="nvidia",
+                environment={"GPU_NUMBER": num_gpu}
+            )
+
+        # Run on CPU
         return self.client.containers.run(image=image, detach=detach)
 
-    def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
+    def build_model_instance(
+        self,
+        model,
+        container_name,
+        lock=False,
+        num_gpu=None
+    ):
         """
         Build and return model instance object
         """

@@ -31,6 +31,10 @@ class Config:
 
     zmq_output_address: str
     zmq_input_address: str
+    docker_registry: str
+    docker_login: str
+    docker_password: str
+    gpu_all: List[int]
 
 
 @dataclass
@@ -44,6 +48,8 @@ class ModelInstance:
     sender: Sender
     receiver: Receiver
     lock: bool
+    container_name: str
+    num_gpu: Optional[int] = None
 
 
 RequestBatch = MinimalBatchObject

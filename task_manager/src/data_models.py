@@ -17,6 +17,7 @@ from src.utils.data_transfers.receiver import Receiver
 
 from shared_modules.data_objects import (
     ModelObject,
+    RequestObject,
     MinimalBatchObject,
     Status,
     ResponseBatch,

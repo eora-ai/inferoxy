@@ -51,6 +51,14 @@ class ModelInstancesStorage:
         return models_with_source_ids
 
     def get_next_running_instance(
-        self, model: dm.ModelObject, source_ids: Optional[str] = None
+        self, model: dm.ModelObject, source_id: Optional[str] = None
     ) -> dm.ModelInstance:
-        pass
+        model_instances = self.model_instances[model]
+
+        # For stateful models
+        if source_id is not None:
+            for model_instance in model_instances:
+                if model_instance.source_id == source_id:
+                    return model_instance
+
+        # For stateless models

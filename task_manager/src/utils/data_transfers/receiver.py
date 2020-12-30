@@ -3,7 +3,7 @@ This module is responsible for receiving data from model instance
 """
 
 __author__ = "Andrey Chertkov"
-__name__ = "a.chertkov@eora.ru"
+__email__ = "a.chertkov@eora.ru"
 
 from typing import AsyncIterator
 

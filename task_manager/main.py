@@ -13,16 +13,18 @@ import src.data_models as dm
 import src.receiver as rc
 import src.sender as snd
 from src.batch_processing.queue_processing import send_to_model
-from src.load_analyzer import RunningMeanLoadAnalyzer
+from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.cloud_client import DockerCloudClient
+from src.cloud_clients import DockerCloudClient
 
 
 async def pipeline(
     input_batch_queue: InputBatchQueue,
     output_batch_queue: OutputBatchQueue,
+    receiver_streams_combiner: ReceiverStreamsCombiner,
+    model_instances_storage: ModelInstancesStorage,
     config: dm.Config,
 ):
     """
@@ -30,8 +32,6 @@ async def pipeline(
     """
     receiver_socket = rc.create_socket(config)
     receiver_task = rc.receive(receiver_socket, input_batch_queue)
-    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
-    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     send_to_model_task = send_to_model(
         input_batch_queue, model_instances_storage=model_instances_storage
     )
@@ -59,19 +59,27 @@ def main():
 
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
+    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     pipeline_thread = threading.Thread(
         target=asyncio.run,
         args=(
             pipeline(
                 input_batch_queue=input_batch_queue,
                 output_batch_queue=output_batch_queue,
+                receiver_streams_combiner=receiver_streams_combiner,
+                model_instances_storage=model_instances_storage,
                 config=config,
             ),
         ),
     )
     cloud_client = DockerCloudClient(config)
     load_analyzer_thread = RunningMeanLoadAnalyzer(
-        cloud_client, input_batch_queue, output_batch_queue
+        cloud_client,
+        input_batch_queue,
+        output_batch_queue,
+        model_instances_storage=model_instances_storage,
+        config=config,
     )
     pipeline_thread.start()
     load_analyzer_thread.start()

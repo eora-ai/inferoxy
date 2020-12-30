@@ -35,14 +35,28 @@ class ModelInstancesStorage:
             del self.model_instances[model_instance.model]
         self.receiver_streams_combiner.remove_listener(model_instance.receiver)
 
+    def get_model_instance(
+        self, model: dm.ModelObject, source_id: Optional[str] = None
+    ) -> Optional[dm.ModelInstance]:
+        for model_instance in self.model_instances[model]:
+            if model_instance.source_id == source_id:
+                return model_instance
+        return None
+
+    def get_model_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
+        """
+        Return list of model instances for model
+        """
+        return self.model_instances.get(model, [])
+
     def get_running_models_with_source_ids(
-        self,
+        self, is_stateless: Optional[bool] = None
     ) -> List[Tuple[Optional[str], dm.ModelObject]]:
         models_with_source_ids: List[Tuple[Optional[str], dm.ModelObject]] = []
         for model in self.model_instances.keys():
-            if model.stateless:
+            if model.stateless and is_stateless in (None, True):
                 models_with_source_ids.append((None, model))
-            else:
+            elif is_stateless in (None, False):
                 model_with_source_ids = [
                     (model_instance.source_id, model)
                     for model_instance in self.model_instances[model]
@@ -50,6 +64,31 @@ class ModelInstancesStorage:
                 models_with_source_ids.extend(model_with_source_ids)
 
         return models_with_source_ids
+
+    def get_running_models(self) -> List[dm.ModelObject]:
+        """
+        Return models, that have at least one running model instance
+        """
+        return list(self.model_instances.keys())
+
+    def get_number_of_running_instancse(self) -> Dict[dm.ModelObject, int]:
+        """
+        Return number of running models
+        """
+        result = dict()
+        for model in self.model_instances:
+            result[model] = len(self.model_instances[model])
+        return result
+
+    def get_not_locked_model_instances(
+        self, model: dm.ModelObject
+    ) -> List[dm.ModelInstance]:
+        """
+        Get model instances where lock=False
+        """
+        model_instances = self.get_model_instances(model)
+        not_locked = list(filter(lambda mi: not mi.lock, model_instances))
+        return not_locked
 
     def get_next_running_instance(
         self, model: dm.ModelObject, source_id: Optional[str] = None

@@ -9,6 +9,8 @@ import asyncio
 from asyncio import QueueEmpty
 from typing import List, Tuple, Optional
 
+from loguru import logger
+
 from src.batch_queue import InputBatchQueue
 from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
 from src.model_instances_storage import ModelInstancesStorage
@@ -46,6 +48,11 @@ async def send_to_model(
             model_instance = model_instances_storage.get_next_running_instance(
                 model, source_id
             )
+            if model_instance is None:
+                logger.warning(
+                    f"Model Instance Storage return None, for {model=} and {source_id=}"
+                )
+                continue
             adapter_model_instance = AdapterV1ModelInstance(model_instance)
             tasks.append(adapter_model_instance.send(batch))
         await asyncio.wait(tasks)

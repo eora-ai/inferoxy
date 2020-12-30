@@ -89,6 +89,7 @@ def test_stateful_batch_routing():
         sender=Sender(),
         receiver=Receiver(),
         lock=False,
+        running=True,
         container_name="",
     )
     model_instance2 = dm.ModelInstance(
@@ -97,6 +98,7 @@ def test_stateful_batch_routing():
         sender=Sender(),
         receiver=Receiver(),
         lock=False,
+        running=True,
         container_name="",
     )
     model_instance3 = dm.ModelInstance(
@@ -105,6 +107,7 @@ def test_stateful_batch_routing():
         sender=Sender(),
         receiver=Receiver(),
         lock=False,
+        running=True,
         container_name="",
     )
     output_batch_queue = OutputBatchQueue()
@@ -146,6 +149,7 @@ def test_stateless_batch_routing():
         receiver=Receiver(),
         lock=False,
         container_name="",
+        running=True,
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
@@ -154,6 +158,7 @@ def test_stateless_batch_routing():
         receiver=Receiver(),
         lock=False,
         container_name="",
+        running=True,
     )
     model_instance3 = dm.ModelInstance(
         model=stub_model,
@@ -161,6 +166,7 @@ def test_stateless_batch_routing():
         sender=Sender(),
         receiver=Receiver(),
         lock=False,
+        running=True,
         container_name="",
     )
     output_batch_queue = OutputBatchQueue()

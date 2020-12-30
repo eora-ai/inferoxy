@@ -174,6 +174,9 @@ class MinimalBatchObject:
             and self.status == other.status
         )
 
+    def __hash__(self):
+        return hash(self.uid)
+
 
 @dataclass
 class BatchMapping:
@@ -256,3 +259,6 @@ class ResponseBatch(MinimalBatchObject):
             # pictures=pictures,
             outputs=outputs,
         )
+
+    def __hash__(self):
+        return hash(self.uid)

@@ -3,7 +3,7 @@ This module is responsible for sending data to model instance
 """
 
 __author__ = "Andrey Chertkov"
-__name__ = "a.chertkov@eora.ru"
+__email__ = "a.chertkov@eora.ru"
 
 
 class Sender:

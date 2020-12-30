@@ -6,11 +6,13 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from asyncio import Queue, QueueEmpty
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, List
 import datetime
 
 import src.data_models as dm
 from src.exceptions import TagDoesNotExists
+
+QueueSize = int
 
 
 class InputBatchQueue:
@@ -20,13 +22,12 @@ class InputBatchQueue:
 
     def __init__(self):
         self.queues: Dict[
-            str, Dict[Tuple[Optional[str], dm.ModelObject], Queue]
+            str, Dict[Tuple[Optional[str], dm.ModelObject], (QueueSize, Queue)]
         ] = dict(stateless={}, stateful={})
 
     async def put(
         self,
         item: dm.MinimalBatchObject,
-        model: dm.ModelObject,
     ):
         """
         Put dm.ResponseBatch into queue, save time processing for load analyzer
@@ -39,32 +40,47 @@ class InputBatchQueue:
         """
         is_stateless = True
         source_id = None
-        if not model.stateless:
+        if not item.model.stateless:
             is_stateless = False
             source_id = item.source_id
 
         item.queued_at = datetime.datetime.now()
         item.status = dm.Status.IN_QUEUE
-        queue = self.__select_queue(model, is_stateless, source_id)
+        queue = self.__select_queue(item.model, source_id)
         if queue is None:
-            queue = self.__create_queue(model, is_stateless, source_id)
+            queue = self.__create_queue(item.model, source_id)
+        self.__increase_queue_size(item)
         await queue.put(item)
+
+    def __increase_queue_size(self, batch: dm.MinimalBatchObject):
+        """
+        Increase size of queue by batch.size
+        """
+        sub_queues = self.queues["stateless" if batch.model.stateless else "stateful"]
+        size, queue = sub_queues[(batch.source_id, batch.model)]
+        sub_queues[(batch.source_id, batch.model)] = (size + batch.size, queue)
+
+    def __decrease_queue_size(self, batch: dm.MinimalBatchObject):
+        """
+        Increase size of queue by batch.size
+        """
+        sub_queues = self.queues["stateless" if batch.model.stateless else "stateful"]
+        size, queue = sub_queues[(batch.source_id, batch.model)]
+        sub_queues[(batch.source_id, batch.model)] = (size - batch.size, queue)
 
     def __create_queue(
         self,
         model: dm.ModelObject,
-        is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Queue:
         queue: Queue = Queue()
-        sub_queue = self.queues["stateless" if is_stateless else "stateful"]
-        sub_queue[(source_id, model)] = queue
+        sub_queue = self.queues["stateless" if model.stateless else "stateful"]
+        sub_queue[(source_id, model)] = (0, queue)
         return queue
 
     def __select_queue(
         self,
         model: dm.ModelObject,
-        is_stateless: bool = True,
         source_id: Optional[str] = None,
     ) -> Optional[Queue]:
         """
@@ -76,20 +92,19 @@ class InputBatchQueue:
             Tag of the queue
         """
         try:
-            return self.queues["stateless" if is_stateless else "stateful"][
+            return self.queues["stateless" if model.stateless else "stateful"][
                 (source_id, model)
-            ]
+            ][1]
         except KeyError:
             return None
 
     def __delete_queue(
         self,
         model: dm.ModelObject,
-        is_stateless: bool = True,
         source_id: Optional[str] = None,
     ):
         try:
-            del self.queues["stateless" if is_stateless else "stateful"][
+            del self.queues["stateless" if model.stateless else "stateful"][
                 (source_id, model)
             ]
         except KeyError:
@@ -110,16 +125,45 @@ class InputBatchQueue:
         Returns:
             Request Batch object
         """
-        is_stateless = model.stateless
-        queue = self.__select_queue(model, is_stateless, source_id)
+        queue = self.__select_queue(model, source_id)
         if queue is None:
             raise TagDoesNotExists(f"Tag {(source_id, model)} doesnot exists")
         try:
             batch = queue.get_nowait()
+            self.__decrease_queue_size(batch)
         except QueueEmpty as exc:
-            self.__delete_queue(model, is_stateless, source_id)
+            self.__delete_queue(model, source_id)
             raise exc
         return batch
+
+    def get_models(self, is_stateless: bool = True) -> List[dm.ModelObject]:
+        """
+        Return models in the queue
+        """
+        source_id_models = list(
+            self.queues["stateless" if is_stateless else "stateful"].keys()
+        )
+        return list(map(lambda x: x[1], source_id_models))
+
+    def get_models_with_source_ids(
+        self, is_stateless: bool = True
+    ) -> List[Tuple[Optional[str], dm.ModelObject]]:
+        """
+        Return keys, (source_id, model)
+        """
+        source_id_models = list(
+            self.queues["stateless" if is_stateless else "stateful"].keys()
+        )
+        return source_id_models
+
+    def get_num_requests_in_queue(
+        self, model: dm.ModelObject, source_id: Optional[str] = None
+    ) -> QueueSize:
+        """
+        Return number of requests in queue, size of each batch in queue
+        """
+        sub_queues = self.queues["stateless" if model.stateless else "stateful"]
+        return sub_queues[(source_id, model)][0]
 
 
 class OutputBatchQueue(Queue):

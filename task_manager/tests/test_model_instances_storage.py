@@ -38,6 +38,7 @@ def test_add_model_instance():
         receiver=Receiver(),
         lock=False,
         container_name="",
+        running=True,
     )
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
@@ -63,6 +64,7 @@ def test_remove_model_instance():
         receiver=Receiver(),
         lock=False,
         container_name="",
+        running=True,
     )
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)

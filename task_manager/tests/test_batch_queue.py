@@ -56,8 +56,11 @@ async def test_one_element_input_queue():
         model=stub_model,
         status=dm.Status.CREATED,
     )
-    await input_batch_queue.put(item, stub_model)
+    await input_batch_queue.put(item)
+    assert input_batch_queue.get_num_requests_in_queue(stub_model) == 1
+
     result = input_batch_queue.get_nowait(stub_model)
+    assert input_batch_queue.get_num_requests_in_queue(stub_model) == 0
     assert result == item
     assert result.status == dm.Status.IN_QUEUE
 
@@ -94,9 +97,9 @@ async def test_multiple_elements_input_queue():
         model=stub_model,
         status=dm.Status.CREATED,
     )
-    await input_batch_queue.put(item1, stub_model)
-    await input_batch_queue.put(item2, stub_model)
-    await input_batch_queue.put(item3, stub_model)
+    await input_batch_queue.put(item1)
+    await input_batch_queue.put(item2)
+    await input_batch_queue.put(item3)
     result = input_batch_queue.get_nowait(stub_model)
     assert result == item1
     assert result.status == dm.Status.IN_QUEUE
@@ -126,7 +129,7 @@ async def test_stateful_models():
         source_id="test",
     )
     input_batch_queue = InputBatchQueue()
-    await input_batch_queue.put(item, stub_stateful)
+    await input_batch_queue.put(item)
 
     result = input_batch_queue.get_nowait(stub_stateful, source_id="test")
 

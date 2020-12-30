@@ -22,6 +22,7 @@ class ModelInstancesStorage:
         self.model_instances: Dict[
             dm.ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
+        self.indexes: Dict[dm.ModelObject, int] = defaultdict(int)
         self.receiver_streams_combiner = receiver_streams_combiner
 
     def add_model_instance(self, model_instance: dm.ModelInstance):
@@ -51,6 +52,18 @@ class ModelInstancesStorage:
         return models_with_source_ids
 
     def get_next_running_instance(
-        self, model: dm.ModelObject, source_ids: Optional[str] = None
-    ) -> dm.ModelInstance:
-        pass
+        self, model: dm.ModelObject, source_id: Optional[str] = None
+    ) -> Optional[dm.ModelInstance]:
+        model_instances = self.model_instances[model]
+
+        if source_id is not None:
+            # For stateful models
+            for model_instance in model_instances:
+                if model_instance.source_id == source_id:
+                    return model_instance
+            return None
+
+        # For stateless models
+        index = self.indexes[model]
+        self.indexes[model] = (index + 1) % len(self.model_instances[model])
+        return self.model_instances[model][index]

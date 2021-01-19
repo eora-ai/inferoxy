@@ -5,19 +5,15 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from enum import Enum
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from typing import List, Optional
 
-import numpy as np  # type: ignore
 
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
 from shared_modules.data_objects import (
     ModelObject,
-    RequestObject,
     MinimalBatchObject,
     Status,
     ResponseBatch,

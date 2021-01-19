@@ -5,7 +5,7 @@ This module is responsible for receiving data from model instance
 __author__ = "Andrey Chertkov"
 __name__ = "a.chertkov@eora.ru"
 
-import zmq
+import zmq.asyncio
 import sys
 
 from loguru import logger
@@ -15,7 +15,7 @@ from shared_modules.data_objects import ResponseBatch
 
 class Receiver:
     def __init__(self, open_address, sync_address, settings):
-        self.zmq_context = zmq.Context()
+        self.zmq_context = zmq.asyncio.Context()
         self.zmq_socket = self.zmq_context.socket(zmq.PULL)
         self.zmq_socket.setsockopt(zmq.RCVHWM, settings.ZMQ_SETTINGS.get("RCVHWM", 10))
         self.zmq_socket.setsockopt(
@@ -25,8 +25,8 @@ class Receiver:
         self.sync(sync_address, settings)
 
     def sync(self, sync_address, settings):
-        ctx = zmq.Context.instance()
-        r = ctx.socket(zmq.REQ)
+        self.zmq_context = zmq.asyncio.Context()
+        r = self.zmq_context.socket(zmq.REQ)
         r.setsockopt(zmq.SNDTIMEO, settings.ZMQ_SETTINGS.get("SNDTIMEO", 60000))
         r.setsockopt(zmq.RCVTIMEO, settings.ZMQ_SETTINGS.get("RCVTIMEO", 60000))
         r.connect(sync_address)
@@ -38,32 +38,17 @@ class Receiver:
         r.close()
 
     async def receive(self) -> ResponseBatch:
+        while True:
+            sys.stdout.write("Parse received data\n")
+            data = await self.zmq_socket.recv_pyobj()
+            response_batch = data.get("batch_object")
+            break
 
-        data = self.zmq_socket.recv_pyobj()
-        try:
-            minimal_batch = data.get("batch_object")
-            outputs = data.get("outputs")
-            pictures = data.get("pictures")
+        if response_batch is None:
+            logger.info("Response batch object is None")
 
-            if minimal_batch is None:
-                sys.stdout.write("Minimal batch object is None")
-                return None
-
-            # Check that pictures is not None
-            if pictures is not None and pictures.size != 0:
-                response_outputs = [{"outputs": outputs, "pictures": pictures}]
-            else:
-                response_outputs = [{"outputs": outputs}]
-
-            response = ResponseBatch.from_minimal_batch_object(
-                batch=minimal_batch,
-                outputs=response_outputs,
-                source_id=minimal_batch.source_id,
-                done_at=minimal_batch.done_at,
-            )
-            return response
-        except KeyError:
-            logger.error("No such key in dictionary")
+        sys.stdout.write("\n")
+        return response_batch
 
     def close(self):
         self.zmq_socket.close()

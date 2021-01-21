@@ -48,11 +48,11 @@ def test_debatch_many():
     assert result[1].uid == "robj2"
     assert result[1].source_id == "robjsource2"
 
-    assert np.array_equal(result[0].output.get("output"), [np.array([1, 2, 3, 4])])
-    assert np.array_equal(result[0].output.get("picture"), [np.array([1, 2, 3, 4])])
+    assert np.array_equal(result[0].output[0].get("output"), [np.array([1, 2, 3, 4])])
+    assert np.array_equal(result[0].output[0].get("picture"), [np.array([1, 2, 3, 4])])
 
-    assert np.array_equal(result[1].output.get("output"), [np.array([5, 6, 7])])
-    assert np.array_equal(result[1].output.get("picture"), [np.array([5, 6, 7])])
+    assert np.array_equal(result[1].output[0].get("output"), [np.array([5, 6, 7])])
+    assert np.array_equal(result[1].output[0].get("picture"), [np.array([5, 6, 7])])
 
 
 response_batch_one = dm.ResponseBatch(
@@ -75,8 +75,8 @@ def test_debatch_one():
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 
-    assert np.array_equal(result[0].output.get("output"), [np.array([1, 2, 3, 4])])
-    assert np.array_equal(result[0].output.get("picture"), [np.array([1, 2, 3, 4])])
+    assert np.array_equal(result[0].output[0].get("output"), [np.array([1, 2, 3, 4])])
+    assert np.array_equal(result[0].output[0].get("picture"), [np.array([1, 2, 3, 4])])
 
 
 response_batch_empty = dm.ResponseBatch(

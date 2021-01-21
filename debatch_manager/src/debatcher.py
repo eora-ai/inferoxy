@@ -35,7 +35,7 @@ def debatch(
             uid=request_object_uid,
             model=batch.model,
             source_id=batch_mapping.source_ids[i],
-            output=batch.outputs[i],
+            output=[batch.outputs[i]],
         )
         response_objects.append(new_response_object)
 

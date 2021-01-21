@@ -8,14 +8,16 @@ __email__ = "a.chertkov@eora.ru"
 
 import docker  # type: ignore
 import random
-import src.data_models as dm
+import yaml
+import pathlib
 
 from loguru import logger
 from typing import List, Set
 from abc import ABC, abstractmethod
 
-from src.utils.data_transfers import Receiver, Sender
+import src.data_models as dm
 import src.exceptions as exc
+from src.utils.data_transfers import Receiver, Sender
 
 
 class BaseCloudClient(ABC):
@@ -25,10 +27,7 @@ class BaseCloudClient(ABC):
     """
 
     @abstractmethod
-    def get_running_instances(
-        self,
-        model: dm.ModelObject
-    ) -> List[dm.ModelInstance]:
+    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         """
         Get all running model instances by model
 
@@ -81,9 +80,7 @@ class DockerCloudClient(BaseCloudClient):
         """
         Authorize client
         """
-        self.client = docker.DockerClient(
-            base_url="unix://var/run/docker.sock"
-        )
+        self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
         self.client.login(
             username=config.docker_login,
             password=config.docker_password,
@@ -92,10 +89,7 @@ class DockerCloudClient(BaseCloudClient):
         self.gpu_all = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
-    def get_running_instances(
-        self,
-        model: dm.ModelObject
-    ) -> List[dm.ModelInstance]:
+    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
         """
         Get running instances
 
@@ -107,16 +101,10 @@ class DockerCloudClient(BaseCloudClient):
 
         model_instances = []
         for container in containers:
-            # TODO: заглушка Recevier and Sender
-            # TODO: how to show model instance running on gpu
             if model.run_on_gpu:
-                logger.info(
-                    f"This instance {container.name} is running on gpu"
-                )
+                logger.info(f"This instance {container.name} is running on gpu")
             else:
-                logger.info(
-                    f"This instance {container.name} is running on cpu"
-                )
+                logger.info(f"This instance {container.name} is running on cpu")
             model_instance = self.build_model_instance(
                 model=model,
                 container_name=container.name,
@@ -191,9 +179,7 @@ class DockerCloudClient(BaseCloudClient):
             if model_instance.num_gpu is not None:
                 self.gpu_busy.remove(model_instance.num_gpu)
 
-            container = self.client.containers.get(
-                model_instance.container_name
-            )
+            container = self.client.containers.get(model_instance.container_name)
             container.stop()
 
         except docker.errors.NotFound:
@@ -212,26 +198,58 @@ class DockerCloudClient(BaseCloudClient):
                 image=image,
                 detach=detach,
                 runtime="nvidia",
-                environment={"GPU_NUMBER": num_gpu}
+                environment={"GPU_NUMBER": num_gpu},
             )
 
         # Run on CPU
-        return self.client.containers.run(image=image, detach=detach)
+        return self.client.containers.run(
+            image=image,
+            detach=detach,
+            # TODO: remove or make optional
+            ports={
+                "5556/tcp": 5556,
+                "5546/tcp": 5546,
+                "5555/tcp": 5555,
+                "5545/tcp": 5545,
+            },
+        )
 
-    def build_model_instance(
-        self,
-        model,
-        container_name,
-        lock=False,
-        num_gpu=None
-    ):
+    def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
         """
         Build and return model instance object
         """
+
+        cur_path = pathlib.Path(__file__)
+        config_path = cur_path.parent / "utils/data_transfers/zmq-config.yaml"
+
+        with open(config_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config = dm.ZMQConfig(**config_dict)
+
+        # Build addresses
+        sender_open_address = f"tcp://{container_name}:5556"
+        sender_sync_address = f"tcp://{container_name}:5546"
+
+        receiver_open_address = f"tcp://{container_name}:5555"
+        receiver_sync_address = f"tcp://{container_name}:5545"
+
+        # Create sender and receiver
+        sender = Sender(
+            open_address=sender_open_address,
+            sync_address=sender_sync_address,
+            config=config,
+        )
+
+        receiver = Receiver(
+            open_address=receiver_open_address,
+            sync_address=receiver_sync_address,
+            config=config,
+        )
+
         return dm.ModelInstance(
             model=model,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=sender,
+            receiver=receiver,
             lock=lock,
             source_id=None,
             container_name=container_name,

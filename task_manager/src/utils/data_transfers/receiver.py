@@ -6,48 +6,54 @@ __author__ = "Andrey Chertkov"
 __name__ = "a.chertkov@eora.ru"
 
 import zmq.asyncio
-import sys
 
 from loguru import logger
 
 from shared_modules.data_objects import ResponseBatch
 
 
-class Receiver:
-    def __init__(self, open_address, sync_address, settings):
+class BaseReceiver:
+    def __init__(self):
+        pass
+
+    def sync(self, sync_address, config):
+        pass
+
+    async def receive(self):
+        pass
+
+    def close(self):
+        pass
+
+
+class Receiver(BaseReceiver):
+    def __init__(self, open_address, sync_address, config):
         self.zmq_context = zmq.asyncio.Context()
         self.zmq_socket = self.zmq_context.socket(zmq.PULL)
-        self.zmq_socket.setsockopt(zmq.RCVHWM, settings.ZMQ_SETTINGS.get("RCVHWM", 10))
-        self.zmq_socket.setsockopt(
-            zmq.RCVTIMEO, settings.ZMQ_SETTINGS.get("RCVTIMEO", 60000)
-        )
+        self.zmq_socket.setsockopt(zmq.RCVHWM, config.zmq_rcvhwm)
+        self.zmq_socket.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
         self.zmq_socket.connect(open_address)
-        self.sync(sync_address, settings)
+        self.sync(sync_address, config)
 
-    def sync(self, sync_address, settings):
+    def sync(self, sync_address, config):
         self.zmq_context = zmq.asyncio.Context()
         r = self.zmq_context.socket(zmq.REQ)
-        r.setsockopt(zmq.SNDTIMEO, settings.ZMQ_SETTINGS.get("SNDTIMEO", 60000))
-        r.setsockopt(zmq.RCVTIMEO, settings.ZMQ_SETTINGS.get("RCVTIMEO", 60000))
+        r.setsockopt(zmq.SNDTIMEO, config.zmq_sndtimeo)
+        r.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
         r.connect(sync_address)
         r.send(b"Sync message")
-        sys.stdout.write("Send request to model\n")
         r.recv()
-        sys.stdout.write("Model is ready\n")
-        sys.stdout.flush()
         r.close()
 
     async def receive(self) -> ResponseBatch:
         while True:
-            sys.stdout.write("Parse received data\n")
             data = await self.zmq_socket.recv_pyobj()
             response_batch = data.get("batch_object")
             break
 
         if response_batch is None:
-            logger.info("Response batch object is None")
+            logger.warning("Response batch object is None")
 
-        sys.stdout.write("\n")
         return response_batch
 
     def close(self):

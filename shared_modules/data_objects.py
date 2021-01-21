@@ -250,3 +250,15 @@ class ResponseBatch(MinimalBatchObject):
             sent_at=batch.queued_at,
             outputs=outputs,
         )
+
+
+@dataclass
+class ZMQConfig:
+    """
+    Config of base object (ZMQ)
+    """
+
+    zmq_sndhwm: int
+    zmq_rcvhwm: int
+    zmq_sndtimeo: int
+    zmq_rcvtimeo: int

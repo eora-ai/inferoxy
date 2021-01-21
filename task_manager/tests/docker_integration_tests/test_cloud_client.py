@@ -36,11 +36,7 @@ model_object_pass = dm.ModelObject(
 )
 
 model_object_gpu = dm.ModelObject(
-    name="run",
-    address="nginx",
-    stateless=True,
-    batch_size=24,
-    run_on_gpu=True
+    name="run", address="nginx", stateless=True, batch_size=24, run_on_gpu=True
 )
 
 model_instance_fail = dm.ModelInstance(

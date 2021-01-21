@@ -1,11 +1,10 @@
 import importlib
 import sys
+import yaml
+
+import data_models as dm
 
 from data_transfer import Sender, Receiver
-
-from shared_modules.data_objects import ResponseBatch
-
-import settings
 
 
 class Runner:
@@ -27,16 +26,20 @@ class Runner:
         :param dataset_address: address of socket to connect to receive from dataset sender (zmq format)
         :param results_address: address of socket to bind to send result (zmq format)
         """
+        with open("/model_base/config.yaml") as config_file:
+            config_dict = yaml.full_load(config_file)
+            config = dm.ZMQConfig(**config_dict)
+
         self.batch_size = batch_size
         self.receiver = Receiver(
             open_address=dataset_address,
             sync_address=dataset_sync_address,
-            settings=settings.ZMQ_SETTINGS,
+            config=config,
         )
         self.sender = Sender(
             open_address=results_address,
             sync_address=results_sync_address,
-            settings=settings.ZMQ_SETTINGS,
+            config=config,
         )
         self._prepare_model()
 
@@ -63,21 +66,6 @@ class Runner:
         response_batch = self._process_next_batch()
         data = {"batch_object": response_batch}
         self.sender.send(data)
-        # for res in results:
-        #     if res is None:
-        #         self.sender.send(None)
-        #         break
-        #     package = {
-        #         "data": {
-        #             "prediction": res["prediction"],
-        #             "image": res["image"],
-        #         },
-        #         "meta": None,
-        #     }
-        #     if "sound" in res:
-        #         package["data"]["sound"] = res["sound"]
-
-        #     self.sender.send(package)
         sys.stdout.flush()
 
         self.receiver.close()
@@ -126,14 +114,22 @@ class Runner:
 
         sys.stdout.write("CONSTRUCT RESPONSE BATCH \n")
 
+        response_batch = self.build_response_batch(minimal_batch, results)
+
+        return response_batch
+
+    def build_response_batch(self, minimal_batch, meta):
+        """
+        Build Response Batch object from Minimal Batch Object
+        """
         outputs = []
 
-        for item in results:
+        for item in meta:
             prediction = item["prediction"]
             image = item["image"]
             outputs.append([{"output": prediction, "picture": image}])
 
-        response_batch = ResponseBatch.from_minimal_batch_object(
+        response_batch = dm.ResponseBatch.from_minimal_batch_object(
             batch=minimal_batch, outputs=outputs
         )
         sys.stdout.write("RESPONSE BATCH: \n")

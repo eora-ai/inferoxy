@@ -9,12 +9,15 @@ __email__ = "m.gafarova@eora.ru"
 import sys
 import asyncio
 import numpy as np  # type: ignore
+import yaml
 import time
+import pathlib
 from PIL import Image
 from numpy import asarray
 
 sys.path.append("..")
 
+import src.data_models as dm
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
@@ -35,16 +38,23 @@ batch = MinimalBatchObject(
 )
 
 if __name__ == "__main__":
+    cur_path = pathlib.Path(__file__)
+    config_path = cur_path.parent.parent / "src/utils/data_transfers/zmq-config.yaml"
+
+    with open(config_path) as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.ZMQConfig(**config_dict)
+
     sender = Sender(
         open_address="tcp://127.0.0.1:5556",
         sync_address="tcp://127.0.0.1:5546",
-        settings=settings,
+        config=config,
     )
 
     receiver = Receiver(
         open_address="tcp://127.0.0.1:5555",
         sync_address="tcp://127.0.0.1:5545",
-        settings=settings,
+        config=config,
     )
 
     sys.stdout.write("Send data\n")

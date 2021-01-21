@@ -166,7 +166,7 @@ class DockerCloudClient(BaseCloudClient):
                 return model_instance
 
         except docker.errors.APIError:
-            raise exc.ImageNotFound()
+            raise exc.DockerAPIError()
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -199,13 +199,18 @@ class DockerCloudClient(BaseCloudClient):
                 detach=detach,
                 runtime="nvidia",
                 environment={"GPU_NUMBER": num_gpu},
+                ports={
+                    "5556/tcp": 5556,
+                    "5546/tcp": 5546,
+                    "5555/tcp": 5555,
+                    "5545/tcp": 5545,
+                },
             )
 
         # Run on CPU
         return self.client.containers.run(
             image=image,
             detach=detach,
-            # TODO: remove or make optional
             ports={
                 "5556/tcp": 5556,
                 "5546/tcp": 5546,

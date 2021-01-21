@@ -9,7 +9,8 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.batch_queue import OutputBatchQueue
 import src.data_models as dm
-from src.utils.data_transfers import Sender, Receiver
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 
 stub_model = dm.ModelObject(
     "stub",
@@ -26,8 +27,8 @@ def test_add_model_instance():
     model_instance = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         container_name="",
     )
@@ -51,8 +52,8 @@ def test_remove_model_instance():
     model_instance = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         container_name="",
     )

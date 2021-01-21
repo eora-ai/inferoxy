@@ -14,7 +14,7 @@ import src.data_models as dm
 
 from src.batch_queue import OutputBatchQueue
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.utils.data_transfers import Receiver
+from src.utils.data_transfers.receiver import BaseReceiver
 
 pytestmark = pytest.mark.asyncio
 
@@ -56,7 +56,7 @@ async def test_one_element_in_output_queue():
         status=dm.Status.IN_QUEUE,
     )
 
-    class StubReceiver(Receiver):
+    class StubReceiver(BaseReceiver):
         async def receive(self) -> AsyncIterator[dict]:
             yield batch_dict
 
@@ -93,7 +93,7 @@ async def test_multiple_element_in_output_queue():
         status=dm.Status.IN_QUEUE,
     )
 
-    class StubReceiver(Receiver):
+    class StubReceiver(BaseReceiver):
         async def receive(self) -> AsyncIterator[dict]:
             yield batch_dict
             yield batch_dict

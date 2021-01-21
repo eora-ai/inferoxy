@@ -226,7 +226,7 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    outputs: List[Dict[str, np.ndarray]] = None
+    outputs: List[Dict[str, np.ndarray]] = field(default_factory=lambda: [])
 
     @classmethod
     def from_minimal_batch_object(

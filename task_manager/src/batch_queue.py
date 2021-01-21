@@ -5,7 +5,7 @@ This module is responsible for transfer Batches from receiver to process and fro
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from asyncio import Queue, QueueEmpty
+from asyncio import Queue, QueueEmpty  # type: ignore
 from typing import Optional, Dict, Tuple
 import datetime
 

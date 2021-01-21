@@ -8,12 +8,11 @@ __email__ = "m.gafarova@eora.ru"
 
 import sys
 import asyncio
-import numpy as np  # type: ignore
 import yaml
 import time
 import pathlib
-from PIL import Image
-from numpy import asarray
+from PIL import Image  # type: ignore
+from numpy import asarray  # type: ignore
 
 sys.path.append("..")
 
@@ -22,7 +21,6 @@ from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 
 from src.data_models import MinimalBatchObject, ModelObject
-import src.utils.data_transfers.settings as settings
 
 # load the image
 image = Image.open("test.jpg")
@@ -36,6 +34,13 @@ batch = MinimalBatchObject(
     parameters=[],
     model=model,
 )
+
+
+async def get_response_batches(receiver):
+    res_iterable = receiver.receive()
+    async for item in res_iterable:
+        sys.stdout.write(str(item))
+
 
 if __name__ == "__main__":
     cur_path = pathlib.Path(__file__)
@@ -61,6 +66,6 @@ if __name__ == "__main__":
     data = {"batch_object": batch}
     asyncio.run(sender.send(data))
     time.sleep(5)
-    res = asyncio.run(receiver.receive())
-    sys.stdout.write(str(res))
+    asyncio.run(get_response_batches(receiver))
+
     sys.stdout.flush()

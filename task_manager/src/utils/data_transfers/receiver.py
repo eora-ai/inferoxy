@@ -5,11 +5,11 @@ This module is responsible for receiving data from model instance
 __author__ = "Andrey Chertkov"
 __name__ = "a.chertkov@eora.ru"
 
-import zmq.asyncio
+import zmq.asyncio  # type: ignore
+from typing import AsyncIterator
 
 from loguru import logger
-
-from shared_modules.data_objects import ResponseBatch
+from shared_modules.data_objects import ResponseBatch, ZMQConfig
 
 
 class BaseReceiver:
@@ -27,7 +27,7 @@ class BaseReceiver:
 
 
 class Receiver(BaseReceiver):
-    def __init__(self, open_address, sync_address, config):
+    def __init__(self, open_address: str, sync_address: str, config: ZMQConfig):
         self.zmq_context = zmq.asyncio.Context()
         self.zmq_socket = self.zmq_context.socket(zmq.PULL)
         self.zmq_socket.setsockopt(zmq.RCVHWM, config.zmq_rcvhwm)
@@ -35,7 +35,7 @@ class Receiver(BaseReceiver):
         self.zmq_socket.connect(open_address)
         self.sync(sync_address, config)
 
-    def sync(self, sync_address, config):
+    def sync(self, sync_address: str, config: ZMQConfig):
         self.zmq_context = zmq.asyncio.Context()
         r = self.zmq_context.socket(zmq.REQ)
         r.setsockopt(zmq.SNDTIMEO, config.zmq_sndtimeo)
@@ -45,7 +45,7 @@ class Receiver(BaseReceiver):
         r.recv()
         r.close()
 
-    async def receive(self) -> ResponseBatch:
+    async def receive(self) -> AsyncIterator[ResponseBatch]:
         while True:
             data = await self.zmq_socket.recv_pyobj()
             response_batch = data.get("batch_object")
@@ -54,7 +54,7 @@ class Receiver(BaseReceiver):
         if response_batch is None:
             logger.warning("Response batch object is None")
 
-        return response_batch
+        yield response_batch
 
     def close(self):
         self.zmq_socket.close()

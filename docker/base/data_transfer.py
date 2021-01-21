@@ -1,6 +1,7 @@
 import sys
-import zmq
+import zmq  # type: ignore
 import time
+from loguru import logger
 
 
 class Sender:
@@ -21,10 +22,10 @@ class Sender:
         s.setsockopt(zmq.SNDTIMEO, config.zmq_sndtimeo)
         s.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
         s.bind(sync_address)
-        sys.stdout.write("Waiting for receiver to connect...\n")
+        logger.info("Waiting for receiver to connect...\n")
         s.recv()
         time.sleep(1)
-        sys.stdout.write("Receiver connected\n")
+        logger.info("Receiver connected\n")
         sys.stdout.flush()
         s.send(b"GO")
         s.close()
@@ -54,10 +55,10 @@ class Receiver:
         s.setsockopt(zmq.SNDTIMEO, config.zmq_sndtimeo)
         s.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
         s.bind(sync_address)
-        sys.stdout.write("Waiting for sender to connect...\n")
+        logger.info("Waiting for sender to connect...\n")
         s.recv()
         time.sleep(1)
-        sys.stdout.write("Sender connected\n")
+        logger.info("Sender connected\n")
         sys.stdout.flush()
         s.send(b"GO")
         s.close()

@@ -1,9 +1,10 @@
 import importlib
 import sys
-import yaml
+import yaml  # type: ignore
+
+from loguru import logger
 
 import data_models as dm
-
 from data_transfer import Sender, Receiver
 
 
@@ -62,11 +63,9 @@ class Runner:
         # 1. Get sample from input queue
         # 2. Run model on sample
         # 3. Send result back
-        sys.stdout.write("START\n")
         response_batch = self._process_next_batch()
         data = {"batch_object": response_batch}
         self.sender.send(data)
-        sys.stdout.flush()
 
         self.receiver.close()
         self.sender.close()
@@ -88,31 +87,23 @@ class Runner:
         data = self.receiver.receive()
         minimal_batch = data.get("batch_object")
         if minimal_batch is None:
-            sys.stdout.write("Sample is None\n")
-
-        sys.stdout.write("Get minimal batch object\n")
+            logger.warning("Sample is None\n")
 
         for input_image in minimal_batch.inputs:
             sample = dict()
             sample["image"] = input_image
             samples.append(sample)
 
-        sys.stdout.write(str(samples))
-        sys.stdout.write("\n")
+            # samples is a list of dict of dicts having structure:
+            # - image: np.ndarray of shape (H, W, 3) and dtype=np.uint8,
+            # order of channels - RGB
+            # - sound: np.ndarray of shape (2,)(for stereo) or
+            # (1,)(for mono) and dtype=np.uint8
+            # - meta: serializable dict with keys required by model
 
-        # samples is a list of dict of dicts having structure:
-        # - image: np.ndarray of shape (H, W, 3) and dtype=np.uint8, order of channels - RGB
-        # - sound: np.ndarray of shape (2,)(for stereo) or (1,)(for mono) and dtype=np.uint8
-        # - meta: serializable dict with keys required by model
-
-        # List of dictionaries prediciton and image
-        results = self.predict_batch(samples, draw=True)
-        # self.__set_sound_for_results_if_needed(results, samples)
-
-        sys.stdout.write(str(results))
-        sys.stdout.write("\n")
-
-        sys.stdout.write("CONSTRUCT RESPONSE BATCH \n")
+            # List of dictionaries prediciton and image
+            results = self.predict_batch(samples, draw=True)
+            # self.__set_sound_for_results_if_needed(results, samples)
 
         response_batch = self.build_response_batch(minimal_batch, results)
 
@@ -132,10 +123,6 @@ class Runner:
         response_batch = dm.ResponseBatch.from_minimal_batch_object(
             batch=minimal_batch, outputs=outputs
         )
-        sys.stdout.write("RESPONSE BATCH: \n")
-        sys.stdout.write(str(response_batch))
-        sys.stdout.write("\n")
-        sys.stdout.flush()
         return response_batch
 
     @staticmethod

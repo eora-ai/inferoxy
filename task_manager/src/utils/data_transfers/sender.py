@@ -5,7 +5,7 @@ This module is responsible for sending data to model instance
 __author__ = "Andrey Chertkov"
 __name__ = "a.chertkov@eora.ru"
 
-import zmq.asyncio
+import zmq.asyncio  # type: ignore
 
 
 class BaseSender:

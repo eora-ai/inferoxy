@@ -42,6 +42,17 @@ class ModelObject:
         return hash((self.name, self.address))
 
 
+@dataclass
+class RequestInfo:
+    inputs: np.ndarray
+    parameters: dict
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.inputs == other.inputs and self.parameters == other.parameters
+
+
 @dataclass(eq=False)
 class RequestObject:
     """
@@ -62,9 +73,8 @@ class RequestObject:
     """
 
     uid: str
-    inputs: np.ndarray
     source_id: str
-    parameters: dict
+    request_info: RequestInfo
     model: ModelObject
 
     def __eq__(self, other):
@@ -73,7 +83,7 @@ class RequestObject:
         return (
             self.uid == other.uid
             and np.array_equal(self.inputs, other.inputs)
-            and self.parameters == other.parameters
+            and self.request_info == other.request_info
             and self.model == other.model
         )
 
@@ -144,8 +154,7 @@ class MinimalBatchObject:
     """
 
     uid: str
-    inputs: List[np.ndarray]
-    parameters: List[dict]
+    requests_info: List[RequestInfo]
     model: ModelObject
     status: Status = Status.CREATING
     source_id: Optional[str] = None
@@ -160,16 +169,15 @@ class MinimalBatchObject:
     @property
     def size(self) -> int:
         "Actual batch size"
-        return len(self.inputs)
+        return len(self.requests_info)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
         return (
             self.uid == other.uid
-            and map(np.array_equal, zip(self.inputs, other.inputs))
-            and self.parameters == other.parameters
             and self.model == other.model
+            and self.requests_info == other.requests_info
             and self.source_id == other.source_id
             and self.status == other.status
         )

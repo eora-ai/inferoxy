@@ -14,22 +14,18 @@ from src.debatcher import (
 
 
 stub_model = dm.ModelObject(
-    "stub",
-    "registry.visionhub.ru/models/stub:v3",
-    stateless=True,
-    batch_size=128
+    "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
+)
+request_info1 = dm.RequestInfo(
+    inputs=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
 )
 response_batch = dm.ResponseBatch(
     uid="test",
-    inputs=np.array([1, 2, 3, 4]),
-    parameters=[{"sest": "test"}],
     model=stub_model,
+    requests_info=[request_info1],
     status=dm.Status.CREATED,
-    outputs=[
-        np.array([1, 2, 3, 4]),
-        np.array([5, 6, 7, 8]),
-        np.array([9, 10])
-    ],
+    outputs=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8]), np.array([9, 10])],
     pictures=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8]), np.array([])],
 )
 
@@ -47,28 +43,22 @@ def test_debatch_many():
 
     assert result[1].uid == "test"
     assert result[1].source_id == "test"
-    assert np.array_equal(
-        result[1].output[0].get("output"),
-        np.array([5, 6, 7, 8])
-    )
+    assert np.array_equal(result[1].output[0].get("output"), np.array([5, 6, 7, 8]))
 
-    assert np.array_equal(
-        result[1].output[0].get("picture"),
-        np.array([5, 6, 7, 8])
-    )
+    assert np.array_equal(result[1].output[0].get("picture"), np.array([5, 6, 7, 8]))
 
     assert result[2].uid == "roobj-3"
-    assert np.array_equal(
-        result[2].output[0].get("output"),
-        np.array([9, 10])
-    )
+    assert np.array_equal(result[2].output[0].get("output"), np.array([9, 10]))
 
 
+request_info2 = dm.RequestInfo(
+    inputs=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
 response_batch_one = dm.ResponseBatch(
     uid="test",
-    inputs=np.array([1, 2, 3, 4]),
-    parameters=[{"sest": "test"}],
     model=stub_model,
+    requests_info=[request_info2],
     status=dm.Status.CREATED,
     outputs=[np.array([1, 2, 3, 4])],
     pictures=[np.array([1, 2, 3, 4])],
@@ -84,21 +74,18 @@ def test_debatch_one():
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 
-    assert np.array_equal(
-        result[0].output[0].get("output"),
-        np.array([1, 2, 3, 4])
-    )
-    assert np.array_equal(
-        result[0].output[0].get("picture"),
-        np.array([1, 2, 3, 4])
-    )
+    assert np.array_equal(result[0].output[0].get("output"), np.array([1, 2, 3, 4]))
+    assert np.array_equal(result[0].output[0].get("picture"), np.array([1, 2, 3, 4]))
 
 
+request_info3 = dm.RequestInfo(
+    inputs=[],
+    parameters={},
+)
 response_batch_empty = dm.ResponseBatch(
     uid="test",
-    inputs=[],
-    parameters=[],
     model=stub_model,
+    requests_info=[request_info3],
     status=dm.Status.CREATED,
     outputs=[],
     pictures=[],

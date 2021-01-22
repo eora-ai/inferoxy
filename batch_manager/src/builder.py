@@ -165,15 +165,13 @@ def build_batches(
                     and batch.source_id != request_object.source_id
                 ):
                     continue
-                batch.inputs.append(request_object.inputs)
-                batch.parameters.append(request_object.parameters)
+                batch.requests_info.append(request_object.request_info)
                 batch.request_objects.append(request_object)
                 break
         else:
             new_batch = dm.BatchObject(
                 uid=next(uid_generator),
-                inputs=[request_object.inputs],
-                parameters=[request_object.parameters],
+                requests_info=[request_object.request_info],
                 model=request_object.model,
                 request_objects=[request_object],
                 source_id=None

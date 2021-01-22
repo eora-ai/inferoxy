@@ -13,6 +13,7 @@ from shared_modules.data_objects import (
     RequestObject,
     MinimalBatchObject,
     BatchMapping,
+    RequestInfo,
 )
 
 
@@ -71,8 +72,7 @@ class BatchObject(MinimalBatchObject):
         """
         return MinimalBatchObject(
             uid=self.uid,
-            inputs=self.inputs,
-            parameters=self.parameters,
+            requests_info=self.requests_info,
             model=self.model,
             source_id=self.source_id,
             status=self.status,
@@ -83,6 +83,7 @@ class BatchObject(MinimalBatchObject):
         return (
             super().__eq__(other)
             and self.request_objects == other.request_objects
+            and self.requests_info == other.requests_info
             and self.source_id == other.source_id
         )
 

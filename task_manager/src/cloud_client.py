@@ -166,7 +166,7 @@ class DockerCloudClient(BaseCloudClient):
                 return model_instance
 
         except docker.errors.APIError:
-            raise exc.DockerAPIError()
+            raise exc.CloudAPIError()
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -199,6 +199,7 @@ class DockerCloudClient(BaseCloudClient):
                 detach=detach,
                 runtime="nvidia",
                 environment={"GPU_NUMBER": num_gpu},
+                # TODO: убрать после оборота в docker
                 ports={
                     "5556/tcp": 5556,
                     "5546/tcp": 5546,

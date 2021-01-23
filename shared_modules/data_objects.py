@@ -226,7 +226,7 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    outputs: List[Dict[str, np.ndarray]] = field(default_factory=lambda: [])
+    outputs: List[Dict[str, np.ndarray]] = field(default_factory=list)
 
     @classmethod
     def from_minimal_batch_object(
@@ -255,7 +255,7 @@ class ResponseBatch(MinimalBatchObject):
 @dataclass
 class ZMQConfig:
     """
-    Config of base object (ZMQ)
+    Config for ZMQ senders receivers
     """
 
     zmq_sndhwm: int

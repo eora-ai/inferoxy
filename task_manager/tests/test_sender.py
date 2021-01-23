@@ -63,8 +63,7 @@ if __name__ == "__main__":
     )
 
     sys.stdout.write("Send data\n")
-    data = {"batch_object": batch}
-    asyncio.run(sender.send(data))
+    asyncio.run(sender.send(batch))
     time.sleep(5)
     asyncio.run(get_response_batches(receiver))
 

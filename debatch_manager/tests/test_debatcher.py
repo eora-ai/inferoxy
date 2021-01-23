@@ -67,7 +67,6 @@ batch_mapping_one = dm.BatchMapping(
 
 def test_debatch_one():
     result = debatch(response_batch, batch_mapping)
-    print(result[0].output)
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 
@@ -94,7 +93,3 @@ batch_mapping_empty = dm.BatchMapping(
 def test_debatch_empty():
     result = debatch(response_batch_empty, batch_mapping_empty)
     len(result) == 0
-
-
-if __name__ == "__main__":
-    test_debatch_one()

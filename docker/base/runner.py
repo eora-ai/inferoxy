@@ -64,8 +64,7 @@ class Runner:
         # 2. Run model on sample
         # 3. Send result back
         response_batch = self._process_next_batch()
-        data = {"batch_object": response_batch}
-        self.sender.send(data)
+        self.sender.send(response_batch)
 
         self.receiver.close()
         self.sender.close()
@@ -84,8 +83,7 @@ class Runner:
         # - vid2img (batch_size = 0)
         samples = []
 
-        data = self.receiver.receive()
-        minimal_batch = data.get("batch_object")
+        minimal_batch = self.receiver.receive()
         if minimal_batch is None:
             logger.warning("Sample is None\n")
 

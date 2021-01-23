@@ -6,7 +6,8 @@
 #
 numpy==1.17.2
 Pillow==6.2.1
-pyzmq==18.1.0
+loguru==0.5.3
+pyzmq==19.1.0
 opencv-python==4.1.1.26
 dataclasses==0.6
 pyyaml==5.3.1

@@ -6,12 +6,8 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 import numpy as np  # type: ignore
-import sys
-
-sys.path.append("..")
 
 import src.data_models as dm
-
 from src.debatcher import (
     debatch,
 )

@@ -49,10 +49,13 @@ async def test_requested_one_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info = dm.RequestInfo(
+        inputs=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -74,10 +77,13 @@ async def test_requested_many_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info = dm.RequestInfo(
+        inputs=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -101,10 +107,13 @@ async def test_requested_stateful_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info = dm.RequestInfo(
+        inputs=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="1",

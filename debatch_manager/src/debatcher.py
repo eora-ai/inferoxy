@@ -30,20 +30,14 @@ def debatch(
     response_objects = []
     for i, request_object_uid in enumerate(request_object_uids):
 
-        # Merge outputs and pictures from response batch
-        output = batch.outputs[i]
-        picture = batch.pictures[i]
-        if picture is not None and picture.size != 0:
-            response_output = [{"output": output, "picture": picture}]
-        else:
-            response_output = [{"output": output}]
+        response_info = batch.responses_info[i]
 
         # Create response object
         new_response_object = dm.ResponseObject(
             uid=request_object_uid,
             model=batch.model,
             source_id=batch_mapping.source_ids[i],
-            output=response_output,
+            response_info=response_info,
         )
         response_objects.append(new_response_object)
 

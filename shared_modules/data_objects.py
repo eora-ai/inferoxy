@@ -53,6 +53,19 @@ class RequestInfo:
         return self.inputs == other.inputs and self.parameters == other.parameters
 
 
+@dataclass
+class ResponseInfo:
+    output: np.ndarray
+    picture: Optional[np.ndarray]
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return np.array_equal(self.output, other.output) and np.array_equal(
+            self.picture, other.picture
+        )
+
+
 @dataclass(eq=False)
 class RequestObject:
     """
@@ -107,7 +120,7 @@ class ResponseObject:
 
     uid: str
     model: ModelObject
-    output: List[Dict[str, np.ndarray]]
+    response_info: ResponseInfo
     source_id: str
 
     def __eq__(self, other):
@@ -116,7 +129,7 @@ class ResponseObject:
         return (
             self.uid == other.uid
             and self.model == other.model
-            and np.array_equal(self.outputs, other.outputs)
+            and self.response_info == other.response_info
         )
 
 
@@ -237,16 +250,13 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    # TODO: merge outputs and pictures????
-    outputs: List[np.ndarray] = field(default_factory=list)
-    pictures: List[Optional[np.ndarray]] = field(default_factory=list)
+    responses_info: List[ResponseInfo] = field(default_factory=list)
 
     @classmethod
     def from_request_batch_object(
         cls,
         batch: MinimalBatchObject,
-        outputs: List[Dict[str, np.ndarray]],
-        # TODO: Add parameters
+        responses_info: List[ResponseInfo],
         source_id: str,
         done_at: datetime,
     ):
@@ -264,8 +274,7 @@ class ResponseBatch(MinimalBatchObject):
             done_at=done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
-            # pictures=pictures,
-            outputs=outputs,
+            responses_info=responses_info,
         )
 
     def __hash__(self):

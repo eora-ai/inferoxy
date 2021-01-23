@@ -13,6 +13,7 @@ from shared_modules.data_objects import (
     ResponseObject,
     ResponseBatch,
     RequestInfo,
+    ResponseInfo,
 )
 
 

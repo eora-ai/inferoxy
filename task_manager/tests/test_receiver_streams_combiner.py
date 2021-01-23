@@ -48,10 +48,13 @@ async def test_one_element_in_output_queue():
     Receiver combiner accept one response batch and put it into output batch queue
     """
 
+    request_info = dm.RequestInfo(
+        inputs=np.array(range(10)),
+        parameters={},
+    )
     batch_dict = dict(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.IN_QUEUE,
     )
@@ -85,10 +88,13 @@ async def test_multiple_element_in_output_queue():
     Receiver combiner accept one response batch and put it into output batch queue
     """
 
+    request_info = dm.RequestInfo(
+        inputs=np.array(range(10)),
+        parameters={},
+    )
     batch_dict = dict(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.IN_QUEUE,
     )

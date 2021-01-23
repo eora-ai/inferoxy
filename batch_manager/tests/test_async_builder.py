@@ -35,11 +35,14 @@ async def test_by_time_interrupt():
     """
 
     async def async_request_generator() -> AsyncIterable[dm.RequestObject]:
+        request_info = dm.RequestInfo(
+            inputs=np.array(range(10)),
+            parameters={},
+        )
         yield dm.RequestObject(
             uid=next(uuid4_string_generator()),
-            inputs=np.array(range(10)),
+            request_info=request_info,
             source_id="internal_sportrecs_1",
-            parameters={},
             model=stateless_model,
         )
 
@@ -58,25 +61,34 @@ async def test_by_full_interrupt():
 
     async def async_request_generator() -> AsyncIterable[dm.RequestObject]:
         await asyncio.sleep(0.1)
-        yield dm.RequestObject(
-            uid=next(uuid4_string_generator()),
+        request_info1 = dm.RequestInfo(
             inputs=np.array(range(10)),
-            source_id="internal_sportrecs_1",
             parameters={},
-            model=stateless_model,
         )
         yield dm.RequestObject(
             uid=next(uuid4_string_generator()),
-            inputs=np.array(range(10)),
+            request_info=request_info1,
             source_id="internal_sportrecs_1",
-            parameters={},
             model=stateless_model,
+        )
+        request_info2 = dm.RequestInfo(
+            inputs=np.array(range(10)),
+            parameters={},
         )
         yield dm.RequestObject(
             uid=next(uuid4_string_generator()),
-            inputs=np.array(range(10)),
+            request_info=request_info2,
             source_id="internal_sportrecs_1",
+            model=stateless_model,
+        )
+        request_info3 = dm.RequestInfo(
+            inputs=np.array(range(10)),
             parameters={},
+        )
+        yield dm.RequestObject(
+            uid=next(uuid4_string_generator()),
+            request_info=request_info3,
+            source_id="internal_sportrecs_1",
             model=stateless_model,
         )
 

@@ -44,8 +44,8 @@ class ModelObject:
 
 @dataclass
 class RequestInfo:
-    inputs: np.ndarray = field(default_factory=list)
-    parameters: dict = {}
+    inputs: np.ndarray
+    parameters: dict
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

@@ -44,8 +44,8 @@ class ModelObject:
 
 @dataclass
 class RequestInfo:
-    inputs: np.ndarray
-    parameters: dict
+    inputs: np.ndarray = field(default_factory=list)
+    parameters: dict = {}
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -257,21 +257,18 @@ class ResponseBatch(MinimalBatchObject):
         cls,
         batch: MinimalBatchObject,
         responses_info: List[ResponseInfo],
-        source_id: str,
-        done_at: datetime,
     ):
         """
         Make Response Batch object from RequestBactch
         """
         return cls(
             uid=batch.uid,
-            inputs=batch.inputs,
-            parameters=batch.parameters,
+            requests_info=batch.requests_info,
             model=batch.model,
             status=batch.status,
             created_at=batch.created_at,
             started_at=batch.started_at,
-            done_at=done_at,
+            done_at=batch.done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
             responses_info=responses_info,

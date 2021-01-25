@@ -47,5 +47,5 @@ class DockerAPIError(CloudClientErrors):
 
 class CloudAPIError(CloudClientErrors):
     def __init__(self, message="Cloud client API error"):
-        super(DockerAPIError, self).__init__(message)
+        super(CloudAPIError, self).__init__(message)
         logger.error(message)

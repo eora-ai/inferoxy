@@ -9,7 +9,7 @@ import asyncio
 
 import src.data_models as dm
 
-from typing import AsyncIterator, Union, Dict, Optional, Coroutine
+from typing import AsyncIterator, Union, Dict, Optional
 
 from aiostream.stream import merge  # type: ignore
 

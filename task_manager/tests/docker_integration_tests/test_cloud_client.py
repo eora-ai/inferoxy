@@ -67,7 +67,7 @@ def test_image_doesnt_exist():
         config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
-    with pytest.raises(ex.DockerAPIError):
+    with pytest.raises(ex.CloudAPIError):
         docker_client.start_instance(model_object_fail)
 
 
@@ -185,13 +185,14 @@ def test_cannot_run_gpu():
 
     docker_client = DockerCloudClient(config)
 
-    docker_client.start_instance(model_object_gpu)
-
+    model_instance = docker_client.start_instance(model_object_gpu)
     test = ""
     if not docker_client.can_create_instance(model_object_gpu):
         test = "CANNOT"
 
     assert test == "CANNOT"
+    c = docker_client.client.containers.get(model_instance.container_name)
+    c.remove(force=True)
 
 
 def test_failed_stop():
@@ -205,7 +206,3 @@ def test_failed_stop():
     docker_client = DockerCloudClient(config)
     with pytest.raises(ex.ContainerNotFound):
         docker_client.stop_instance(model_instance_fail)
-
-
-if __name__ == "__main__":
-    test_run_on_gpu()

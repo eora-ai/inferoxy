@@ -187,12 +187,36 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError:
             raise exc.DockerAPIError()
 
+    def read_ports(self):
+        cur_path = pathlib.Path(__file__)
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
+
+        return {
+            "s_open_port": s_open_port,
+            "s_sync_port": s_sync_port,
+            "r_open_port": r_open_port,
+            "r_sync_port": r_sync_port,
+        }
+
     def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """
         Create and run docker container
         """
 
         # Run on GPU
+        ports = self.read_ports()
+        s_open_port = ports.get("s_open_port")
+        s_sync_port = ports.get("s_sync_port")
+        r_open_port = ports.get("r_open_port")
+        r_sync_port = ports.get("r_sync_port")
+
         if on_gpu:
             return self.client.containers.run(
                 image=image,
@@ -201,10 +225,10 @@ class DockerCloudClient(BaseCloudClient):
                 environment={"GPU_NUMBER": num_gpu},
                 # TODO: убрать после оборота в docker
                 ports={
-                    "5556/tcp": 5556,
-                    "5546/tcp": 5546,
-                    "5555/tcp": 5555,
-                    "5545/tcp": 5545,
+                    "5556/tcp": s_open_port,
+                    "5546/tcp": s_sync_port,
+                    "5555/tcp": r_open_port,
+                    "5545/tcp": r_sync_port,
                 },
             )
 
@@ -213,10 +237,10 @@ class DockerCloudClient(BaseCloudClient):
             image=image,
             detach=detach,
             ports={
-                "5556/tcp": 5556,
-                "5546/tcp": 5546,
-                "5555/tcp": 5555,
-                "5545/tcp": 5545,
+                "5556/tcp": s_open_port,
+                "5546/tcp": s_sync_port,
+                "5555/tcp": r_open_port,
+                "5545/tcp": r_sync_port,
             },
         )
 
@@ -232,12 +256,17 @@ class DockerCloudClient(BaseCloudClient):
             config_dict = yaml.full_load(config_file)
             config = dm.ZMQConfig(**config_dict)
 
-        # Build addresses
-        sender_open_address = f"tcp://{container_name}:5556"
-        sender_sync_address = f"tcp://{container_name}:5546"
+        ports = self.read_ports()
+        s_open_port = ports.get("s_open_port")
+        s_sync_port = ports.get("s_sync_port")
+        r_open_port = ports.get("r_open_port")
+        r_sync_port = ports.get("r_sync_port")
 
-        receiver_open_address = f"tcp://{container_name}:5555"
-        receiver_sync_address = f"tcp://{container_name}:5545"
+        sender_open_address = f"tcp://{container_name}:{s_open_port}"
+        sender_sync_address = f"tcp://{container_name}:{s_sync_port}"
+
+        receiver_open_address = f"tcp://{container_name}:{r_open_port}"
+        receiver_sync_address = f"tcp://{container_name}:{r_sync_port}"
 
         # Create sender and receiver
         sender = Sender(

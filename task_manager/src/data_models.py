@@ -18,6 +18,7 @@ from shared_modules.data_objects import (
     Status,
     ResponseBatch,
     ZMQConfig,
+    PortConfig,
 )
 
 

@@ -187,35 +187,21 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError:
             raise exc.DockerAPIError()
 
-    def read_ports(self):
+    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
+        """
+        Create and run docker container
+        """
         cur_path = pathlib.Path(__file__)
         config_port_path = cur_path.parent.parent / "ports-config.yaml"
         with open(config_port_path) as config_file:
             config_dict = yaml.full_load(config_file)
             config_port = dm.PortConfig(**config_dict)
+
+        # Run on GPU
         s_open_port = config_port.sender_open_addr_port
         s_sync_port = config_port.sender_sync_addr_port
         r_open_port = config_port.receiver_open_addr_port
         r_sync_port = config_port.receiver_sync_addr_port
-
-        return {
-            "s_open_port": s_open_port,
-            "s_sync_port": s_sync_port,
-            "r_open_port": r_open_port,
-            "r_sync_port": r_sync_port,
-        }
-
-    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
-        """
-        Create and run docker container
-        """
-
-        # Run on GPU
-        ports = self.read_ports()
-        s_open_port = ports.get("s_open_port")
-        s_sync_port = ports.get("s_sync_port")
-        r_open_port = ports.get("r_open_port")
-        r_sync_port = ports.get("r_sync_port")
 
         if on_gpu:
             return self.client.containers.run(
@@ -256,11 +242,15 @@ class DockerCloudClient(BaseCloudClient):
             config_dict = yaml.full_load(config_file)
             config = dm.ZMQConfig(**config_dict)
 
-        ports = self.read_ports()
-        s_open_port = ports.get("s_open_port")
-        s_sync_port = ports.get("s_sync_port")
-        r_open_port = ports.get("r_open_port")
-        r_sync_port = ports.get("r_sync_port")
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
+
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
 
         sender_open_address = f"tcp://{container_name}:{s_open_port}"
         sender_sync_address = f"tcp://{container_name}:{s_sync_port}"

@@ -262,3 +262,15 @@ class ZMQConfig:
     zmq_rcvhwm: int
     zmq_sndtimeo: int
     zmq_rcvtimeo: int
+
+
+@dataclass
+class PortConfig:
+    """
+    Config for sender/receiver ports
+    """
+
+    sender_open_addr_port: int
+    sender_sync_addr_port: int
+    receiver_open_addr_port: int
+    receiver_sync_addr_port: int

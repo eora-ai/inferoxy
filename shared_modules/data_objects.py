@@ -229,18 +229,13 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    # TODO: merge outputs and pictures????
-    outputs: List[np.ndarray] = field(default_factory=list)
-    pictures: List[Optional[np.ndarray]] = field(default_factory=list)
+    outputs: List[Dict[str, np.ndarray]] = field(default_factory=list)
 
     @classmethod
-    def from_request_batch_object(
+    def from_minimal_batch_object(
         cls,
         batch: MinimalBatchObject,
         outputs: List[Dict[str, np.ndarray]],
-        # TODO: Add parameters
-        source_id: str,
-        done_at: datetime,
     ):
         """
         Make Response Batch object from RequestBactch
@@ -253,12 +248,35 @@ class ResponseBatch(MinimalBatchObject):
             status=batch.status,
             created_at=batch.created_at,
             started_at=batch.started_at,
-            done_at=done_at,
+            done_at=batch.done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
-            # pictures=pictures,
             outputs=outputs,
         )
 
     def __hash__(self):
         return hash(self.uid)
+
+
+@dataclass
+class ZMQConfig:
+    """
+    Config for ZMQ senders receivers
+    """
+
+    zmq_sndhwm: int
+    zmq_rcvhwm: int
+    zmq_sndtimeo: int
+    zmq_rcvtimeo: int
+
+
+@dataclass
+class PortConfig:
+    """
+    Config for sender/receiver ports
+    """
+
+    sender_open_addr_port: int
+    sender_sync_addr_port: int
+    receiver_open_addr_port: int
+    receiver_sync_addr_port: int

@@ -1,0 +1,4 @@
+sender_open_addr_port: 5556
+sender_sync_addr_port: 5555
+receiver_open_addr_port: 5546
+receiver_sync_addr_port: 5545

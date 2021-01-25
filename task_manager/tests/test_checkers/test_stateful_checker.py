@@ -14,7 +14,8 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.load_analyzers.checkers import StatefulChecker
 from src.load_analyzers.triggers import IncreaseTrigger, DecreaseTrigger
-from src.utils.data_transfers import Sender, Receiver
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 
 pytestmark = pytest.mark.asyncio
 
@@ -148,8 +149,8 @@ async def test_decrease_stateful_instance():
     model_instance1 = dm.ModelInstance(
         stub_stateful,
         "1",
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=True,
         running=True,
         container_name="test",
@@ -157,8 +158,8 @@ async def test_decrease_stateful_instance():
     model_instance2 = dm.ModelInstance(
         stub_stateful,
         None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",

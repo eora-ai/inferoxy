@@ -7,16 +7,16 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import List, Set
 import random
-
 import docker  # type: ignore
+import yaml
+import pathlib
 
 from loguru import logger
 
-from src.utils.data_transfers import Receiver, Sender
-import src.exceptions as exc
 import src.data_models as dm
-
+import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
+from src.utils.data_transfers import Receiver, Sender
 
 
 class DockerCloudClient(BaseCloudClient):
@@ -49,8 +49,6 @@ class DockerCloudClient(BaseCloudClient):
 
         model_instances = []
         for container in containers:
-            # TODO: заглушка Recevier and Sender
-            # TODO: how to show model instance running on gpu
             if model.run_on_gpu:
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
@@ -116,7 +114,7 @@ class DockerCloudClient(BaseCloudClient):
                 return model_instance
 
         except docker.errors.APIError:
-            raise exc.ImageNotFound()
+            raise exc.CloudAPIError()
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -141,27 +139,90 @@ class DockerCloudClient(BaseCloudClient):
         """
         Create and run docker container
         """
+        cur_path = pathlib.Path(__file__)
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
 
         # Run on GPU
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
+
         if on_gpu:
             return self.client.containers.run(
                 image=image,
                 detach=detach,
                 runtime="nvidia",
                 environment={"GPU_NUMBER": num_gpu},
+                # TODO: убрать после оборота в docker
+                ports={
+                    "5556/tcp": s_open_port,
+                    "5546/tcp": s_sync_port,
+                    "5555/tcp": r_open_port,
+                    "5545/tcp": r_sync_port,
+                },
             )
 
         # Run on CPU
-        return self.client.containers.run(image=image, detach=detach)
+        return self.client.containers.run(
+            image=image,
+            detach=detach,
+            ports={
+                "5556/tcp": s_open_port,
+                "5546/tcp": s_sync_port,
+                "5555/tcp": r_open_port,
+                "5545/tcp": r_sync_port,
+            },
+        )
 
     def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
         """
         Build and return model instance object
         """
+
+        cur_path = pathlib.Path(__file__)
+        config_path = cur_path.parent / "utils/data_transfers/zmq-config.yaml"
+
+        with open(config_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config = dm.ZMQConfig(**config_dict)
+
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
+
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
+
+        sender_open_address = f"tcp://{container_name}:{s_open_port}"
+        sender_sync_address = f"tcp://{container_name}:{s_sync_port}"
+
+        receiver_open_address = f"tcp://{container_name}:{r_open_port}"
+        receiver_sync_address = f"tcp://{container_name}:{r_sync_port}"
+
+        # Create sender and receiver
+        sender = Sender(
+            open_address=sender_open_address,
+            sync_address=sender_sync_address,
+            config=config,
+        )
+
+        receiver = Receiver(
+            open_address=receiver_open_address,
+            sync_address=receiver_sync_address,
+            config=config,
+        )
+
         return dm.ModelInstance(
             model=model,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=sender,
+            receiver=receiver,
             lock=lock,
             source_id=None,
             container_name=container_name,

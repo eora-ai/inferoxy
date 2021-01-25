@@ -8,16 +8,17 @@ __email__ = "a.chertkov@eora.ru"
 from dataclasses import dataclass
 from typing import List, Optional
 
-import numpy as np  # type: ignore
 
-from src.utils.data_transfers.sender import Sender
-from src.utils.data_transfers.receiver import Receiver
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 
 from shared_modules.data_objects import (
     ModelObject,
     MinimalBatchObject,
     Status,
     ResponseBatch,
+    ZMQConfig,
+    PortConfig,
 )
 
 
@@ -92,8 +93,8 @@ class ModelInstance:
 
     model: ModelObject
     source_id: Optional[str]
-    sender: Sender
-    receiver: Receiver
+    sender: BaseSender
+    receiver: BaseReceiver
     lock: bool
     host: str
     running: bool

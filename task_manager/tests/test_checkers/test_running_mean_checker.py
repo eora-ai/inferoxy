@@ -11,7 +11,8 @@ import numpy as np  # type: ignore
 import src.data_models as dm
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
-from src.utils.data_transfers import Sender, Receiver
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.load_analyzers.checkers import RunningMeanStatelessChecker
 from src.load_analyzers.triggers import IncreaseTrigger, DecreaseTrigger
@@ -75,8 +76,8 @@ async def test_low_load():
         dm.ModelInstance(
             model=stub_model,
             source_id=None,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=BaseSender(),
+            receiver=BaseReceiver(),
             lock=False,
             running=True,
             container_name="test",
@@ -87,8 +88,8 @@ async def test_low_load():
         dm.ModelInstance(
             model=stub_model,
             source_id=None,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=BaseSender(),
+            receiver=BaseReceiver(),
             lock=False,
             running=True,
             container_name="test",
@@ -158,8 +159,8 @@ async def test_high_load():
         dm.ModelInstance(
             model=stub_model,
             source_id=None,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=BaseSender(),
+            receiver=BaseReceiver(),
             lock=False,
             running=True,
             container_name="test",
@@ -170,8 +171,8 @@ async def test_high_load():
         dm.ModelInstance(
             model=stub_model,
             source_id=None,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=BaseSender(),
+            receiver=BaseReceiver(),
             lock=False,
             running=True,
             container_name="test",

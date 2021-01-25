@@ -31,9 +31,10 @@ class ReceiverStreamsCombiner:
 
     def __init__(self, output_batch_queue: OutputBatchQueue):
         self.output_batch_queue = output_batch_queue
-        self.sources: Dict[Optional[Receiver], AsyncIterator[Union[str, dict]]] = {
-            None: self.check_source_interaptor()
-        }
+        self.sources: Dict[
+            Optional[Receiver],
+            Union[AsyncIterator[dm.ResponseBatch], AsyncIterator[str]],
+        ] = {None: self.check_source_interaptor()}
         self.combined_streams = merge(*self.sources.values())
         self.running = True
         self.sourcers_updated = False

@@ -95,7 +95,7 @@ class ModelInstance:
     sender: Sender
     receiver: Receiver
     lock: bool
-    container_name: str
+    host: str
     running: bool
     num_gpu: Optional[int] = None
 

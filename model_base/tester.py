@@ -6,9 +6,9 @@ import pickle
 import sys
 import traceback
 
-import cv2
-import numpy as np
-from PIL import Image
+import cv2  # type: ignore
+import numpy as np  # type: ignore
+from PIL import Image  # type: ignore
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,12 +95,13 @@ class VideoReader(SamplesReader):
         self.item = 0
 
     def get_init_params(self):
-        height, width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),\
-                        int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height, width = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(
+            self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        )
         fps = int(self.cap.get(cv2.CAP_PROP_FPS))
         length = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        init_params = {'height': height, 'width': width, 'fps': fps, 'length': length}
+        init_params = {"height": height, "width": width, "fps": fps, "length": length}
 
         return init_params
 

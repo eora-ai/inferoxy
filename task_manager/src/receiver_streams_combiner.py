@@ -14,7 +14,7 @@ from typing import AsyncIterator, Union, Dict, Optional
 from aiostream.stream import merge  # type: ignore
 
 from src.batch_queue import OutputBatchQueue
-from src.utils.data_transfers.receiver import Receiver
+from src.utils.data_transfers.receiver import BaseReceiver
 
 
 class ReceiverStreamsCombiner:
@@ -32,14 +32,14 @@ class ReceiverStreamsCombiner:
     def __init__(self, output_batch_queue: OutputBatchQueue):
         self.output_batch_queue = output_batch_queue
         self.sources: Dict[
-            Optional[Receiver],
+            Optional[BaseReceiver],
             Union[AsyncIterator[dm.ResponseBatch], AsyncIterator[str]],
         ] = {None: self.check_source_interaptor()}
         self.combined_streams = merge(*self.sources.values())
         self.running = True
         self.sourcers_updated = False
 
-    def add_listener(self, receiver: Receiver) -> None:
+    def add_listener(self, receiver: BaseReceiver) -> None:
         """
         Add receiver listener to sourcers
         """
@@ -47,7 +47,7 @@ class ReceiverStreamsCombiner:
         self.combined_streams = merge(*self.sources.values())
         self.sourcers_updated = True
 
-    def remove_listener(self, receiver: Receiver):
+    def remove_listener(self, receiver: BaseReceiver):
         """
         Remove receiver listener from combining sourcers
         """

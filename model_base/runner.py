@@ -4,8 +4,8 @@ import yaml  # type: ignore
 
 from loguru import logger
 
-import data_models as dm
-from data_transfer import Sender, Receiver
+import data_models as dm  # type: ignore
+from data_transfer import Sender, Receiver  # type: ignore
 
 
 class Runner:

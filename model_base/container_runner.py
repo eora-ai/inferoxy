@@ -3,8 +3,8 @@ import sys
 
 from pathlib import Path
 
-from runner import Runner
-from tester import Tester
+from runner import Runner  # type: ignore
+from tester import Tester  # type: ignore
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(

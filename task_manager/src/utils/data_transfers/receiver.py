@@ -48,12 +48,11 @@ class Receiver(BaseReceiver):
     async def receive(self) -> AsyncIterator[ResponseBatch]:
         while True:
             response_batch = await self.zmq_socket.recv_pyobj()
-            break
 
-        if response_batch is None:
-            logger.warning("Response batch object is None")
+            if response_batch is None:
+                logger.warning("Response batch object is None")
 
-        yield response_batch
+            yield response_batch
 
     def close(self):
         self.zmq_socket.close()

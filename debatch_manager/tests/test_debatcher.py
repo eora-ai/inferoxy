@@ -27,10 +27,12 @@ request_info2 = dm.RequestInfo(
 response_info1 = dm.ResponseInfo(
     output=np.array([1, 2, 3, 4]),
     picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
 )
 response_info2 = dm.ResponseInfo(
     output=np.array([1, 2, 3, 4]),
     picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
 )
 response_batch = dm.ResponseBatch(
     uid="test",
@@ -67,6 +69,7 @@ request_info3 = dm.RequestInfo(
 response_info3 = dm.ResponseInfo(
     output=np.array([1, 2, 3, 4]),
     picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
 )
 response_batch_one = dm.ResponseBatch(
     uid="test",
@@ -96,6 +99,7 @@ request_info4 = dm.RequestInfo(
 response_info4 = dm.ResponseInfo(
     output=[],
     picture=[],
+    parameters={},
 )
 response_batch_empty = dm.ResponseBatch(
     uid="test",

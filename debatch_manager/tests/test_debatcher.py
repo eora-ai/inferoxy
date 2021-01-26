@@ -6,8 +6,8 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 import numpy as np  # type: ignore
-import src.data_models as dm
 
+import src.data_models as dm
 from src.debatcher import (
     debatch,
 )
@@ -49,6 +49,7 @@ batch_mapping = dm.BatchMapping(
 
 def test_debatch_many():
     result = debatch(response_batch, batch_mapping)
+
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 

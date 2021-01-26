@@ -7,16 +7,16 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import List, Set
 import random
-
 import docker  # type: ignore
+import yaml
+import pathlib
 
 from loguru import logger
 
-from src.utils.data_transfers import Receiver, Sender
-import src.exceptions as exc
 import src.data_models as dm
-
+import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
+from src.utils.data_transfers import Receiver, Sender
 
 
 class DockerCloudClient(BaseCloudClient):
@@ -49,8 +49,6 @@ class DockerCloudClient(BaseCloudClient):
 
         model_instances = []
         for container in containers:
-            # TODO: заглушка Recevier and Sender
-            # TODO: how to show model instance running on gpu
             if model.run_on_gpu:
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
@@ -69,7 +67,12 @@ class DockerCloudClient(BaseCloudClient):
             return False
         return True
 
-    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+    def start_instance(
+        self,
+        model: dm.ModelObject,
+        config_port: dm.PortConfig,
+        zmq_config: dm.ZMQConfig,
+    ) -> dm.ModelInstance:
         """
         Start instance base on model image
 
@@ -91,6 +94,7 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info("Run container on GPU")
                 container = self.run_container(
                     image=model.address,
+                    config_port=config_port,
                     on_gpu=True,
                     num_gpu=num_gpu,
                 )
@@ -100,23 +104,27 @@ class DockerCloudClient(BaseCloudClient):
                     model=model,
                     container_name=container.name,
                     num_gpu=num_gpu,
+                    config_port=config_port,
+                    zmq_config=zmq_config,
                 )
                 return model_instance
 
             else:
                 # Run container on CPU
                 logger.info("Run container on CPU")
-                container = self.run_container(model.address)
+                container = self.run_container(model.address, config_port)
 
                 # Construct model instanse
                 model_instance = self.build_model_instance(
                     model=model,
                     container_name=container.name,
+                    config_port=config_port,
+                    zmq_config=zmq_config,
                 )
                 return model_instance
 
         except docker.errors.APIError:
-            raise exc.ImageNotFound()
+            raise exc.CloudAPIError()
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -137,33 +145,86 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError:
             raise exc.DockerAPIError()
 
-    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
+    def run_container(
+        self, image, config_port, num_gpu=None, detach=True, on_gpu=False
+    ):
         """
         Create and run docker container
         """
-
         # Run on GPU
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
+
         if on_gpu:
             return self.client.containers.run(
                 image=image,
                 detach=detach,
                 runtime="nvidia",
                 environment={"GPU_NUMBER": num_gpu},
+                # TODO: убрать после оборота в docker
+                ports={
+                    "5556/tcp": s_open_port,
+                    "5546/tcp": s_sync_port,
+                    "5555/tcp": r_open_port,
+                    "5545/tcp": r_sync_port,
+                },
             )
 
         # Run on CPU
-        return self.client.containers.run(image=image, detach=detach)
+        return self.client.containers.run(
+            image=image,
+            detach=detach,
+            ports={
+                "5556/tcp": s_open_port,
+                "5546/tcp": s_sync_port,
+                "5555/tcp": r_open_port,
+                "5545/tcp": r_sync_port,
+            },
+        )
 
-    def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
+    def build_model_instance(
+        self, model, container_name, config_port, zmq_config, lock=False, num_gpu=None
+    ):
         """
         Build and return model instance object
         """
+
+        s_open_port = config_port.sender_open_addr_port
+        s_sync_port = config_port.sender_sync_addr_port
+        r_open_port = config_port.receiver_open_addr_port
+        r_sync_port = config_port.receiver_sync_addr_port
+
+        sender_open_address = f"tcp://{container_name}:{s_open_port}"
+        sender_sync_address = f"tcp://{container_name}:{s_sync_port}"
+
+        receiver_open_address = f"tcp://{container_name}:{r_open_port}"
+        receiver_sync_address = f"tcp://{container_name}:{r_sync_port}"
+
+        # Create sender and receiver
+        sender = Sender(
+            open_address=sender_open_address,
+            sync_address=sender_sync_address,
+            config=zmq_config,
+        )
+
+        receiver = Receiver(
+            open_address=receiver_open_address,
+            sync_address=receiver_sync_address,
+            config=zmq_config,
+        )
+
         return dm.ModelInstance(
             model=model,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=sender,
+            receiver=receiver,
             lock=lock,
             source_id=None,
             container_name=container_name,
             num_gpu=num_gpu,
         )
+
+    def get_maximum_running_instances(self):
+        magic_number = 20
+        return magic_number + len(self.gpu_all)

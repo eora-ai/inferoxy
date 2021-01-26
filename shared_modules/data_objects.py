@@ -56,6 +56,7 @@ class RequestInfo:
 @dataclass
 class ResponseInfo:
     output: np.ndarray
+    parameters: dict
     picture: Optional[np.ndarray]
 
     def __eq__(self, other):
@@ -253,7 +254,7 @@ class ResponseBatch(MinimalBatchObject):
     responses_info: List[ResponseInfo] = field(default_factory=list)
 
     @classmethod
-    def from_request_batch_object(
+    def from_minimal_batch_object(
         cls,
         batch: MinimalBatchObject,
         responses_info: List[ResponseInfo],
@@ -276,3 +277,27 @@ class ResponseBatch(MinimalBatchObject):
 
     def __hash__(self):
         return hash(self.uid)
+
+
+@dataclass
+class ZMQConfig:
+    """
+    Config for ZMQ senders receivers
+    """
+
+    zmq_sndhwm: int
+    zmq_rcvhwm: int
+    zmq_sndtimeo: int
+    zmq_rcvtimeo: int
+
+
+@dataclass
+class PortConfig:
+    """
+    Config for sender/receiver ports
+    """
+
+    sender_open_addr_port: int
+    sender_sync_addr_port: int
+    receiver_open_addr_port: int
+    receiver_sync_addr_port: int

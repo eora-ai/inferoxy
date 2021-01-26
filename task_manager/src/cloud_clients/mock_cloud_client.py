@@ -8,7 +8,8 @@ __email__ = "a.chertkov@eora.ru"
 from typing import List
 
 import src.data_models as dm
-from src.utils.data_transfers import Receiver, Sender
+from src.utils.data_transfers.receiver import BaseReceiver
+from src.utils.data_transfers.sender import BaseSender
 from src.cloud_clients import BaseCloudClient
 
 
@@ -30,8 +31,8 @@ class MockCloudClient(BaseCloudClient):
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         return dm.ModelInstance(
             model=model,
-            sender=Sender(),
-            receiver=Receiver(),
+            sender=BaseSender(),
+            receiver=BaseReceiver(),
             source_id=None,
             lock=False,
             running=True,

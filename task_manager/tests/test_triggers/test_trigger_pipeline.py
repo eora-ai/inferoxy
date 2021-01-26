@@ -14,7 +14,8 @@ from src.load_analyzers.triggers import (
     DecreaseTrigger,
     IncreaseTrigger,
 )
-from src.utils.data_transfers import Sender, Receiver
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.batch_queue import OutputBatchQueue
@@ -56,8 +57,8 @@ def test_decrease_stateful_in_pipeline():
     model_instance1 = dm.ModelInstance(
         model=stub_stateful,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -65,8 +66,8 @@ def test_decrease_stateful_in_pipeline():
     model_instance2 = dm.ModelInstance(
         model=stub_stateful,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -101,8 +102,8 @@ def test_decrease_stateless_in_pipeline():
     model_instance1 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -110,8 +111,8 @@ def test_decrease_stateless_in_pipeline():
     model_instance2 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -146,8 +147,8 @@ def test_not_enough_resources_decrease_in_pipeline():
     model_instance1 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -155,8 +156,8 @@ def test_not_enough_resources_decrease_in_pipeline():
     model_instance2 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -191,8 +192,8 @@ def test_percent_rule():
     model_instance1 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",
@@ -200,8 +201,8 @@ def test_percent_rule():
     model_instance2 = dm.ModelInstance(
         model=stub_model,
         source_id=None,
-        sender=Sender(),
-        receiver=Receiver(),
+        sender=BaseSender(),
+        receiver=BaseReceiver(),
         lock=False,
         running=True,
         container_name="test",

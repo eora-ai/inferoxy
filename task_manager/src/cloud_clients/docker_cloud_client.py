@@ -67,12 +67,7 @@ class DockerCloudClient(BaseCloudClient):
             return False
         return True
 
-    def start_instance(
-        self,
-        model: dm.ModelObject,
-        config_port: dm.PortConfig,
-        zmq_config: dm.ZMQConfig,
-    ) -> dm.ModelInstance:
+    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
         Start instance base on model image
 
@@ -94,7 +89,6 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info("Run container on GPU")
                 container = self.run_container(
                     image=model.address,
-                    config_port=config_port,
                     on_gpu=True,
                     num_gpu=num_gpu,
                 )
@@ -104,22 +98,18 @@ class DockerCloudClient(BaseCloudClient):
                     model=model,
                     container_name=container.name,
                     num_gpu=num_gpu,
-                    config_port=config_port,
-                    zmq_config=zmq_config,
                 )
                 return model_instance
 
             else:
                 # Run container on CPU
                 logger.info("Run container on CPU")
-                container = self.run_container(model.address, config_port)
+                container = self.run_container(model.address)
 
                 # Construct model instanse
                 model_instance = self.build_model_instance(
                     model=model,
                     container_name=container.name,
-                    config_port=config_port,
-                    zmq_config=zmq_config,
                 )
                 return model_instance
 
@@ -145,12 +135,16 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError:
             raise exc.DockerAPIError()
 
-    def run_container(
-        self, image, config_port, num_gpu=None, detach=True, on_gpu=False
-    ):
+    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """
         Create and run docker container
         """
+        cur_path = pathlib.Path(__file__)
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
+
         # Run on GPU
         s_open_port = config_port.sender_open_addr_port
         s_sync_port = config_port.sender_sync_addr_port
@@ -184,12 +178,22 @@ class DockerCloudClient(BaseCloudClient):
             },
         )
 
-    def build_model_instance(
-        self, model, container_name, config_port, zmq_config, lock=False, num_gpu=None
-    ):
+    def build_model_instance(self, model, container_name, lock=False, num_gpu=None):
         """
         Build and return model instance object
         """
+
+        cur_path = pathlib.Path(__file__)
+        config_path = cur_path.parent / "utils/data_transfers/zmq-config.yaml"
+
+        with open(config_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config = dm.ZMQConfig(**config_dict)
+
+        config_port_path = cur_path.parent.parent / "ports-config.yaml"
+        with open(config_port_path) as config_file:
+            config_dict = yaml.full_load(config_file)
+            config_port = dm.PortConfig(**config_dict)
 
         s_open_port = config_port.sender_open_addr_port
         s_sync_port = config_port.sender_sync_addr_port
@@ -206,13 +210,13 @@ class DockerCloudClient(BaseCloudClient):
         sender = Sender(
             open_address=sender_open_address,
             sync_address=sender_sync_address,
-            config=zmq_config,
+            config=config,
         )
 
         receiver = Receiver(
             open_address=receiver_open_address,
             sync_address=receiver_sync_address,
-            config=zmq_config,
+            config=config,
         )
 
         return dm.ModelInstance(
@@ -224,7 +228,3 @@ class DockerCloudClient(BaseCloudClient):
             container_name=container_name,
             num_gpu=num_gpu,
         )
-
-    def get_maximum_running_instances(self):
-        magic_number = 20
-        return magic_number + len(self.gpu_all)

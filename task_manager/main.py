@@ -5,6 +5,7 @@ Entry point of the task manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
 import asyncio
 import threading
 import yaml
@@ -56,6 +57,12 @@ def main():
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
+        if os.environ.get("CLOUD_CLIENT") == "docker":
+            config.docker = dm.DockerConfig(
+                docker_registry=os.environ.get("DOCKER_REGISTRY"),
+                docker_login=os.environ.get("DOCKER_LOGIN"),
+                docker_password=os.environ.get("DOCKER_PASSWORD"),
+            )
 
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()

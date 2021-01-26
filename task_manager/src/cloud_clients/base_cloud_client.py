@@ -70,3 +70,16 @@ class BaseCloudClient(ABC):
         """
         Return maximum number of running instances
         """
+
+    @abstractmethod
+    def is_instance_running(
+        self, model_instance: dm.ModelInstance
+    ) -> dm.ReasoningOutput[bool]:
+        """
+        Returns true if instance is running, else returns false, and description why
+
+        Parameters
+        ----------
+        model_instance:
+            The Model instance that we want to check
+        """

@@ -11,9 +11,7 @@ import yaml
 import pytest
 import time
 
-sys.path.append("../..")
-
-from src.cloud_client import DockerCloudClient
+from src.cloud_clients import DockerCloudClient
 
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver

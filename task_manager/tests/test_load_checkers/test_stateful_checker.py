@@ -153,7 +153,7 @@ async def test_decrease_stateful_instance():
         receiver=BaseReceiver(),
         lock=True,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instance2 = dm.ModelInstance(
         stub_stateful,
@@ -162,7 +162,7 @@ async def test_decrease_stateful_instance():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instances_storage.add_model_instance(model_instance1)
     model_instances_storage.add_model_instance(model_instance2)

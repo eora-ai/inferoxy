@@ -30,16 +30,17 @@ stub_stateful = dm.ModelObject(
 )
 
 stub_config = dm.Config(
-    "",
-    "",
-    "",
-    "",
-    "",
-    [],
-    dm.LoadAnalyzerConfig(
-        0.5,
-        trigger_pipeline=dm.TriggerPipelineConfig(70),
-        running_mean=dm.RunningMeanConfig(0.1, 1, 3),
+    zmq_output_address="",
+    zmq_input_address="",
+    gpu_all=[],
+    load_analyzer=dm.LoadAnalyzerConfig(
+        0,
+        trigger_pipeline=dm.TriggerPipelineConfig(60),
+        running_mean=dm.RunningMeanConfig(0, 10, 10),
+    ),
+    docker=dm.DockerConfig("", "", ""),
+    models=dm.ModelsRunnerConfig(
+        ports=dm.PortConfig(0, 0, 0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
     ),
 )
 
@@ -80,7 +81,7 @@ async def test_low_load():
             receiver=BaseReceiver(),
             lock=False,
             running=True,
-            container_name="test",
+            hostname="test",
         )
     )
 
@@ -92,7 +93,7 @@ async def test_low_load():
             receiver=BaseReceiver(),
             lock=False,
             running=True,
-            container_name="test",
+            hostname="test",
         )
     )
 
@@ -163,7 +164,7 @@ async def test_high_load():
             receiver=BaseReceiver(),
             lock=False,
             running=True,
-            container_name="test",
+            hostname="test",
         )
     )
 
@@ -175,7 +176,7 @@ async def test_high_load():
             receiver=BaseReceiver(),
             lock=False,
             running=True,
-            container_name="test",
+            hostname="test",
         )
     )
     stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(0.1, 3, 3)

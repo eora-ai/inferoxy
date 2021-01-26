@@ -1,4 +1,0 @@
-zmq_sndhwm: 10
-zmq_rcvhwm: 10
-zmq_sndtimeo: 3600000
-zmq_rcvtimeo: 3600000

@@ -38,7 +38,7 @@ def test_add_model_instance():
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=False,
-        container_name="",
+        hostname="",
         running=True,
     )
     output_batch_queue = OutputBatchQueue()
@@ -64,7 +64,7 @@ def test_remove_model_instance():
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=False,
-        container_name="",
+        hostname="",
         running=True,
     )
     output_batch_queue = OutputBatchQueue()
@@ -91,7 +91,7 @@ def test_stateful_batch_routing():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="",
+        hostname="",
     )
     model_instance2 = dm.ModelInstance(
         model=stub_stateful,
@@ -100,7 +100,7 @@ def test_stateful_batch_routing():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="",
+        hostname="",
     )
     model_instance3 = dm.ModelInstance(
         model=stub_stateful,
@@ -109,7 +109,7 @@ def test_stateful_batch_routing():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="",
+        hostname="",
     )
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
@@ -149,7 +149,7 @@ def test_stateless_batch_routing():
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=False,
-        container_name="",
+        hostname="",
         running=True,
     )
     model_instance2 = dm.ModelInstance(
@@ -158,7 +158,7 @@ def test_stateless_batch_routing():
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=False,
-        container_name="",
+        hostname="",
         running=True,
     )
     model_instance3 = dm.ModelInstance(
@@ -168,7 +168,7 @@ def test_stateless_batch_routing():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="",
+        hostname="",
     )
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)

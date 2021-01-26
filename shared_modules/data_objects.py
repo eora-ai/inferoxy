@@ -10,7 +10,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Type, NewType
 
 import numpy as np  # type: ignore
 
@@ -258,25 +258,31 @@ class ResponseBatch(MinimalBatchObject):
         return hash(self.uid)
 
 
+class BaseConfig:
+    """
+    Generic type of config
+    """
+
+
 @dataclass
-class ZMQConfig:
+class ZMQConfig(BaseConfig):
     """
     Config for ZMQ senders receivers
     """
 
-    zmq_sndhwm: int
-    zmq_rcvhwm: int
-    zmq_sndtimeo: int
-    zmq_rcvtimeo: int
+    sndhwm: int
+    rcvhwm: int
+    sndtimeo: int
+    rcvtimeo: int
 
 
 @dataclass
-class PortConfig:
+class PortConfig(BaseConfig):
     """
     Config for sender/receiver ports
     """
 
-    sender_open_addr_port: int
-    sender_sync_addr_port: int
-    receiver_open_addr_port: int
-    receiver_sync_addr_port: int
+    sender_open_addr: int
+    sender_sync_addr: int
+    receiver_open_addr: int
+    receiver_sync_addr: int

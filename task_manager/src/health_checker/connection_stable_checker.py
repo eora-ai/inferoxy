@@ -10,5 +10,8 @@ from .checker import BaseHealthChecker, Status
 
 
 class ConnectionChecker(BaseHealthChecker):
-    def check(self, model_instance: dm.ModelInstance) -> Status:
-        return Status(model_instance=model, is_running=True, reason=None)
+    async def check(self, model_instance: dm.ModelInstance) -> Status:
+        if not model_instance.lock:
+            return Status(model_instance=model_instance, is_running=True, reason=None)
+
+        return Status(model_instance=model_instance, is_running=True, reason=None)

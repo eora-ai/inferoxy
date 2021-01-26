@@ -30,16 +30,16 @@ class Receiver(BaseReceiver):
     def __init__(self, open_address: str, sync_address: str, config: ZMQConfig):
         self.zmq_context = zmq.asyncio.Context()
         self.zmq_socket = self.zmq_context.socket(zmq.PULL)
-        self.zmq_socket.setsockopt(zmq.RCVHWM, config.zmq_rcvhwm)
-        self.zmq_socket.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
+        self.zmq_socket.setsockopt(zmq.RCVHWM, config.rcvhwm)
+        self.zmq_socket.setsockopt(zmq.RCVTIMEO, config.rcvtimeo)
         self.zmq_socket.connect(open_address)
         self.sync(sync_address, config)
 
     def sync(self, sync_address: str, config: ZMQConfig):
         self.zmq_context = zmq.asyncio.Context()
         r = self.zmq_context.socket(zmq.REQ)
-        r.setsockopt(zmq.SNDTIMEO, config.zmq_sndtimeo)
-        r.setsockopt(zmq.RCVTIMEO, config.zmq_rcvtimeo)
+        r.setsockopt(zmq.SNDTIMEO, config.sndtimeo)
+        r.setsockopt(zmq.RCVTIMEO, config.rcvtimeo)
         r.connect(sync_address)
         r.send(b"Sync message")
         r.recv()

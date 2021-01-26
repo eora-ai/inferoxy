@@ -88,6 +88,7 @@ class Runner:
             logger.warning("Sample is None\n")
 
         for request_info in minimal_batch.requests_info:
+            # TODO: add sound to sample
             sample = dict()
             sample["image"] = request_info.inputs
             samples.append(sample)

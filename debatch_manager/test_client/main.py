@@ -78,10 +78,12 @@ def main():
         response_info1 = dm.ResponseInfo(
             output=np.array([1, 2, 3, 4]),
             picture=np.array([5, 6, 7, 8]),
+            parameters={},
         )
         response_info2 = dm.ResponseInfo(
             output=np.array([1, 2, 3, 4]),
             picture=np.array([5, 6, 7, 8]),
+            parameters={},
         )
         responses += [
             ResponseBatch(

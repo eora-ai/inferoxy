@@ -38,8 +38,11 @@ class BaseHealthChecker(ABC):
     Abstract class for HealthChecker
     """
 
-    def __init__(self, cloud_client: BaseCloudClient):
+    def __init__(
+        self, cloud_client: BaseCloudClient, config: Optional[dm.Config] = None
+    ):
         self.cloud_client = cloud_client
+        self.config = config
 
     @abstractmethod
     async def check(self, model_instance: dm.ModelInstance) -> Status:

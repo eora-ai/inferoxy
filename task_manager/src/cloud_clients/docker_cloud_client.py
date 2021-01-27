@@ -220,7 +220,12 @@ class DockerCloudClient(BaseCloudClient):
     def is_instance_running(
         self, model_instance: dm.ModelInstance
     ) -> dm.ReasoningOutput[bool]:
-        container = self.client.containers.get(model_instance.hostname)
+        try:
+            container = self.client.containers.get(model_instance.hostname)
+        except:
+            is_running = False
+            reason = "Container does not exists"
+            return dm.ReasoningOutput(is_running, reason)
         is_running = container.status == "running"
         reason = None
         if not is_running:

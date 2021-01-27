@@ -50,7 +50,7 @@ async def test_requested_one_model():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(
@@ -78,7 +78,7 @@ async def test_requested_many_model():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(
@@ -108,7 +108,7 @@ async def test_requested_stateful_model():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(

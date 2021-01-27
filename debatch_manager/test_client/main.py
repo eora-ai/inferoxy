@@ -68,11 +68,11 @@ def main():
 
         # Create response batch and add to list of response batches
         request_info1 = dm.RequestInfo(
-            inputs=np.array([1, 2, 3, 4]),
+            input=np.array([1, 2, 3, 4]),
             parameters={},
         )
         request_info2 = dm.RequestInfo(
-            inputs=np.array([5, 6, 7, 8]),
+            input=np.array([5, 6, 7, 8]),
             parameters={},
         )
         response_info1 = dm.ResponseInfo(

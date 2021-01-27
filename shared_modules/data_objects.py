@@ -10,7 +10,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional
 
 import numpy as np  # type: ignore
 
@@ -44,7 +44,7 @@ class ModelObject:
 
 @dataclass
 class RequestInfo:
-    inputs: np.ndarray
+    input: np.ndarray
     parameters: dict
 
     def __eq__(self, other):

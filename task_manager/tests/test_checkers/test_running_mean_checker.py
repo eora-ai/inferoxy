@@ -97,7 +97,7 @@ async def test_low_load():
     )
 
     request_info1 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     response_info1 = dm.ResponseInfo(
@@ -116,7 +116,7 @@ async def test_low_load():
     )
 
     request_info2 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     response_info2 = dm.ResponseInfo(
@@ -140,7 +140,7 @@ async def test_low_load():
     # In output queue we store that model `stub_model` take 1 second to process one `request_object`
 
     request_info3 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request1 = dm.RequestBatch(
@@ -150,7 +150,7 @@ async def test_low_load():
         status=dm.Status.CREATED,
     )
     request_info4 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request2 = dm.RequestBatch(
@@ -206,7 +206,7 @@ async def test_high_load():
     )
 
     request_info1 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     response_info1 = dm.ResponseInfo(
@@ -225,7 +225,7 @@ async def test_high_load():
     )
 
     request_info2 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     response_info2 = dm.ResponseInfo(
@@ -248,7 +248,7 @@ async def test_high_load():
 
     # Average processing time for `stub_model` is 1 second
     request_info3 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request1 = dm.RequestBatch(
@@ -258,7 +258,7 @@ async def test_high_load():
         status=dm.Status.CREATED,
     )
     request_info4 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request2 = dm.RequestBatch(
@@ -269,23 +269,23 @@ async def test_high_load():
     )
 
     request_info5 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request_info6 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request_info7 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request_info8 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request_info9 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     request3 = dm.RequestBatch(

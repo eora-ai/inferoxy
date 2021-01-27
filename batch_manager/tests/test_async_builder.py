@@ -36,7 +36,7 @@ async def test_by_time_interrupt():
 
     async def async_request_generator() -> AsyncIterable[dm.RequestObject]:
         request_info = dm.RequestInfo(
-            inputs=np.array(range(10)),
+            input=np.array(range(10)),
             parameters={},
         )
         yield dm.RequestObject(
@@ -62,7 +62,7 @@ async def test_by_full_interrupt():
     async def async_request_generator() -> AsyncIterable[dm.RequestObject]:
         await asyncio.sleep(0.1)
         request_info1 = dm.RequestInfo(
-            inputs=np.array(range(10)),
+            input=np.array(range(10)),
             parameters={},
         )
         yield dm.RequestObject(
@@ -72,7 +72,7 @@ async def test_by_full_interrupt():
             model=stateless_model,
         )
         request_info2 = dm.RequestInfo(
-            inputs=np.array(range(10)),
+            input=np.array(range(10)),
             parameters={},
         )
         yield dm.RequestObject(
@@ -82,7 +82,7 @@ async def test_by_full_interrupt():
             model=stateless_model,
         )
         request_info3 = dm.RequestInfo(
-            inputs=np.array(range(10)),
+            input=np.array(range(10)),
             parameters={},
         )
         yield dm.RequestObject(

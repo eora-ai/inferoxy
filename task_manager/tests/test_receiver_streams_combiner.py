@@ -49,7 +49,7 @@ async def test_one_element_in_output_queue():
     """
 
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     batch_dict = dict(
@@ -89,7 +89,7 @@ async def test_multiple_element_in_output_queue():
     """
 
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     batch_dict = dict(

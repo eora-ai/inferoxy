@@ -29,7 +29,7 @@ data = asarray(image)
 
 model = ModelObject(name="test", address="", stateless=True, batch_size=4)
 request_info = dm.RequestInfo(
-    inputs=data,
+    input=data,
     parameters={},
 )
 batch = MinimalBatchObject(

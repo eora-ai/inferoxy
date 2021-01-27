@@ -17,11 +17,11 @@ stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
 )
 request_info1 = dm.RequestInfo(
-    inputs=np.array([1, 2, 3, 4]),
+    input=np.array([1, 2, 3, 4]),
     parameters={"sest": "test"},
 )
 request_info2 = dm.RequestInfo(
-    inputs=np.array([1, 2, 3, 4]),
+    input=np.array([1, 2, 3, 4]),
     parameters={"sest": "test"},
 )
 response_info1 = dm.ResponseInfo(
@@ -63,7 +63,7 @@ def test_debatch_many():
 
 
 request_info3 = dm.RequestInfo(
-    inputs=np.array([1, 2, 3, 4]),
+    input=np.array([1, 2, 3, 4]),
     parameters={"sest": "test"},
 )
 response_info3 = dm.ResponseInfo(
@@ -93,7 +93,7 @@ def test_debatch_one():
 
 
 request_info4 = dm.RequestInfo(
-    inputs=[],
+    input=[],
     parameters={},
 )
 response_info4 = dm.ResponseInfo(

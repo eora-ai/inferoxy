@@ -90,7 +90,7 @@ class Runner:
         for request_info in minimal_batch.requests_info:
             # TODO: add sound to sample
             sample = dict()
-            sample["image"] = request_info.inputs
+            sample["image"] = request_info.input
             samples.append(sample)
 
             # samples is a list of dict of dicts having structure:
@@ -102,6 +102,8 @@ class Runner:
 
             # List of dictionaries prediciton and image
             results = self.predict_batch(samples, draw=True)
+
+            # TODO call set sound
             # self.__set_sound_for_results_if_needed(results, samples)
 
         response_batch = self.build_response_batch(minimal_batch, results)

@@ -50,7 +50,7 @@ async def test_one_element_input_queue():
 
     input_batch_queue = InputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(
@@ -80,7 +80,7 @@ async def test_multiple_elements_input_queue():
     """
     input_batch_queue = InputBatchQueue()
     request_info1 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item1 = dm.MinimalBatchObject(
@@ -90,7 +90,7 @@ async def test_multiple_elements_input_queue():
         status=dm.Status.CREATED,
     )
     request_info2 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item2 = dm.MinimalBatchObject(
@@ -100,7 +100,7 @@ async def test_multiple_elements_input_queue():
         status=dm.Status.CREATED,
     )
     request_info3 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item3 = dm.MinimalBatchObject(
@@ -133,7 +133,7 @@ async def test_stateful_models():
     Test stateful model
     """
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(

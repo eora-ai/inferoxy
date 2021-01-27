@@ -52,7 +52,7 @@ async def test_requested_one_stateless_model():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(
@@ -78,7 +78,7 @@ async def test_requested_one_stateful_model():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item = dm.MinimalBatchObject(
@@ -108,7 +108,7 @@ async def test_requested_many_stateful_model():
     output_batch_queue = OutputBatchQueue()
 
     request_info1 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item1 = dm.MinimalBatchObject(
@@ -119,7 +119,7 @@ async def test_requested_many_stateful_model():
         source_id="1",
     )
     request_info2 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item2 = dm.MinimalBatchObject(
@@ -149,7 +149,7 @@ async def test_decrease_stateful_instance():
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
     request_info1 = dm.RequestInfo(
-        inputs=np.array(range(10)),
+        input=np.array(range(10)),
         parameters={},
     )
     item1 = dm.MinimalBatchObject(

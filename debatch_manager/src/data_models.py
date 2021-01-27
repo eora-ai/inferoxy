@@ -12,6 +12,8 @@ from shared_modules.data_objects import (
     BatchMapping,
     ResponseObject,
     ResponseBatch,
+    RequestInfo,
+    ResponseInfo,
 )
 
 

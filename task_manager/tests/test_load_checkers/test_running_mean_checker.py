@@ -97,23 +97,39 @@ async def test_low_load():
         )
     )
 
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    response_info1 = dm.ResponseInfo(
+        output=np.array(range(10)),
+        picture=[],
+        parameters={},
+    )
     response1 = dm.ResponseBatch(
         uid="1",
-        inputs=[np.array(range(10))],
-        outputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info1],
         model=stub_model,
+        responses_info=[response_info1],
         status=dm.Status.PROCESSED,
         processed_at=10,
         started_at=9,
     )
 
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    response_info2 = dm.ResponseInfo(
+        output=np.array(range(10)),
+        picture=[],
+        parameters={},
+    )
     response2 = dm.ResponseBatch(
         uid="2",
-        inputs=[np.array(range(10))],
-        outputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info2],
         model=stub_model,
+        responses_info=[response_info2],
         status=dm.Status.PROCESSED,
         processed_at=11,
         started_at=10,
@@ -124,17 +140,23 @@ async def test_low_load():
 
     # In output queue we store that model `stub_model` take 1 second to process one `request_object`
 
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     request1 = dm.RequestBatch(
         uid="3",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info3],
         model=stub_model,
         status=dm.Status.CREATED,
     )
+    request_info4 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     request2 = dm.RequestBatch(
         uid="4",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info4],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -184,23 +206,39 @@ async def test_high_load():
         model_instances_storage, input_batch_queue, output_batch_queue, stub_config
     )
 
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    response_info1 = dm.ResponseInfo(
+        output=np.array(range(10)),
+        picture=[],
+        parameters={},
+    )
     response1 = dm.ResponseBatch(
         uid="1",
-        inputs=[np.array(range(10))],
-        outputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info1],
         model=stub_model,
+        responses_info=[response_info1],
         status=dm.Status.PROCESSED,
         processed_at=10,
         started_at=9,
     )
 
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    response_info2 = dm.ResponseInfo(
+        output=np.array(range(10)),
+        picture=[],
+        parameters={},
+    )
     response2 = dm.ResponseBatch(
         uid="2",
-        inputs=[np.array(range(10))],
-        outputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info2],
         model=stub_model,
+        responses_info=[response_info2],
         status=dm.Status.PROCESSED,
         processed_at=11,
         started_at=10,
@@ -210,31 +248,56 @@ async def test_high_load():
     await output_batch_queue.put(response2)
 
     # Average processing time for `stub_model` is 1 second
-
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     request1 = dm.RequestBatch(
         uid="3",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info3],
         model=stub_model,
         status=dm.Status.CREATED,
+    )
+    request_info4 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request2 = dm.RequestBatch(
         uid="4",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info4],
         model=stub_model,
         status=dm.Status.CREATED,
     )
+
+    request_info5 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    request_info6 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    request_info7 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    request_info8 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
+    request_info9 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     request3 = dm.RequestBatch(
         uid="5",
-        inputs=[
-            np.array(range(10)),
-            np.array(range(10)),
-            np.array(range(10)),
-            np.array(range(10)),
-            np.array(range(10)),
+        requests_info=[
+            request_info5,
+            request_info6,
+            request_info7,
+            request_info8,
+            request_info9,
         ],
-        parameters=[{}, {}, {}, {}, {}],
         model=stub_model,
         status=dm.Status.CREATED,
     )

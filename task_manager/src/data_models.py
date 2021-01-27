@@ -16,6 +16,8 @@ from shared_modules.data_objects import (
     MinimalBatchObject,
     Status,
     ResponseBatch,
+    RequestInfo,
+    ResponseInfo,
     ZMQConfig,
     PortConfig,
     BaseConfig,

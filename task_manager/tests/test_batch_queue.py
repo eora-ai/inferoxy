@@ -49,10 +49,13 @@ async def test_one_element_input_queue():
     """
 
     input_batch_queue = InputBatchQueue()
+    request_info = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -76,24 +79,33 @@ async def test_multiple_elements_input_queue():
     Put three elements in the queue and try to get them
     """
     input_batch_queue = InputBatchQueue()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item1 = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info1],
         model=stub_model,
         status=dm.Status.CREATED,
+    )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     item2 = dm.MinimalBatchObject(
         uid="2",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info2],
         model=stub_model,
         status=dm.Status.CREATED,
     )
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item3 = dm.MinimalBatchObject(
         uid="3",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info3],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -120,10 +132,13 @@ async def test_stateful_models():
     """
     Test stateful model
     """
+    request_info = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=np.array(range(10)),
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="test",

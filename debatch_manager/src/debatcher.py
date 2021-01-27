@@ -30,12 +30,14 @@ def debatch(
     response_objects = []
     for i, request_object_uid in enumerate(request_object_uids):
 
+        response_info = batch.responses_info[i]
+
         # Create response object
         new_response_object = dm.ResponseObject(
             uid=request_object_uid,
             model=batch.model,
             source_id=batch_mapping.source_ids[i],
-            output=[batch.outputs[i]],
+            response_info=response_info,
         )
         response_objects.append(new_response_object)
 

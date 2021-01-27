@@ -4,7 +4,7 @@ __email__ = "m.gafarova@eora.ru"
 
 from dataclasses import dataclass
 
-from shared_modules.data_objects import ResponseBatch
+from shared_modules.data_objects import ResponseBatch, ResponseInfo
 
 
 @dataclass

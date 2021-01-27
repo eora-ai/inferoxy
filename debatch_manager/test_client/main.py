@@ -67,15 +67,31 @@ def main():
         )
 
         # Create response batch and add to list of response batches
+        request_info1 = dm.RequestInfo(
+            input=np.array([1, 2, 3, 4]),
+            parameters={},
+        )
+        request_info2 = dm.RequestInfo(
+            input=np.array([5, 6, 7, 8]),
+            parameters={},
+        )
+        response_info1 = dm.ResponseInfo(
+            output=np.array([1, 2, 3, 4]),
+            picture=np.array([5, 6, 7, 8]),
+            parameters={},
+        )
+        response_info2 = dm.ResponseInfo(
+            output=np.array([1, 2, 3, 4]),
+            picture=np.array([5, 6, 7, 8]),
+            parameters={},
+        )
         responses += [
             ResponseBatch(
                 uid=uid,
-                inputs=np.array([1, 2, 3, 4]),
-                parameters={},
+                requests_info=[request_info1, request_info2],
                 model=stateful_model,
                 status=Status.CREATED,
-                outputs=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
-                pictures=[np.array([1, 2, 3, 4]), np.array([5, 6, 7, 8])],
+                responses_info=[response_info1, response_info2],
             )
         ]
 

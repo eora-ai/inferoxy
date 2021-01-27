@@ -87,9 +87,10 @@ class Runner:
         if minimal_batch is None:
             logger.warning("Sample is None\n")
 
-        for input_image in minimal_batch.inputs:
+        for request_info in minimal_batch.requests_info:
+            # TODO: add sound to sample
             sample = dict()
-            sample["image"] = input_image
+            sample["image"] = request_info.input
             samples.append(sample)
 
             # samples is a list of dict of dicts having structure:
@@ -101,25 +102,32 @@ class Runner:
 
             # List of dictionaries prediciton and image
             results = self.predict_batch(samples, draw=True)
+
+            # TODO call set sound
             # self.__set_sound_for_results_if_needed(results, samples)
 
         response_batch = self.build_response_batch(minimal_batch, results)
 
         return response_batch
 
-    def build_response_batch(self, minimal_batch, meta):
+    def build_response_batch(self, minimal_batch, results):
         """
         Build Response Batch object from Minimal Batch Object
         """
-        outputs = []
+        responses_info = []
 
-        for item in meta:
+        for i, item in enumerate(results):
             prediction = item["prediction"]
             image = item["image"]
-            outputs.append([{"output": prediction, "picture": image}])
+            response_info = dm.ResponseInfo(
+                output=prediction,
+                picture=image,
+                parameters=minimal_batch.requests_info[i].parameters,
+            )
+            responses_info.append(response_info)
 
         response_batch = dm.ResponseBatch.from_minimal_batch_object(
-            batch=minimal_batch, outputs=outputs
+            batch=minimal_batch, responses_info=responses_info
         )
         return response_batch
 

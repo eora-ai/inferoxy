@@ -28,10 +28,13 @@ image = Image.open("test.jpg")
 data = asarray(image)
 
 model = ModelObject(name="test", address="", stateless=True, batch_size=4)
+request_info = dm.RequestInfo(
+    input=data,
+    parameters={},
+)
 batch = MinimalBatchObject(
     uid="test",
-    inputs=[data],
-    parameters=[],
+    requests_info=[request_info],
     model=model,
 )
 

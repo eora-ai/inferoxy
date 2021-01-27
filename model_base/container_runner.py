@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 from runner import Runner  # type: ignore
+
 from tester import Tester  # type: ignore
 
 if __name__ == "__main__":

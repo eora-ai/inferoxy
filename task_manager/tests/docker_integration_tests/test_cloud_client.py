@@ -14,7 +14,7 @@ import pathlib
 
 sys.path.append("../..")
 
-from src.cloud_client import DockerCloudClient
+from src.cloud_clients.docker_cloud_client import DockerCloudClient
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver

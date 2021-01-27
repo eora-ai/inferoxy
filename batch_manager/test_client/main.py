@@ -54,11 +54,14 @@ def main():
     number_of_request = int(input("Write number of requests: "))
     uid_generator = uuid4_string_generator()
     for _ in range(number_of_request):
+        request_info = dm.RequestInfo(
+            input=np.array(range(10)),
+            parameters={},
+        )
         req = dm.RequestObject(
             uid=next(uid_generator),
-            inputs=np.array(range(10)),
+            requests_info=[request_info],
             source_id="test_client_1",
-            parameters={},
             model=model,
         )
         sock_sender.send_pyobj(req)

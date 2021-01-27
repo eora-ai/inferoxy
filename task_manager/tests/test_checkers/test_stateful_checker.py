@@ -51,10 +51,13 @@ async def test_requested_one_stateless_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_model,
         status=dm.Status.CREATED,
     )
@@ -74,10 +77,13 @@ async def test_requested_one_stateful_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="1",
@@ -100,18 +106,25 @@ async def test_requested_many_stateful_model():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item1 = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info1],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="1",
     )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item2 = dm.MinimalBatchObject(
         uid="2",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info2],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="2",
@@ -135,10 +148,13 @@ async def test_decrease_stateful_instance():
     """
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
+    )
     item1 = dm.MinimalBatchObject(
         uid="1",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info1],
         model=stub_stateful,
         status=dm.Status.CREATED,
         source_id="1",

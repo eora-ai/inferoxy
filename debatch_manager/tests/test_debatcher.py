@@ -16,22 +16,36 @@ from src.debatcher import (
 stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
 )
+request_info1 = dm.RequestInfo(
+    input=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
+request_info2 = dm.RequestInfo(
+    input=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
+response_info1 = dm.ResponseInfo(
+    output=np.array([1, 2, 3, 4]),
+    picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
+response_info2 = dm.ResponseInfo(
+    output=np.array([1, 2, 3, 4]),
+    picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
 response_batch = dm.ResponseBatch(
     uid="test",
-    inputs=np.array([1, 2, 3, 4]),
-    parameters=[{"sest": "test"}],
     model=stub_model,
+    requests_info=[request_info1, request_info2],
     status=dm.Status.CREATED,
-    outputs=[
-        {"output": [np.array([1, 2, 3, 4])], "picture": [np.array([1, 2, 3, 4])]},
-        {"output": [np.array([5, 6, 7])], "picture": [np.array([5, 6, 7])]},
-    ],
+    responses_info=[response_info1, response_info2],
 )
 
 batch_mapping = dm.BatchMapping(
     batch_uid="test",
-    request_object_uids=["robj1", "robj2"],
-    source_ids=["robjsource1", "robjsource2"],
+    request_object_uids=["robj1", "test"],
+    source_ids=["robjsource1", "test"],
 )
 
 
@@ -41,23 +55,28 @@ def test_debatch_many():
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 
-    assert result[1].uid == "robj2"
-    assert result[1].source_id == "robjsource2"
+    assert result[1].uid == "test"
+    assert result[1].source_id == "test"
 
-    assert np.array_equal(result[0].output[0].get("output"), [np.array([1, 2, 3, 4])])
-    assert np.array_equal(result[0].output[0].get("picture"), [np.array([1, 2, 3, 4])])
-
-    assert np.array_equal(result[1].output[0].get("output"), [np.array([5, 6, 7])])
-    assert np.array_equal(result[1].output[0].get("picture"), [np.array([5, 6, 7])])
+    assert result[0].response_info == response_info1
+    assert result[1].response_info == response_info2
 
 
+request_info3 = dm.RequestInfo(
+    input=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
+response_info3 = dm.ResponseInfo(
+    output=np.array([1, 2, 3, 4]),
+    picture=np.array([1, 2, 3, 4]),
+    parameters={"sest": "test"},
+)
 response_batch_one = dm.ResponseBatch(
     uid="test",
-    inputs=np.array([1, 2, 3, 4]),
-    parameters=[{"sest": "test"}],
     model=stub_model,
+    requests_info=[request_info3],
     status=dm.Status.CREATED,
-    outputs=[{"output": [np.array([1, 2, 3, 4])], "picture": [np.array([1, 2, 3, 4])]}],
+    responses_info=[response_info3],
 )
 
 batch_mapping_one = dm.BatchMapping(
@@ -70,17 +89,24 @@ def test_debatch_one():
     assert result[0].uid == "robj1"
     assert result[0].source_id == "robjsource1"
 
-    assert np.array_equal(result[0].output[0].get("output"), [np.array([1, 2, 3, 4])])
-    assert np.array_equal(result[0].output[0].get("picture"), [np.array([1, 2, 3, 4])])
+    assert result[0].response_info == response_info3
 
 
+request_info4 = dm.RequestInfo(
+    input=[],
+    parameters={},
+)
+response_info4 = dm.ResponseInfo(
+    output=[],
+    picture=[],
+    parameters={},
+)
 response_batch_empty = dm.ResponseBatch(
     uid="test",
-    inputs=[],
-    parameters=[],
     model=stub_model,
+    requests_info=[request_info4],
     status=dm.Status.CREATED,
-    outputs=[],
+    responses_info=[response_info4],
 )
 
 batch_mapping_empty = dm.BatchMapping(

@@ -10,7 +10,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional
 
 import numpy as np  # type: ignore
 
@@ -42,6 +42,31 @@ class ModelObject:
         return hash((self.name, self.address))
 
 
+@dataclass
+class RequestInfo:
+    input: np.ndarray
+    parameters: dict
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return self.inputs == other.inputs and self.parameters == other.parameters
+
+
+@dataclass
+class ResponseInfo:
+    output: np.ndarray
+    parameters: dict
+    picture: Optional[np.ndarray]
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return np.array_equal(self.output, other.output) and np.array_equal(
+            self.picture, other.picture
+        )
+
+
 @dataclass(eq=False)
 class RequestObject:
     """
@@ -62,9 +87,8 @@ class RequestObject:
     """
 
     uid: str
-    inputs: np.ndarray
     source_id: str
-    parameters: dict
+    request_info: RequestInfo
     model: ModelObject
 
     def __eq__(self, other):
@@ -73,7 +97,7 @@ class RequestObject:
         return (
             self.uid == other.uid
             and np.array_equal(self.inputs, other.inputs)
-            and self.parameters == other.parameters
+            and self.request_info == other.request_info
             and self.model == other.model
         )
 
@@ -97,7 +121,7 @@ class ResponseObject:
 
     uid: str
     model: ModelObject
-    output: List[Dict[str, np.ndarray]]
+    response_info: ResponseInfo
     source_id: str
 
     def __eq__(self, other):
@@ -106,7 +130,7 @@ class ResponseObject:
         return (
             self.uid == other.uid
             and self.model == other.model
-            and np.array_equal(self.outputs, other.outputs)
+            and self.response_info == other.response_info
         )
 
 
@@ -144,8 +168,7 @@ class MinimalBatchObject:
     """
 
     uid: str
-    inputs: List[np.ndarray]
-    parameters: List[dict]
+    requests_info: List[RequestInfo]
     model: ModelObject
     status: Status = Status.CREATING
     source_id: Optional[str] = None
@@ -160,16 +183,15 @@ class MinimalBatchObject:
     @property
     def size(self) -> int:
         "Actual batch size"
-        return len(self.inputs)
+        return len(self.requests_info)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
         return (
             self.uid == other.uid
-            and map(np.array_equal, zip(self.inputs, other.inputs))
-            and self.parameters == other.parameters
             and self.model == other.model
+            and self.requests_info == other.requests_info
             and self.source_id == other.source_id
             and self.status == other.status
         )
@@ -229,21 +251,20 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    outputs: List[Dict[str, np.ndarray]] = field(default_factory=list)
+    responses_info: List[ResponseInfo] = field(default_factory=list)
 
     @classmethod
     def from_minimal_batch_object(
         cls,
         batch: MinimalBatchObject,
-        outputs: List[Dict[str, np.ndarray]],
+        responses_info: List[ResponseInfo],
     ):
         """
         Make Response Batch object from RequestBactch
         """
         return cls(
             uid=batch.uid,
-            inputs=batch.inputs,
-            parameters=batch.parameters,
+            requests_info=batch.requests_info,
             model=batch.model,
             status=batch.status,
             created_at=batch.created_at,
@@ -251,7 +272,7 @@ class ResponseBatch(MinimalBatchObject):
             done_at=batch.done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
-            outputs=outputs,
+            responses_info=responses_info,
         )
 
     def __hash__(self):

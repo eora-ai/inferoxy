@@ -55,18 +55,20 @@ def string_generator() -> Iterator[str]:
 
 def test_batch_build_one():
     """Test build for one request object"""
+    request_info = dm.RequestInfo(
+        input=np.array([1, 2, 3, 4]),
+        parameters={},
+    )
     request_object = dm.RequestObject(
         "test",
-        np.array([1, 2, 3, 4]),
         "internal_123123",
-        parameters={},
+        request_info=request_info,
         model=stub_model,
     )
 
     expected_batch = dm.BatchObject(
         next(string_generator()),
-        [np.array([1, 2, 3, 4])],
-        [{}],
+        requests_info=[request_info],
         model=stub_model,
         request_objects=[request_object],
     )
@@ -80,25 +82,35 @@ def test_batch_stateless_many():
     Test build for many stateless request objects
     """
     uid_generator = string_generator()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
+    )
+
     request_object1 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_123",
-        parameters={"gif_id": 12},
+        request_info=request_info1,
         model=stub_model,
+    )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object2 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_123",
-        parameters={},
+        request_info=request_info2,
         model=blur_model,
+    )
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object3 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_123",
-        parameters={},
+        request_info=request_info3,
         model=stub_model,
     )
 
@@ -108,15 +120,16 @@ def test_batch_stateless_many():
         batches=[
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object1.inputs, request_object3.inputs],
-                parameters=[request_object1.parameters, request_object3.parameters],
+                requests_info=[
+                    request_object1.request_info,
+                    request_object3.request_info,
+                ],
                 model=stub_model,
                 request_objects=[request_object1, request_object3],
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object2.inputs],
-                parameters=[request_object2.parameters],
+                requests_info=[request_object2.request_info],
                 model=blur_model,
                 request_objects=[request_object2],
             ),
@@ -134,25 +147,34 @@ def test_batch_stateful_many():
     Test build for many stateful request objects
     """
     uid_generator = string_generator()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
+    )
     request_object1 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_123",
-        parameters={"gif_id": 12},
+        request_info=request_info1,
         model=stub_stateful_model,
+    )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object2 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_124",
-        parameters={},
+        request_info=request_info2,
         model=blur_stateful_model,
+    )
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
     )
     request_object3 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
         source_id="internal_123_123",
-        parameters={"gif_id": 12},
+        request_info=request_info3,
         model=stub_stateful_model,
     )
 
@@ -162,17 +184,18 @@ def test_batch_stateful_many():
         batches=[
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object1.inputs, request_object3.inputs],
-                parameters=[request_object1.parameters, request_object3.parameters],
+                requests_info=[
+                    request_object1.request_info,
+                    request_object3.request_info,
+                ],
                 model=stub_stateful_model,
                 request_objects=[request_object1, request_object3],
                 source_id=request_object1.source_id,
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object2.inputs],
-                parameters=[request_object2.parameters],
                 model=blur_stateful_model,
+                requests_info=[request_object2.request_info],
                 request_objects=[request_object2],
                 source_id=request_object2.source_id,
             ),
@@ -191,53 +214,74 @@ def test_multi_stage_build_batch():
     """
 
     uid_generator = string_generator()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
+    )
     request_object1 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info1,
         source_id="internal_123_124",
-        parameters={"gif_id": 12},
         model=stub_model,
+    )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object2 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info2,
         source_id="internal_123_123",
-        parameters={},
         model=blur_stateful_model,
+    )
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object3 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info3,
         source_id="internal_123_125",
-        parameters={},
         model=stub_stateful_model,
+    )
+    request_info4 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object4 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info4,
         source_id="internal_123_121",
-        parameters={},
         model=stub_stateful_model,
+    )
+    request_info5 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object5 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info5,
         source_id="internal_123_123",
-        parameters={},
         model=blur_stateful_model,
+    )
+    request_info6 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object6 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info6,
         source_id="internal_123_123",
-        parameters={},
         model=blur_stateful_model,
+    )
+    request_info7 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
     )
     request_object7 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info7,
         source_id="internal_123_127",
-        parameters={"gif_id": 12},
         model=blur_model,
     )
 
@@ -246,22 +290,16 @@ def test_multi_stage_build_batch():
         batches=[
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object1.inputs],
-                parameters=[request_object1.parameters],
+                requests_info=[request_object1.request_info],
                 model=stub_model,
                 request_objects=[request_object1],
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[
-                    request_object2.inputs,
-                    request_object5.inputs,
-                    request_object6.inputs,
-                ],
-                parameters=[
-                    request_object2.parameters,
-                    request_object5.parameters,
-                    request_object6.parameters,
+                requests_info=[
+                    request_object2.request_info,
+                    request_object5.request_info,
+                    request_object6.request_info,
                 ],
                 source_id=request_object2.source_id,
                 model=blur_stateful_model,
@@ -269,24 +307,27 @@ def test_multi_stage_build_batch():
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object3.inputs],
-                parameters=[request_object3.parameters],
+                requests_info=[
+                    request_object3.request_info,
+                ],
                 model=stub_stateful_model,
                 source_id=request_object3.source_id,
                 request_objects=[request_object3],
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object4.inputs],
-                parameters=[request_object4.parameters],
+                requests_info=[
+                    request_object4.request_info,
+                ],
                 model=stub_stateful_model,
                 source_id=request_object4.source_id,
                 request_objects=[request_object4],
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object7.inputs],
-                parameters=[request_object7.parameters],
+                requests_info=[
+                    request_object7.request_info,
+                ],
                 model=blur_model,
                 request_objects=[request_object7],
             ),
@@ -311,25 +352,34 @@ def test_batch_size_limit():
     Test batch size limitation
     """
     uid_generator = string_generator()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
+    )
     request_object1 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info1,
         source_id="internal_123_123",
-        parameters={"gif_id": 12},
         model=small_batch_stub_model,
+    )
+    request_info2 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object2 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info2,
         source_id="internal_123_123",
-        parameters={},
         model=small_batch_stub_model,
+    )
+    request_info3 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={},
     )
     request_object3 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info3,
         source_id="internal_123_123",
-        parameters={},
         model=small_batch_stub_model,
     )
 
@@ -339,15 +389,16 @@ def test_batch_size_limit():
         batches=[
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object1.inputs, request_object2.inputs],
-                parameters=[request_object1.parameters, request_object2.parameters],
+                requests_info=[
+                    request_object1.request_info,
+                    request_object2.request_info,
+                ],
                 model=small_batch_stub_model,
                 request_objects=[request_object1, request_object2],
             ),
             dm.BatchObject(
                 uid=next(batch_uid_generator),
-                inputs=[request_object3.inputs],
-                parameters=[request_object3.parameters],
+                requests_info=[request_object3.request_info],
                 model=small_batch_stub_model,
                 request_objects=[request_object3],
             ),
@@ -365,11 +416,14 @@ def test_build_one_mapping_batch():
     Test for build mapping batch for one case
     """
     uid_generator = string_generator()
+    request_info1 = dm.RequestInfo(
+        input=np.array(range(10)),
+        parameters={"gif_id": 12},
+    )
     request_object1 = dm.RequestObject(
         uid=next(uid_generator),
-        inputs=np.array(range(10)),
+        request_info=request_info1,
         source_id="internal_123_123",
-        parameters={"gif_id": 12},
         model=stub_model,
     )
     batches = build_batches([request_object1], uid_generator=string_generator())
@@ -387,17 +441,18 @@ def test_split_batches():
     """
     Test for split_on_complete_and_uncomplete_batches
     """
+    request_info1 = dm.RequestInfo(input=np.array(range(10)), parameters={})
+    request_info2 = dm.RequestInfo(input=np.array(range(10)), parameters={})
     batch1 = dm.BatchObject(
         uid="00",
-        inputs=[np.array(range(10)), np.array(range(10))],
-        parameters=[{}, {}],
+        requests_info=[request_info1, request_info2],
         model=small_batch_stub_model,
         request_objects=[],
     )
+    request_info3 = dm.RequestInfo(input=np.array(range(10)), parameters={})
     batch2 = dm.BatchObject(
         uid="01",
-        inputs=[np.array(range(10))],
-        parameters=[{}],
+        requests_info=[request_info3],
         model=small_batch_stub_model,
         request_objects=[],
     )

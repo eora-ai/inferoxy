@@ -11,6 +11,7 @@ import asyncio
 import yaml
 import time
 import pathlib
+import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
 
@@ -30,7 +31,7 @@ data = asarray(image)
 model = ModelObject(name="test", address="", stateless=True, batch_size=4)
 request_info = dm.RequestInfo(
     input=data,
-    parameters={},
+    parameters={"sound": np.array([255, 1], dtype=np.uint8)},
 )
 batch = MinimalBatchObject(
     uid="test",
@@ -43,6 +44,9 @@ async def get_response_batches(receiver):
     res_iterable = receiver.receive()
     async for item in res_iterable:
         sys.stdout.write(str(item))
+        image = item.responses_info[0].picture
+        im = Image.fromarray(image)
+        im.save("result.png")
 
 
 if __name__ == "__main__":

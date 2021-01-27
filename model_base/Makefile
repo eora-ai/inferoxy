@@ -1,10 +1,4 @@
-all: copy build delete
-
-copy:
-	cp -r ../shared_modules ./shared_modules
+all: build
 
 build:
-	docker build . -t registry.visionhub.ru/models/base:v4
-
-delete:
-	rm -rf ./shared_modules
+	cp -r ./shared_modules_link ./shared_modules && docker build . -t registry.visionhub.ru/models/base:v4 && rm -rf ./shared_modules

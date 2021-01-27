@@ -82,7 +82,7 @@ class Runner:
 
         minimal_batch = self.receiver.receive()
         if minimal_batch is None:
-            logger.warning("Sample is None\n")
+            logger.warning("Batch object is None\n")
 
         for request_info in minimal_batch.requests_info:
             sample = dict()

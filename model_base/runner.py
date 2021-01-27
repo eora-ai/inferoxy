@@ -90,6 +90,9 @@ class Runner:
         for request_info in minimal_batch.requests_info:
             # TODO: add sound to sample
             sample = dict()
+
+            if "sound" in request_info.parameters:
+                sample["sound"] = request_info.parameters.get("sound")
             sample["image"] = request_info.input
             samples.append(sample)
 

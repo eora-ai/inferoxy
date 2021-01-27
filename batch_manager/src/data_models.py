@@ -80,12 +80,7 @@ class BatchObject(MinimalBatchObject):
         )
 
     def __eq__(self, other):
-        return (
-            super().__eq__(other)
-            and self.request_objects == other.request_objects
-            and self.requests_info == other.requests_info
-            and self.source_id == other.source_id
-        )
+        return super().__eq__(other) and self.request_objects == other.request_objects
 
 
 @dataclass

@@ -3,7 +3,7 @@ import sys
 import yaml
 from pathlib import Path
 
-import data_models as dm
+import data_models as dm  # type: ignore
 from runner import Runner  # type: ignore
 from tester import Tester  # type: ignore
 

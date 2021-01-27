@@ -5,19 +5,21 @@ This module is responsible for docker based cloud(Actualy it is single machine)
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Set
+from typing import List, Set, Optional
 import random
-import pathlib
 
 import docker  # type: ignore
-import yaml
-
 from loguru import logger
 
 import src.data_models as dm
 import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
 from src.utils.data_transfers import Receiver, Sender
+from src.health_checker.errors import (
+    ContainerDoesNotExists,
+    ContainerExit,
+    HealthCheckError,
+)
 
 
 class DockerCloudClient(BaseCloudClient):
@@ -219,16 +221,20 @@ class DockerCloudClient(BaseCloudClient):
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance
-    ) -> dm.ReasoningOutput[bool]:
+    ) -> dm.ReasoningOutput[bool, HealthCheckError]:
+        reason: Optional[HealthCheckError] = None
         try:
             container = self.client.containers.get(model_instance.hostname)
         except:
             is_running = False
-            reason = "Container does not exists"
+            reason = ContainerDoesNotExists(
+                "Container {model_instance.hostname} does not exists"
+            )
             return dm.ReasoningOutput(is_running, reason)
         is_running = container.status == "running"
-        reason = None
         if not is_running:
-            reason = f"""Container status: {container.status}, last 10 lines of logs:
+            reason = ContainerExit(
+                f"""Container status: {container.status}, last 10 lines of logs:
                 {container.logs(tail=10)}"""
+            )
         return dm.ReasoningOutput(is_running, reason)

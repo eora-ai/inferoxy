@@ -9,6 +9,7 @@ import time
 
 import src.data_models as dm
 from .checker import BaseHealthChecker, Status
+from .errors import ConnectionIdleTimeout
 
 
 class ConnectionChecker(BaseHealthChecker):
@@ -27,5 +28,5 @@ class ConnectionChecker(BaseHealthChecker):
         return Status(
             model_instance=model_instance,
             is_running=False,
-            reason="Nothing was sent or received in 10 seconds",
+            reason=ConnectionIdleTimeout("Nothing was sent or received in 10 seconds"),
         )

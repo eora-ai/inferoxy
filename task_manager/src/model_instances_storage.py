@@ -90,6 +90,15 @@ class ModelInstancesStorage:
         not_locked = list(filter(lambda mi: not mi.lock, model_instances))
         return not_locked
 
+    def get_all_model_instances(self) -> List[dm.ModelInstance]:
+        """
+        Get all model instances in the model instance storage
+        """
+        model_instances = []
+        for model_instances_ in self.model_instances.values():
+            model_instances.extend(model_instances_)
+        return model_instances
+
     def get_next_running_instance(
         self, model: dm.ModelObject, source_id: Optional[str] = None
     ) -> Optional[dm.ModelInstance]:

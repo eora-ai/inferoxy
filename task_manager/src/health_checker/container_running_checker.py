@@ -8,6 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import src.data_models as dm
 
 from .checker import BaseHealthChecker, Status
+from .errors import ContainerDoesNotExists, ContainerExit
 
 
 class ContainerRunningChecker(BaseHealthChecker):
@@ -17,4 +18,6 @@ class ContainerRunningChecker(BaseHealthChecker):
 
     async def check(self, model_instance: dm.ModelInstance) -> Status:
         reasoning_output = self.cloud_client.is_instance_running(model_instance)
-        return Status(model_instance, reasoning_output.output, reasoning_output.reason)
+        return Status(
+            model_instance, reasoning_output.output, reason=reasoning_output.reason
+        )

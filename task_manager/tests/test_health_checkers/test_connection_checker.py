@@ -72,9 +72,7 @@ async def test_wasnot_received_sent_in_10_seconds():
     model_instance.receiver.last_received_batch = time.time() - 100
     model_instance.sender.last_sent_batch = time.time() - 100
     result = await checker.check(model_instance)
-    assert result == Status(
-        model_instance, False, "Nothing was sent or received in 10 seconds"
-    )
+    assert result.reason.code == "E011"
 
 
 async def test_model_doesnot_locked():

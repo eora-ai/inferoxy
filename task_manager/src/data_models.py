@@ -123,17 +123,18 @@ class ModelInstance:
 
 RequestBatch = MinimalBatchObject
 T = TypeVar("T")  # pylint: disable=C0103
+S = TypeVar("S")  # pylint: disable=C0103
 
 
 @dataclass
-class ReasoningOutput(Generic[T]):
+class ReasoningOutput(Generic[T, S]):
     """
     Wrapper for output of any function and adding reason parameters
     For example, `f() -> bool` returns bool,
     we need provide additional information, if result is `False`,
     so we can make `f() -> (bool, Optional[str])`
-    in more general case `f() -> (T, Optional[str])`.
-    `ReasoningOutput` follows from (T, Optional[str])
+    in more general case `f() -> (T, Optional[S])`.
+    `ReasoningOutput` follows from (T, Optional[S])
 
     Parameters
     ----------
@@ -144,4 +145,4 @@ class ReasoningOutput(Generic[T]):
     """
 
     output: T
-    reason: Optional[str] = None
+    reason: Optional[S] = None

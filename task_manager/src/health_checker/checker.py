@@ -12,6 +12,8 @@ from typing import Optional
 from src.cloud_clients import BaseCloudClient
 import src.data_models as dm
 
+from .errors import HealthCheckError
+
 
 @dataclass
 class Status:
@@ -30,7 +32,7 @@ class Status:
 
     model_instance: dm.ModelInstance
     is_running: bool
-    reason: Optional[str] = None
+    reason: Optional[HealthCheckError] = None
 
 
 class BaseHealthChecker(ABC):

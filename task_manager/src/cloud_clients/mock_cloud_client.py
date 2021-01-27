@@ -13,7 +13,7 @@ from src.utils.data_transfers.sender import BaseSender
 from src.cloud_clients import BaseCloudClient
 from src.health_checker.errors import (
     HealthCheckError,
-    ContainerExit,
+    ContainerExited,
     ContainerDoesNotExists,
 )
 
@@ -59,7 +59,7 @@ class MockCloudClient(BaseCloudClient):
         is_running = model_instance.running
         if not is_running:
             return dm.ReasoningOutput(
-                is_running, reason=ContainerExit("ModelInstance.running == False")
+                is_running, reason=ContainerExited("ModelInstance.running == False")
             )
         is_running &= model_instance in self.model_instances
         if not is_running:

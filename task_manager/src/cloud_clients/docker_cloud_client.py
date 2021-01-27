@@ -17,7 +17,7 @@ from src.cloud_clients import BaseCloudClient
 from src.utils.data_transfers import Receiver, Sender
 from src.health_checker.errors import (
     ContainerDoesNotExists,
-    ContainerExit,
+    ContainerExited,
     HealthCheckError,
 )
 
@@ -233,7 +233,7 @@ class DockerCloudClient(BaseCloudClient):
             return dm.ReasoningOutput(is_running, reason)
         is_running = container.status == "running"
         if not is_running:
-            reason = ContainerExit(
+            reason = ContainerExited(
                 f"""Container status: {container.status}, last 10 lines of logs:
                 {container.logs(tail=10)}"""
             )

@@ -12,7 +12,7 @@ class ContainerDoesNotExists(RetriableError):
     code = "W001"
 
 
-class ContainerExit(FatalError):
+class ContainerExited(FatalError):
     """
     May occure when there are bug in the model
     """

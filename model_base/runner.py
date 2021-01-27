@@ -134,13 +134,6 @@ class Runner:
 
     @staticmethod
     def __set_sound_for_results_if_needed(results, samples):
-        # for i in range(len(results)):
-        #     if "sound" in results[i]:
-        #         return
-        #     if "sound" not in samples[i]:
-        #         return
-        #     results[i]["sound"] = samples[i]["sound"]
-
         for i in range(len(results)):
             if "sound" not in results[i]:
                 if "sound" in samples[i]:

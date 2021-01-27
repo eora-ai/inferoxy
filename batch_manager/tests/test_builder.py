@@ -6,9 +6,6 @@ __email__ = "a.chertkov@eora.ru"
 from typing import Iterator
 
 import numpy as np  # type: ignore
-import sys
-
-sys.path.append("..")
 
 import src.data_models as dm
 from src.builder import (
@@ -465,7 +462,3 @@ def test_split_batches():
     )
     assert completed.batches[0] == batch1
     assert uncompleted.batches[0] == batch2
-
-
-if __name__ == "__main__":
-    test_batch_stateful_many()

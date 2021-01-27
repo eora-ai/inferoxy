@@ -19,6 +19,7 @@ from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.cloud_clients import DockerCloudClient
+from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
 
 
 async def pipeline(
@@ -88,11 +89,16 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
+    health_check_thread = HealthCheckerPipeline(
+        model_instances_storage, cloud_client, config
+    )
     pipeline_thread.start()
     load_analyzer_thread.start()
+    health_check_thread.start()
 
     pipeline_thread.join()
     load_analyzer_thread.join()
+    health_check_thread.join()
 
 
 if __name__ == "__main__":

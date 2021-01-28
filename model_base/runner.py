@@ -3,8 +3,8 @@ import sys
 
 from loguru import logger
 
-import data_models as dm  # type: ignore
-from data_transfer import Sender, Receiver  # type: ignore
+import model_base.data_models as dm  # type: ignore
+from model_base.data_transfer import Sender, Receiver  # type: ignore
 
 
 class Runner:
@@ -101,13 +101,14 @@ class Runner:
             # List of dictionaries prediciton and image
             results = self.predict_batch(samples, draw=True)
 
-            results = self.__set_sound_for_results_if_needed(results, samples)
+            # results = self.set_sound_for_results_if_needed(results, samples)
 
         response_batch = self.build_response_batch(minimal_batch, results)
 
         return response_batch
 
-    def build_response_batch(self, minimal_batch, results):
+    @staticmethod
+    def build_response_batch(minimal_batch, results):
         """
         Build Response Batch object from Minimal Batch Object
         """
@@ -131,11 +132,3 @@ class Runner:
             batch=minimal_batch, responses_info=responses_info
         )
         return response_batch
-
-    @staticmethod
-    def __set_sound_for_results_if_needed(results, samples):
-        for i in range(len(results)):
-            if "sound" not in results[i]:
-                if "sound" in samples[i]:
-                    results[i]["sound"] = samples[i]["sound"]
-        return results

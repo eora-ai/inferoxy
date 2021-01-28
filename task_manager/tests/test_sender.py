@@ -14,6 +14,7 @@ import pathlib
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
+from scipy.io.wavfile import read
 
 sys.path.append("..")
 
@@ -25,13 +26,14 @@ from src.data_models import MinimalBatchObject, ModelObject
 
 # load the image
 image = Image.open("test.jpg")
+sound = np.array([1, 255])
 # convert image to numpy array
 data = asarray(image)
 
 model = ModelObject(name="test", address="", stateless=True, batch_size=4)
 request_info = dm.RequestInfo(
     input=data,
-    parameters={"sound": np.array([255, 1], dtype=np.uint8)},
+    parameters={"sound": sound},
 )
 batch = MinimalBatchObject(
     uid="test",

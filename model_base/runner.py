@@ -101,8 +101,6 @@ class Runner:
             # List of dictionaries prediciton and image
             results = self.predict_batch(samples, draw=True)
 
-            # results = self.set_sound_for_results_if_needed(results, samples)
-
         response_batch = self.build_response_batch(minimal_batch, results)
 
         return response_batch

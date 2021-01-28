@@ -14,7 +14,6 @@ import pathlib
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
-from scipy.io.wavfile import read
 
 sys.path.append("..")
 

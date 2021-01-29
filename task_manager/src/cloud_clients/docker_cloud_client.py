@@ -79,46 +79,32 @@ class DockerCloudClient(BaseCloudClient):
 
         `docker run`
         """
+        on_gpu = model.run_on_gpu
+        num_gpu = None
+        if on_gpu:
+            # Geneerate gpu available
+            gpu_available = self.gpu_all.difference(self.gpu_busy)
+            num_gpu = random.sample(gpu_available, 1)[0]
+            logger.debug(f"GPU NUMBER: {num_gpu} for {model.name=}")
+            self.gpu_busy.add(num_gpu)
+
+        logger.debug("Run container")
         try:
-            # Pull image
-            logger.info("Pull model image")
-            if model.run_on_gpu:
-                # Geneerate gpu available
-                gpu_available = self.gpu_all.difference(self.gpu_busy)
-                num_gpu = random.sample(gpu_available, 1)[0]
-                print("GPU NUMBER: ", num_gpu)
-                self.gpu_busy.add(num_gpu)
-
-                # Run container on GPU
-                logger.info("Run container on GPU")
-                container = self.run_container(
-                    image=model.address,
-                    on_gpu=True,
-                    num_gpu=num_gpu,
-                )
-
-                # Construct model instanse
-                model_instance = self.build_model_instance(
-                    model=model,
-                    hostname=container.name,
-                    num_gpu=num_gpu,
-                )
-                return model_instance
-
-            else:
-                # Run container on CPU
-                logger.info("Run container on CPU")
-                container = self.run_container(model.address)
-
-                # Construct model instanse
-                model_instance = self.build_model_instance(
-                    model=model,
-                    hostname=container.name,
-                )
-                return model_instance
-
+            container = self.run_container(
+                image=model.address,
+                on_gpu=on_gpu,
+                num_gpu=num_gpu,
+            )
         except docker.errors.APIError as exception:
             raise exc.CloudAPIError() from exception
+
+        # Construct model instanse
+        model_instance = self.build_model_instance(
+            model=model,
+            hostname=container.name,
+            num_gpu=num_gpu,
+        )
+        return model_instance
 
     def stop_instance(self, model_instance: dm.ModelInstance):
         """
@@ -135,10 +121,10 @@ class DockerCloudClient(BaseCloudClient):
             container.stop()
             container.remove()
 
-        except docker.errors.NotFound as e:
-            raise exc.ContainerNotFound() from e
-        except docker.errors.APIError as e:
-            raise exc.DockerAPIError() from e
+        except docker.errors.NotFound as exception:
+            raise exc.ContainerNotFound() from exception
+        except docker.errors.APIError as exception:
+            raise exc.DockerAPIError() from exception
 
     def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """

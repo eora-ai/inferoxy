@@ -66,7 +66,7 @@ async def test_one_element_in_output_queue():
     receiver = StubReceiver()
 
     async def stop():
-        await asyncio.sleep(1)
+        await asyncio.sleep(3)
 
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
@@ -108,7 +108,7 @@ async def test_multiple_element_in_output_queue():
     receiver = StubReceiver()
 
     async def stop():
-        await asyncio.sleep(1)
+        await asyncio.sleep(3)
 
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)

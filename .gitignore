@@ -4,3 +4,4 @@ __pycache__
 .ropeproject/
 /*/.DS_Store
 .DS_Store
+.env.dev

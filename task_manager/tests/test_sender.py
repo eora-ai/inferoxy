@@ -40,6 +40,13 @@ batch = MinimalBatchObject(
     model=model,
 )
 
+cur_path = pathlib.Path(__file__)
+config_path = cur_path.parent / "config.yaml"
+
+with open(config_path) as config_file:
+    config_dict = yaml.full_load(config_file)
+    config = dm.Config.from_dict(config_dict)
+
 
 async def get_response_batches(receiver):
     res_iterable = receiver.receive()
@@ -51,23 +58,17 @@ async def get_response_batches(receiver):
 
 
 if __name__ == "__main__":
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent / "src/utils/data_transfers/zmq-config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.ZMQConfig(**config_dict)
 
     sender = Sender(
         open_address="tcp://127.0.0.1:5556",
         sync_address="tcp://127.0.0.1:5546",
-        config=config,
+        config=config.models.zmq_config,
     )
 
     receiver = Receiver(
         open_address="tcp://127.0.0.1:5555",
         sync_address="tcp://127.0.0.1:5545",
-        config=config,
+        config=config.models.zmq_config,
     )
 
     sys.stdout.write("Send data\n")

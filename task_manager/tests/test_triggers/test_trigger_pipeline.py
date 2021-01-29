@@ -36,16 +36,18 @@ stub_stateful = dm.ModelObject(
 )
 
 stub_config = dm.Config(
-    "",
-    "",
-    "",
-    "",
-    "",
-    [],
-    dm.LoadAnalyzerConfig(
+    zmq_output_address="",
+    zmq_input_address="",
+    gpu_all=[],
+    load_analyzer=dm.LoadAnalyzerConfig(
         0.5,
         trigger_pipeline=dm.TriggerPipelineConfig(70),
         running_mean=dm.RunningMeanConfig(0.1, 1, 3),
+    ),
+    health_check=dm.HealthCheckerConfig(10),
+    docker=dm.DockerConfig("", "", ""),
+    models=dm.ModelsRunnerConfig(
+        ports=dm.PortConfig(0, 0, 0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
     ),
 )
 
@@ -61,7 +63,7 @@ def test_decrease_stateful_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instance2 = dm.ModelInstance(
         model=stub_stateful,
@@ -70,7 +72,7 @@ def test_decrease_stateful_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     output_queue = OutputBatchQueue()
     model_instances_storage = ModelInstancesStorage(
@@ -106,7 +108,7 @@ def test_decrease_stateless_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
@@ -115,7 +117,7 @@ def test_decrease_stateless_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     output_queue = OutputBatchQueue()
     model_instances_storage = ModelInstancesStorage(
@@ -151,7 +153,7 @@ def test_not_enough_resources_decrease_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
@@ -160,7 +162,7 @@ def test_not_enough_resources_decrease_in_pipeline():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     output_queue = OutputBatchQueue()
     model_instances_storage = ModelInstancesStorage(
@@ -196,7 +198,7 @@ def test_percent_rule():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
@@ -205,7 +207,7 @@ def test_percent_rule():
         receiver=BaseReceiver(),
         lock=False,
         running=True,
-        container_name="test",
+        hostname="test",
     )
     output_queue = OutputBatchQueue()
     model_instances_storage = ModelInstancesStorage(

@@ -6,15 +6,14 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 
-import sys
+import os
+import pathlib
+import time
+
 import yaml
 import pytest
-import time
-import pathlib
 
-sys.path.append("../..")
-
-from src.cloud_clients.docker_cloud_client import DockerCloudClient
+from src.cloud_clients import DockerCloudClient
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
@@ -50,8 +49,21 @@ model_instance_fail = dm.ModelInstance(
     sender=BaseSender(),
     receiver=BaseReceiver(),
     lock=False,
-    container_name="kdjfskalf",
+    hostname="kdjfskalf",
+    running=False,
 )
+
+cur_path = pathlib.Path(__file__)
+config_path = cur_path.parent.parent.parent / "config.yaml"
+
+with open(config_path) as config_file:
+    config_dict = yaml.full_load(config_file)
+    config = dm.Config(**config_dict)
+    config.docker = dm.DockerConfig(
+        registry=os.environ.get("DOCKER_REGISTRY", ""),
+        login=os.environ.get("DOCKER_LOGIN", ""),
+        password=os.environ.get("DOCKER_PASSWORD", ""),
+    )
 
 
 def test_image_doesnt_exist():
@@ -59,12 +71,6 @@ def test_image_doesnt_exist():
     Test function start_instance() on CPU
     Throw exceprion RuntimeError -> image does not exist
     """
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
     with pytest.raises(ex.CloudAPIError):
@@ -75,13 +81,6 @@ def test_stop_container():
     """
     Test function stop_instance() on model running on gpu
     """
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-
     docker_client = DockerCloudClient(config)
     model_instance = docker_client.start_instance(model_object_gpu)
 
@@ -112,22 +111,16 @@ def test_list_containers():
     """
     Test function get_running_instances()
     """
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
     model_instance = docker_client.start_instance(model_object_pass)
 
     model_instances = docker_client.get_running_instances(model_object_pass)
 
-    assert model_instance.container_name == model_instances[0].container_name
+    assert model_instance.hostname == model_instances[0].hostname
 
     for item in model_instances:
-        container = docker_client.client.containers.get(item.container_name)
+        container = docker_client.client.containers.get(item.hostname)
         container.remove(force=True)
 
 
@@ -135,13 +128,6 @@ def test_can_run_on_gpu():
     """
     Test function can_create_instance()
     """
-
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
     can_create = docker_client.can_create_instance(model_object_gpu)
@@ -156,18 +142,11 @@ def test_run_on_gpu():
     Test function start_instance() on GPU
     """
 
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-
     docker_client = DockerCloudClient(config)
     model_instance = docker_client.start_instance(model_object_gpu)
 
     assert len(docker_client.gpu_busy) == 1
-    c = docker_client.client.containers.get(model_instance.container_name)
+    c = docker_client.client.containers.get(model_instance.hostname)
     c.remove(force=True)
 
 
@@ -175,13 +154,6 @@ def test_cannot_run_gpu():
     """
     Test function can_create_instance() return False
     """
-
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
 
     docker_client = DockerCloudClient(config)
 
@@ -191,18 +163,11 @@ def test_cannot_run_gpu():
         test = "CANNOT"
 
     assert test == "CANNOT"
-    c = docker_client.client.containers.get(model_instance.container_name)
+    c = docker_client.client.containers.get(model_instance.hostname)
     c.remove(force=True)
 
 
 def test_failed_stop():
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent.parent / "config.yaml"
-
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-
     docker_client = DockerCloudClient(config)
     with pytest.raises(ex.ContainerNotFound):
         docker_client.stop_instance(model_instance_fail)

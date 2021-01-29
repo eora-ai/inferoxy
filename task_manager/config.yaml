@@ -1,8 +1,21 @@
 zmq_input_address: "ipc:///tmp/batch_manager/result"
 zmq_output_address: "ipc:///tmp/task_manager/result"
-
-docker_registry: "https://registry.visionhub.ru"
-docker_login: "admin"
-docker_password: "6y4JgtsaNbDvQVCX"
-
 gpu_all: [1]
+
+health_check:
+  connection_idle_timeout: 10
+
+models:
+  ports:
+    sender_open_addr: 5556
+    sender_sync_addr: 5555
+    receiver_open_addr: 5546
+    receiver_sync_addr: 5545
+  zmq_config:
+    sndhwm: 10
+    rcvhwm: 10
+    sndtimeo: 3600000
+    rcvtimeo: 3600000
+
+
+  

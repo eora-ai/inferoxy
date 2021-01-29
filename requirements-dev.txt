@@ -4,3 +4,4 @@ pylint
 pytest
 pytest-asyncio
 mypy
+Pillow

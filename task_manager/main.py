@@ -5,6 +5,7 @@ Entry point of the task manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
 import asyncio
 import threading
 import yaml
@@ -18,6 +19,7 @@ from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.cloud_clients import DockerCloudClient
+from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
 
 
 async def pipeline(
@@ -56,6 +58,12 @@ def main():
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
+        if os.environ.get("CLOUD_CLIENT") == "docker":
+            config.docker = dm.DockerConfig(
+                docker_registry=os.environ.get("DOCKER_REGISTRY"),
+                docker_login=os.environ.get("DOCKER_LOGIN"),
+                docker_password=os.environ.get("DOCKER_PASSWORD"),
+            )
 
     input_batch_queue = InputBatchQueue()
     output_batch_queue = OutputBatchQueue()
@@ -81,11 +89,16 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
+    health_check_thread = HealthCheckerPipeline(
+        model_instances_storage, cloud_client, config
+    )
     pipeline_thread.start()
     load_analyzer_thread.start()
+    health_check_thread.start()
 
     pipeline_thread.join()
     load_analyzer_thread.join()
+    health_check_thread.join()
 
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 import src.data_models as dm
+from src.health_checker.errors import HealthCheckError
 
 
 class BaseCloudClient(ABC):
@@ -69,4 +70,17 @@ class BaseCloudClient(ABC):
     def get_maximum_running_instances(self) -> int:
         """
         Return maximum number of running instances
+        """
+
+    @abstractmethod
+    def is_instance_running(
+        self, model_instance: dm.ModelInstance
+    ) -> dm.ReasoningOutput[bool, HealthCheckError]:
+        """
+        Returns true if instance is running, else returns false, and description why
+
+        Parameters
+        ----------
+        model_instance:
+            The Model instance that we want to check
         """

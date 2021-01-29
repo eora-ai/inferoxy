@@ -38,6 +38,7 @@ config = dm.Config(
         trigger_pipeline=dm.TriggerPipelineConfig(60),
         running_mean=dm.RunningMeanConfig(50, 100, 10),
     ),
+    health_check=dm.HealthCheckerConfig(10),
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(
             sender_open_addr=5566,

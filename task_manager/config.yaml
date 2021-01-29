@@ -2,6 +2,9 @@ zmq_input_address: "ipc:///tmp/batch_manager/result"
 zmq_output_address: "ipc:///tmp/task_manager/result"
 gpu_all: [1]
 
+health_check:
+  connection_idle_timeout: 10
+
 models:
   ports:
     sender_open_addr: 5556

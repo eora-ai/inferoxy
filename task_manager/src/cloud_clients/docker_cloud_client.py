@@ -172,11 +172,11 @@ class DockerCloudClient(BaseCloudClient):
         r_open_port = self.config.models.ports.receiver_open_addr
         r_sync_port = self.config.models.ports.receiver_sync_addr
 
-        sender_open_address = f"tcp://localhost:{s_open_port}"
-        sender_sync_address = f"tcp://localhost:{s_sync_port}"
+        sender_open_address = f"tcp://{hostname}:{s_open_port}"
+        sender_sync_address = f"tcp://{hostname}:{s_sync_port}"
 
-        receiver_open_address = f"tcp://localhost:{r_open_port}"
-        receiver_sync_address = f"tcp://localhost:{r_sync_port}"
+        receiver_open_address = f"tcp://{hostname}:{r_open_port}"
+        receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
 
         # Create sender and receiver
         sender = Sender(

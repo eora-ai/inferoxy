@@ -42,7 +42,7 @@ class HealthCheckerPipeline(Thread):
         self.alert_manager = AlertManager()
 
     def run(self):
-        asyncio.run([self.pipeline()])
+        asyncio.run(self.pipeline())
 
     async def pipeline(self):
         while True:

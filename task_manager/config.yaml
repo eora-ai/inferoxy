@@ -5,6 +5,15 @@ gpu_all: [1]
 health_check:
   connection_idle_timeout: 10
 
+load_analyzer:
+  sleep_time: 0
+  trigger_pipeline:
+    max_model_percent: 60
+  running_mean:
+    min_threshold: 5
+    max_threshold: 10
+    window_size: 10
+
 models:
   ports:
     sender_open_addr: 5556
@@ -16,6 +25,3 @@ models:
     rcvhwm: 10
     sndtimeo: 3600000
     rcvtimeo: 3600000
-
-
-  

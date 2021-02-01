@@ -251,13 +251,15 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    responses_info: List[ResponseInfo] = field(default_factory=list)
+    responses_info: Optional[List[ResponseInfo]] = None
+    error: Optional[str] = None
 
     @classmethod
     def from_minimal_batch_object(
         cls,
         batch: MinimalBatchObject,
-        responses_info: List[ResponseInfo],
+        error: Optional[str] = None,
+        responses_info: Optional[List[ResponseInfo]] = None,
     ):
         """
         Make Response Batch object from RequestBactch
@@ -273,6 +275,7 @@ class ResponseBatch(MinimalBatchObject):
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
             responses_info=responses_info,
+            error=error,
         )
 
     def __hash__(self):

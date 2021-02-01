@@ -138,6 +138,10 @@ class ModelInstance:
     hostname: str
     running: bool
     num_gpu: Optional[int] = None
+    current_processing_batch: Optional[MinimalBatchObject] = None
+
+    def __hash__(self):
+        return hash(self.model)
 
 
 RequestBatch = MinimalBatchObject

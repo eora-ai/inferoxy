@@ -25,6 +25,11 @@ class InputBatchQueue:
             str, Dict[Tuple[Optional[str], dm.ModelObject], (QueueSize, Queue)]
         ] = dict(stateless={}, stateful={})
 
+    @staticmethod
+    def __prepare_for_put(item: dm.MinimalBatchObject):
+        item.queued_at = datetime.datetime.now()
+        item.status = dm.Status.IN_QUEUE
+
     async def put(
         self,
         item: dm.MinimalBatchObject,
@@ -38,19 +43,33 @@ class InputBatchQueue:
             dm.MinimalBatchObject item, that will be transformed into RequestBatchObject,
             Set status=created and created_at, this will be saved into queue
         """
-        is_stateless = True
-        source_id = None
-        if not item.model.stateless:
-            is_stateless = False
-            source_id = item.source_id
-
-        item.queued_at = datetime.datetime.now()
-        item.status = dm.Status.IN_QUEUE
-        queue = self.__select_queue(item.model, source_id)
-        if queue is None:
-            queue = self.__create_queue(item.model, source_id)
+        self.__prepare_for_put(item)
+        source_id = self.__get_source_id(item)
+        queue = self.__select_or_create_queue(item.model, source_id=source_id)
         self.__increase_queue_size(item)
         await queue.put(item)
+
+    def put_nowait(self, item: dm.MinimalBatchObject):
+        """
+        Put dm.ResponseBatch into queue, save time processing for load analyzer, not-async method
+
+        Parameters
+        ----------
+        item:
+            dm.MinimalBatchObject item, that will be transformed into RequestBatchObject,
+            Set status=created and created_at, this will be saved into queue
+        """
+        self.__prepare_for_put(item)
+        source_id = self.__get_source_id(item)
+        queue = self.__select_or_create_queue(item.model, source_id=source_id)
+        self.__increase_queue_size(item)
+        queue.put_nowait(item)
+
+    @staticmethod
+    def __get_source_id(item: dm.MinimalBatchObject) -> Optional[str]:
+        if not item.model.stateless:
+            return item.source_id
+        return None
 
     def __increase_queue_size(self, batch: dm.MinimalBatchObject):
         """
@@ -67,6 +86,14 @@ class InputBatchQueue:
         sub_queues = self.queues["stateless" if batch.model.stateless else "stateful"]
         size, queue = sub_queues[(batch.source_id, batch.model)]
         sub_queues[(batch.source_id, batch.model)] = (size - batch.size, queue)
+
+    def __select_or_create_queue(
+        self, model: dm.ModelObject, source_id: Optional[str] = None
+    ) -> Queue:
+        queue = self.__select_queue(model, source_id)
+        if queue is None:
+            queue = self.__create_queue(model, source_id)
+        return queue
 
     def __create_queue(
         self,

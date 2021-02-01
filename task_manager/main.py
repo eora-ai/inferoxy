@@ -57,7 +57,7 @@ def main():
     """
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
+        config = dm.Config.from_dict(config_dict)
         if os.environ.get("CLOUD_CLIENT") == "docker":
             config.docker = dm.DockerConfig(
                 docker_registry=os.environ.get("DOCKER_REGISTRY"),

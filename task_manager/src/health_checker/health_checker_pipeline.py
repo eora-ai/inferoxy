@@ -13,6 +13,7 @@ from loguru import logger
 
 from src.cloud_clients import BaseCloudClient
 from src.model_instances_storage import ModelInstancesStorage
+from src.alert_sender import BaseAlertManager
 import src.data_models as dm
 
 from .checker import BaseHealthChecker, Status
@@ -20,16 +21,12 @@ from .container_running_checker import ContainerRunningChecker
 from .connection_stable_checker import ConnectionChecker
 
 
-class AlertManager:
-    def send(self, error):
-        pass
-
-
 class HealthCheckerPipeline(Thread):
     def __init__(
         self,
         model_instances_storage: ModelInstancesStorage,
         cloud_client: BaseCloudClient,
+        alert_manager: BaseAlertManager,
         config: dm.Config,
     ):
         super().__init__()
@@ -39,7 +36,7 @@ class HealthCheckerPipeline(Thread):
             ContainerRunningChecker(cloud_client, config),
             ConnectionChecker(cloud_client, config),
         ]
-        self.alert_manager = AlertManager()
+        self.alert_manager = alert_manager
 
     def run(self):
         asyncio.run([self.pipeline()])
@@ -69,4 +66,5 @@ class HealthCheckerPipeline(Thread):
                 logger.warning("Status reason can not be None")
                 continue
 
-            status.reason.process(self.alert_manager)
+            status.reason.process(status.model_instance, self.alert_manager)
+            self.model_instances_storage.remove_model_instance(status.model_instance)

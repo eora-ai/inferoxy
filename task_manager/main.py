@@ -9,6 +9,7 @@ import os
 import asyncio
 import threading
 import yaml
+from dotenv import load_dotenv
 
 import src.data_models as dm
 import src.receiver as rc
@@ -20,6 +21,8 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.cloud_clients import DockerCloudClient
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
+
+load_dotenv()
 
 
 async def pipeline(
@@ -58,11 +61,11 @@ def main():
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
-        if os.environ.get("CLOUD_CLIENT") == "docker":
+        if os.getenv("CLOUD_CLIENT") == "docker":
             config.docker = dm.DockerConfig(
-                docker_registry=os.environ.get("DOCKER_REGISTRY"),
-                docker_login=os.environ.get("DOCKER_LOGIN"),
-                docker_password=os.environ.get("DOCKER_PASSWORD"),
+                registry=os.getenv("DOCKER_REGISTRY"),
+                login=os.getenv("DOCKER_LOGIN"),
+                password=os.getenv("DOCKER_PASSWORD"),
             )
 
     input_batch_queue = InputBatchQueue()

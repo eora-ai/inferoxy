@@ -67,7 +67,7 @@ class ResponseInfo:
         )
 
 
-@dataclass(eq=False)
+@dataclass
 class RequestObject:
     """
     Format of input data.
@@ -76,14 +76,12 @@ class RequestObject:
     ----------
     uid:
         Uniq identifier of the request
-    inputs:
-        Input tensor, which will be processed
     source_id:
         Combination of adapter_id and user_id, need for result routing
-    parameters:
-        Meta information for processing
     model:
         Information about model
+    request_info:
+        RequestInfo is a payload of the request
     """
 
     uid: str
@@ -91,18 +89,8 @@ class RequestObject:
     request_info: RequestInfo
     model: ModelObject
 
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return False
-        return (
-            self.uid == other.uid
-            and np.array_equal(self.inputs, other.inputs)
-            and self.request_info == other.request_info
-            and self.model == other.model
-        )
 
-
-@dataclass(eq=False)
+@dataclass
 class ResponseObject:
     """
     Format of ouput data.
@@ -113,25 +101,17 @@ class ResponseObject:
         Uniq identifier of the request
     model:
         Inforamtion about model
-    parameters:
-        Meta information for processing
-    outputs:
-        Output tensor, which will be received
+    response_info:
+        ResponseInfo is a payload of the response
+    error:
+        String error, that will be displayed to user
     """
 
     uid: str
     model: ModelObject
-    response_info: ResponseInfo
+    response_info: Optional[ResponseInfo]
+    error: Optional[str]
     source_id: str
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return False
-        return (
-            self.uid == other.uid
-            and self.model == other.model
-            and self.response_info == other.response_info
-        )
 
 
 class Status(Enum):
@@ -251,13 +231,15 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    responses_info: List[ResponseInfo] = field(default_factory=list)
+    responses_info: Optional[List[ResponseInfo]] = None
+    error: Optional[str] = None
 
     @classmethod
     def from_minimal_batch_object(
         cls,
         batch: MinimalBatchObject,
-        responses_info: List[ResponseInfo],
+        error: Optional[str] = None,
+        responses_info: Optional[List[ResponseInfo]] = None,
     ):
         """
         Make Response Batch object from RequestBactch
@@ -273,6 +255,7 @@ class ResponseBatch(MinimalBatchObject):
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
             responses_info=responses_info,
+            error=error,
         )
 
     def __hash__(self):

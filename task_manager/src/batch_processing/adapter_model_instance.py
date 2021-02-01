@@ -6,7 +6,6 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 
-from dataclasses import asdict
 from datetime import datetime
 
 import src.data_models as dm
@@ -25,13 +24,7 @@ class AdapterV1ModelInstance:
         """
         Parse batches into v3 model request
         """
-        await self.sender.send(AdapterV1ModelInstance.batch_to_send_dict(batch))
+        await self.sender.send(batch)
         batch.status = dm.Status.SENT_TO_MODEL
         batch.started_at = datetime.now()
-
-    @classmethod
-    def batch_to_send_dict(cls, batch: dm.RequestBatch) -> dict:
-        """
-        Convert batch to dict format.
-        """
-        return asdict(batch)
+        self.model_instance.current_processing_batch = batch

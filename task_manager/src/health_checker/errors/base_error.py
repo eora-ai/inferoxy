@@ -20,15 +20,18 @@ class HealthCheckError(ABC):
         self.description = description
 
     @abstractmethod
-    def process(self, alert_manager):
+    def process(self, model_instance, alert_manager):
         """
         Process error, there are several behaviors.
         First one send error to alert manager,
         second one is to re run task that was running on failure model_instance
         """
 
-    def __repr__(self):
+    def __str__(self):
         return f"[{self.code}]: {self.description}"
+
+    def __repr__(self):
+        return str(self.code)
 
 
 class FatalError(HealthCheckError):
@@ -36,8 +39,8 @@ class FatalError(HealthCheckError):
     Fatal error is occured, like bug in the model. There is no sense in try to restart a task.
     """
 
-    def process(self, alert_manager):
-        alert_manager.send(repr(self))
+    def process(self, model_instance, alert_manager):
+        alert_manager.send(model_instance, self)
 
 
 class RetriableError(HealthCheckError):
@@ -45,5 +48,5 @@ class RetriableError(HealthCheckError):
     We can to retry a task.
     """
 
-    def process(self, alert_manager):
-        pass  # TODO: retry a task
+    def process(self, model_instance, alert_manager):
+        alert_manager.retry_task(model_instance, self)

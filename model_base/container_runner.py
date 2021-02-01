@@ -1,11 +1,12 @@
 import argparse
 import sys
-
+import yaml
 from pathlib import Path
 
+import data_models as dm  # type: ignore
 from runner import Runner  # type: ignore
-
 from tester import Tester  # type: ignore
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -42,6 +43,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    with open("/model_base/config.yaml") as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.ZMQConfig(**config_dict)
+
     if args.test_mode != "1":
         runner = Runner(
             dataset_address=args.dataset_addr,
@@ -49,6 +54,7 @@ if __name__ == "__main__":
             dataset_sync_address=args.dataset_sync_addr,
             results_sync_address=args.result_sync_addr,
             batch_size=args.batch_size,
+            config=config,
         )
         runner.start()
     else:

@@ -1,11 +1,10 @@
 import importlib
 import sys
-import yaml  # type: ignore
 
 from loguru import logger
 
-import data_models as dm  # type: ignore
-from data_transfer import Sender, Receiver  # type: ignore
+import model_base.data_models as dm  # type: ignore
+from model_base.data_transfer import Sender, Receiver  # type: ignore
 
 
 class Runner:
@@ -19,6 +18,7 @@ class Runner:
         dataset_sync_address,
         results_sync_address,
         batch_size,
+        config,
     ):
         """
         Initialize Model class which iterates from datasets samples given by host server and send results of
@@ -27,10 +27,6 @@ class Runner:
         :param dataset_address: address of socket to connect to receive from dataset sender (zmq format)
         :param results_address: address of socket to bind to send result (zmq format)
         """
-        with open("/model_base/config.yaml") as config_file:
-            config_dict = yaml.full_load(config_file)
-            config = dm.ZMQConfig(**config_dict)
-
         self.batch_size = batch_size
         self.receiver = Receiver(
             open_address=dataset_address,
@@ -63,8 +59,9 @@ class Runner:
         # 1. Get sample from input queue
         # 2. Run model on sample
         # 3. Send result back
-        response_batch = self._process_next_batch()
-        self.sender.send(response_batch)
+        while True:
+            response_batch = self._process_next_batch()
+            self.sender.send(response_batch)
 
         self.receiver.close()
         self.sender.close()
@@ -85,11 +82,12 @@ class Runner:
 
         minimal_batch = self.receiver.receive()
         if minimal_batch is None:
-            logger.warning("Sample is None\n")
+            logger.warning("Batch object is None\n")
 
         for request_info in minimal_batch.requests_info:
-            # TODO: add sound to sample
             sample = dict()
+            if "sound" in request_info.parameters:
+                sample["sound"] = request_info.parameters.get("sound")
             sample["image"] = request_info.input
             samples.append(sample)
 
@@ -103,14 +101,12 @@ class Runner:
             # List of dictionaries prediciton and image
             results = self.predict_batch(samples, draw=True)
 
-            # TODO call set sound
-            # self.__set_sound_for_results_if_needed(results, samples)
-
         response_batch = self.build_response_batch(minimal_batch, results)
 
         return response_batch
 
-    def build_response_batch(self, minimal_batch, results):
+    @staticmethod
+    def build_response_batch(minimal_batch, results):
         """
         Build Response Batch object from Minimal Batch Object
         """
@@ -119,10 +115,14 @@ class Runner:
         for i, item in enumerate(results):
             prediction = item["prediction"]
             image = item["image"]
+            parameters = minimal_batch.requests_info[i].parameters
+
+            if "sound" in results[i]:
+                parameters["sound"] = results[i]["sound"]
             response_info = dm.ResponseInfo(
                 output=prediction,
                 picture=image,
-                parameters=minimal_batch.requests_info[i].parameters,
+                parameters=parameters,
             )
             responses_info.append(response_info)
 
@@ -130,12 +130,3 @@ class Runner:
             batch=minimal_batch, responses_info=responses_info
         )
         return response_batch
-
-    @staticmethod
-    def __set_sound_for_results_if_needed(results, samples):
-        for i in range(len(results)):
-            if "sound" in results[i]:
-                return
-            if "sound" not in samples[i]:
-                return
-            results[i]["sound"] = samples[i]["sound"]

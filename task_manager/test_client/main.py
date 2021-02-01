@@ -10,6 +10,8 @@ import sys
 import yaml
 import zmq
 import pathlib
+
+from moviepy.editor import VideoFileClip
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
 from loguru import logger
@@ -19,7 +21,6 @@ sys.path.append("..")
 import src.data_models as dm
 
 from src.data_models import MinimalBatchObject, ModelObject
-from src.batch_queue import InputBatchQueue
 
 
 stub_model = model = ModelObject(
@@ -30,16 +31,12 @@ stub_model = model = ModelObject(
 )
 
 
-async def get_response_batches(receiver):
-    res_iterable = receiver.receive()
-    async for item in res_iterable:
-        sys.stdout.write(str(item))
-        image = item.responses_info[0].picture
-        im = Image.fromarray(image)
-        im.save("result.png")
+def batch_video():
+    video = VideoFileClip("without_sound_cutted.mp4")
+    print([frame for frame in video.iter_frames()])
 
 
-def main():
+def batch_pictures():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
@@ -78,4 +75,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    batch_video()

@@ -9,6 +9,7 @@ import asyncio
 from datetime import datetime
 
 import yaml
+from pathlib import Path
 from loguru import logger
 import src.data_models as dm
 import src.receiver as rc
@@ -43,9 +44,20 @@ def main():
     """
     Entry point run asyncio pipeline
     """
+    path_log = "/tmp/batch_manager"
+    path_input = "/tmp/batch_manager/input"
+    path_output = "/tmp/batch_manager/result"
+    path_db = "/tmp/batch_manager/db"
+
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
+
+    Path(path_log).mkdir(parents=True, exist_ok=True)
+    Path(path_input).touch()
+    Path(path_output).touch()
+    Path(path_db).touch()
+
     asyncio.run(pipeline(config))
 
 

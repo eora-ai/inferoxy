@@ -7,11 +7,14 @@ __email__ = "m.gafarova@eora.ru"
 
 import yaml
 import asyncio
+
+from pathlib import Path
+from loguru import logger
+
 import src.data_models as dm
 import src.receiver as rc
 import src.sender as snd
 
-from loguru import logger
 from src.debatcher import debatch, pull_batch_mapping
 
 
@@ -20,9 +23,24 @@ def main():
     Entry point for running main fucntionality
     """
     logger.info("Read config file")
+
+    path_log_debatch = "/tmp/debatch_manager"
+    path_log_task = "/tmp/task_manager"
+
+    path_input = "/tmp/task_manager/result"
+    path_output = "/tmp/debatch_manager/result"
+    path_db = "/tmp/debatch_manager/db"
+
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
+
+    Path(path_log_debatch).mkdir(parents=True, exist_ok=True)
+    Path(path_log_task).mkdir(parents=True, exist_ok=True)
+    Path(path_input).touch()
+    Path(path_output).touch()
+    Path(path_db).touch()
+
     logger.info("Configs loaded")
     logger.info("Run pipeline")
 

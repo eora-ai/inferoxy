@@ -44,3 +44,17 @@ Check that db contains BatchMapping
 ```bash=
 python db.py
 ```
+
+### How to run docker
+
+Create `.env` file with variables
+* CLOUD_CLIENT=docker
+* DOCKER_REGISTRY
+* DOCKER_LOGIN
+* DOCKER_PASSWORD
+
+Run commands:
+```
+docker build . -t inferoxy:v1
+docker run --env-file .env -v /var/run/docker.sock:/var/run/docker.sock inferoxy:v1
+```

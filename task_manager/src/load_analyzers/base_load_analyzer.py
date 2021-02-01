@@ -9,7 +9,7 @@ __email__ = "a.chertkov@eora.ru"
 from threading import Thread
 import time
 from abc import ABC
-from typing import List
+from typing import List, Type
 
 from src.cloud_clients import BaseCloudClient
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
@@ -51,7 +51,7 @@ class BaseLoadAnalyzer(Thread, ABC):
                 )
             )
 
-    checkers: List[type] = []
+    checkers: List[Type[Checker]] = []
     __checkers: List[Checker] = []
 
     def run(self):
@@ -66,9 +66,11 @@ class BaseLoadAnalyzer(Thread, ABC):
         pipeline = TriggerPipeline(
             cloud_client=self.cloud_client,
             model_instances_storage=self.model_instances_storage,
+            # Add config
+            config=self.config,
         )
-        for checker in self.checkers:
+        for checker in self.__checkers:
             triggers = checker.make_triggers()
-            pipeline.append(triggers)
+            pipeline.extend(triggers)
         pipeline.optimize()
         pipeline.apply()

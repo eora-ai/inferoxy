@@ -46,7 +46,53 @@ def extract_frames_at_times(movie, times, imgdir):
         yield data
 
 
-def batch_video():
+def batches_video_with_sound():
+    cur_path = pathlib.Path(__file__)
+    config_path = cur_path.parent.parent / "config.yaml"
+
+    with open(config_path) as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config.from_dict(config_dict)
+
+    ctx = zmq.Context()
+    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender.connect(config.zmq_input_address)
+    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver.bind(config.zmq_output_address)
+    sock_receiver.subscribe(b"")
+
+    movie = VideoFileClip("cat_with_sound.mp4")
+    uid_generator = uuid4_string_generator()
+    audio = movie.audio
+    count_img = 0
+    audio_array = audio.to_soundarray()
+    for frame in movie.iter_frames():
+        count_img += 1
+    sound_per_frame = len(audio_array) // count_img
+
+    for i in range(count_img):
+        sound = audio_array[
+            i * sound_per_frame : (i * sound_per_frame + sound_per_frame) : 1
+        ]
+        if not [] in sound:
+            request_info = dm.RequestInfo(
+                input=frame,
+                parameters={"sound": sound},
+            )
+            batch = MinimalBatchObject(
+                uid=next(uid_generator),
+                requests_info=[request_info],
+                model=stub_model,
+            )
+            print(batch)
+            sock_sender.send_pyobj(batch)
+    logger.info("Start Listening")
+    while True:
+        result = sock_receiver.recv_pyobj()
+        logger.info(f"Result batch {result}")
+
+
+def batches_video_without_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
@@ -120,4 +166,4 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
-    batch_video()
+    batches_video_with_sound()

@@ -171,7 +171,7 @@ def build_batches(
         else:
             new_batch = dm.BatchObject(
                 uid=next(uid_generator),
-                requests_info=[request_object.requests_info],
+                requests_info=[request_object.request_info],
                 model=request_object.model,
                 request_objects=[request_object],
                 source_id=None

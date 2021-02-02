@@ -46,6 +46,81 @@ def extract_frames_at_times(movie, times, imgdir):
         yield data
 
 
+def batches_different_sources():
+    cur_path = pathlib.Path(__file__)
+    config_path = cur_path.parent.parent / "config.yaml"
+
+    with open(config_path) as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config.from_dict(config_dict)
+
+    ctx = zmq.Context()
+    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender.connect(config.zmq_input_address)
+    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver.bind(config.zmq_output_address)
+    sock_receiver.subscribe(b"")
+    movie = VideoFileClip("without_sound_cutted.mp4")
+    uid_generator = uuid4_string_generator()
+
+    requests_info1 = []
+    requests_info2 = []
+    frames = []
+    for item in movie.iter_frames():
+        frames.append(item)
+
+    for frame in frames[: len(frames) // 2]:
+        request_info = dm.RequestInfo(
+            input=frame,
+            parameters={},
+        )
+        requests_info1.append(request_info)
+
+    for frame in frames[len(frames) // 2 :]:
+        request_info = dm.RequestInfo(
+            input=frame,
+            parameters={},
+        )
+        requests_info2.append(request_info)
+
+    batch1 = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info1,
+        model=stub_model,
+        source_id="source_id1",
+    )
+
+    batch2 = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info2,
+        model=stub_model,
+        source_id="source_id1",
+    )
+
+    batch3 = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info1,
+        model=stub_model,
+        source_id="source_id2",
+    )
+
+    batch4 = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info2,
+        model=stub_model,
+        source_id="source_id2",
+    )
+    batches = [batch1, batch2, batch3, batch4]
+    for batch in batches:
+        print(batch)
+        sock_sender.send_pyobj(batch)
+
+    logger.info("Start Listening")
+    while True:
+        result = sock_receiver.recv_pyobj()
+        logger.info(f"Result batch {result}")
+
+
 def batches_video_with_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
@@ -84,7 +159,6 @@ def batches_video_with_sound():
                 requests_info=[request_info],
                 model=stub_model,
             )
-            print(batch)
             sock_sender.send_pyobj(batch)
     logger.info("Start Listening")
     while True:
@@ -166,4 +240,4 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
-    batches_video_with_sound()
+    batches_different_sources()

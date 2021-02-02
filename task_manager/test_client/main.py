@@ -240,4 +240,4 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
-    batches_different_sources()
+    batch_pictures()

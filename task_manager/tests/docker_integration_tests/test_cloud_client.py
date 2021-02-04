@@ -58,7 +58,7 @@ config_path = cur_path.parent.parent.parent / "config.yaml"
 
 with open(config_path) as config_file:
     config_dict = yaml.full_load(config_file)
-    config = dm.Config(**config_dict)
+    config = dm.Config.from_dict(config_dict)
     config.docker = dm.DockerConfig(
         registry=os.environ.get("DOCKER_REGISTRY", ""),
         login=os.environ.get("DOCKER_LOGIN", ""),

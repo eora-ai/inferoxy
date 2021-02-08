@@ -131,7 +131,7 @@ def batches_video_with_sound():
     for frame in movie.iter_frames():
         count_img += 1
     sound_per_frame = len(audio_array) // count_img
-
+    requests_info = []
     for i in range(count_img):
         sound = audio_array[
             i * sound_per_frame : (i * sound_per_frame + sound_per_frame) : 1
@@ -141,12 +141,14 @@ def batches_video_with_sound():
                 input=frame,
                 parameters={"sound": sound},
             )
-            batch = MinimalBatchObject(
-                uid=next(uid_generator),
-                requests_info=[request_info],
-                model=stub_model,
-            )
-            sock_sender.send_pyobj(batch)
+            requests_info.append(request_info)
+
+    batch = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info,
+        model=stub_model,
+    )
+    sock_sender.send_pyobj(batch)
     logger.info("Start Listening")
     while True:
         result = sock_receiver.recv_pyobj()
@@ -170,18 +172,20 @@ def batches_video_without_sound():
 
     movie = VideoFileClip("without_sound_cutted.mp4")
     uid_generator = uuid4_string_generator()
+    requests_info = []
     for frame in movie.iter_frames():
         request_info = dm.RequestInfo(
             input=frame,
             parameters={},
         )
-        batch = MinimalBatchObject(
-            uid=next(uid_generator),
-            requests_info=[request_info],
-            model=stub_model,
-        )
-        print(batch)
-        sock_sender.send_pyobj(batch)
+        requests_info.append(request_info)
+
+    batch = MinimalBatchObject(
+        uid=next(uid_generator),
+        requests_info=requests_info,
+        model=stub_model,
+    )
+    sock_sender.send_pyobj(batch)
     logger.info("Start listening")
     while True:
         result = sock_receiver.recv_pyobj()

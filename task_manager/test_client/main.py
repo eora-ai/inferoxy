@@ -33,19 +33,6 @@ stub_model = model = ModelObject(
 )
 
 
-def extract_frames_at_times(movie, times, imgdir):
-    clip = VideoFileClip(movie)
-    for t in times:
-        imgpath = os.path.join(imgdir, "{}.png".format(t))
-        clip.save_frame(imgpath, t)
-        #  load the image
-        image = Image.open(imgpath)
-
-        # convert image to numpy array
-        data = np.asarray(image)
-        yield data
-
-
 def batches_different_sources():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"

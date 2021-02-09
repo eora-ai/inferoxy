@@ -9,7 +9,6 @@ import os
 import asyncio
 import threading
 import yaml
-from dotenv import load_dotenv
 
 import src.data_models as dm
 import src.receiver as rc
@@ -22,8 +21,6 @@ from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.alert_sender import AlertManager
 from src.cloud_clients import DockerCloudClient
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-
-load_dotenv()
 
 
 async def pipeline(

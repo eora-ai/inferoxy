@@ -59,12 +59,11 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
                 logger.info(f"This instance {container.name} is running on cpu")
-            model_instance = asyncio.run(
-                self.build_model_instance(
-                    model=model,
-                    hostname=container.name,
-                )
+            model_instance = self.build_model_instance(
+                model=model,
+                hostname=container.name,
             )
+
             model_instances.append(model_instance)
         return model_instances
 
@@ -164,7 +163,7 @@ class DockerCloudClient(BaseCloudClient):
             },
         )
 
-    async def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+    async def setup_data_transfer(self, hostname):
         s_open_port = self.config.models.ports.sender_open_addr
         s_sync_port = self.config.models.ports.sender_sync_addr
         r_open_port = self.config.models.ports.receiver_open_addr
@@ -189,6 +188,10 @@ class DockerCloudClient(BaseCloudClient):
             sync_address=receiver_sync_address,
             config=self.config.models.zmq_config,
         )
+        return sender, receiver
+
+    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+        sender, receiver = asyncio.run(self.setup_data_transfer(hostname))
 
         return dm.ModelInstance(
             model=model,

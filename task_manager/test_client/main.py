@@ -231,4 +231,4 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
-    batches_video_without_sound()
+    batch_pictures()

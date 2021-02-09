@@ -58,13 +58,19 @@ def main():
     4. Start sender
     In second thread: load analyzer.
     """
-    log_level = os.environ.get("LOGGING_INFO")
-    logger.add(
+    log_level = os.environ.get("LOGGING_LEVEL")
+    handler = logger.add(
         sys.stderr,
-        format="{time} {level} {message}",
-        filter="my_module",
         level=log_level,
     )
+
+    if log_level == "INFO":
+        handler = logger.add(
+            sys.stderr,
+            level="DEBUG",
+        )
+        logger.remove(handler)
+
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config.from_dict(config_dict)

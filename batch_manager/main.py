@@ -30,11 +30,6 @@ async def pipeline(config: dm.Config):
     config
         Config object
     """
-    # Set up log level of logger
-    log_level = os.getenv("LOGGING_LEVEL")
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
-
     input_socket = rc.create_socket(config=config)
     output_socket = snd.create_socket(config=config)
     request_object_iterable = rc.receive(input_socket)
@@ -52,6 +47,11 @@ def main():
     """
     Entry point run asyncio pipeline
     """
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
     path_log = "/tmp/batch_manager"
     path_input = "/tmp/batch_manager/input"
     path_output = "/tmp/batch_manager/result"

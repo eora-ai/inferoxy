@@ -6,9 +6,12 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import os
+import sys
 import asyncio
 import threading
 import yaml
+
+from loguru import logger
 
 import src.data_models as dm
 import src.receiver as rc
@@ -55,6 +58,13 @@ def main():
     4. Start sender
     In second thread: load analyzer.
     """
+    log_level = os.environ.get("LOGGING_INFO")
+    logger.add(
+        sys.stderr,
+        format="{time} {level} {message}",
+        filter="my_module",
+        level=log_level,
+    )
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config.from_dict(config_dict)

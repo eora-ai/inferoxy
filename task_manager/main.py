@@ -13,6 +13,7 @@ import yaml
 import src.data_models as dm
 import src.receiver as rc
 import src.sender as snd
+from src.alert_sender import AlertManager
 from src.batch_processing.queue_processing import send_to_model
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
@@ -89,8 +90,9 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
+    alert_manager = AlertManager(input_batch_queue, output_batch_queue)
     health_check_thread = HealthCheckerPipeline(
-        model_instances_storage, cloud_client, config
+        model_instances_storage, cloud_client, alert_manager, config
     )
     pipeline_thread.start()
     load_analyzer_thread.start()

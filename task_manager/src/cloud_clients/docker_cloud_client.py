@@ -5,12 +5,12 @@ This module is responsible for docker based cloud(Actualy it is single machine)
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Set, Optional
 import random
-
 import docker  # type: ignore
-from loguru import logger
+import asyncio
 
+from typing import List, Set, Optional
+from loguru import logger
 import src.data_models as dm
 import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
@@ -59,9 +59,11 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
                 logger.info(f"This instance {container.name} is running on cpu")
-            model_instance = self.build_model_instance(
-                model=model,
-                hostname=container.name,
+            model_instance = asyncio.run(
+                self.build_model_instance(
+                    model=model,
+                    hostname=container.name,
+                )
             )
             model_instances.append(model_instance)
         return model_instances
@@ -162,11 +164,7 @@ class DockerCloudClient(BaseCloudClient):
             },
         )
 
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        """
-        Build and return model instance object
-        """
-
+    async def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
         s_open_port = self.config.models.ports.sender_open_addr
         s_sync_port = self.config.models.ports.sender_sync_addr
         r_open_port = self.config.models.ports.receiver_open_addr
@@ -179,6 +177,7 @@ class DockerCloudClient(BaseCloudClient):
         receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
 
         # Create sender and receiver
+
         sender = Sender(
             open_address=sender_open_address,
             sync_address=sender_sync_address,

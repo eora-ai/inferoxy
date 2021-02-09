@@ -75,7 +75,7 @@ class ModelInstancesStorage:
         """
         Return number of running models
         """
-        result = defaultdict(int)
+        result = dict()
         for model in self.model_instances:
             result[model] = len(self.model_instances[model])
         return result

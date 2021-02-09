@@ -16,6 +16,7 @@ from loguru import logger
 import src.data_models as dm
 import src.receiver as rc
 import src.sender as snd
+from src.alert_sender import AlertManager
 from src.batch_processing.queue_processing import send_to_model
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
@@ -58,18 +59,12 @@ def main():
     4. Start sender
     In second thread: load analyzer.
     """
-    log_level = os.environ.get("LOGGING_LEVEL")
-    handler = logger.add(
-        sys.stderr,
-        level=log_level,
-    )
 
-    if log_level == "INFO":
-        handler = logger.add(
-            sys.stderr,
-            level="DEBUG",
-        )
-        logger.remove(handler)
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
 
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
@@ -105,8 +100,9 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
+    alert_manager = AlertManager(input_batch_queue, output_batch_queue)
     health_check_thread = HealthCheckerPipeline(
-        model_instances_storage, cloud_client, config
+        model_instances_storage, cloud_client, alert_manager, config
     )
     pipeline_thread.start()
     load_analyzer_thread.start()

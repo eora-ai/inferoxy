@@ -5,16 +5,19 @@ Entry point of batch manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import asyncio
-from datetime import datetime
-
+import os
+import sys
 import yaml
+import asyncio
+
+from datetime import datetime
 from pathlib import Path
 from loguru import logger
-import src.data_models as dm
-import src.receiver as rc
-from src.builder import builder
+
 import src.sender as snd
+import src.receiver as rc
+import src.data_models as dm
+from src.builder import builder
 from src.saver import save_mapping
 
 
@@ -27,6 +30,11 @@ async def pipeline(config: dm.Config):
     config
         Config object
     """
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
     input_socket = rc.create_socket(config=config)
     output_socket = snd.create_socket(config=config)
     request_object_iterable = rc.receive(input_socket)

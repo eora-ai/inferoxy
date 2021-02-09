@@ -5,6 +5,8 @@ Entry point of debatch manager
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
+import os
+import sys
 import yaml
 import asyncio
 
@@ -22,6 +24,11 @@ def main():
     """
     Entry point for running main fucntionality
     """
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
     logger.info("Read config file")
 
     path_log_debatch = "/tmp/debatch_manager"

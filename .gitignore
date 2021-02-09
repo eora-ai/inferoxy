@@ -6,3 +6,7 @@ __pycache__
 .DS_Store
 .env.dev
 .env
+*.jpg
+*.wav
+*.png
+*.mp4

@@ -7,7 +7,6 @@ __email__ = "m.gafarova@eora.ru"
 
 
 import sys
-import os
 import yaml
 import zmq
 import pathlib
@@ -131,10 +130,11 @@ def batches_video_with_sound():
     for frame in movie.iter_frames():
         count_img += 1
     sound_per_frame = len(audio_array) // count_img
+
     requests_info = []
     for i in range(count_img):
         sound = audio_array[
-            i * sound_per_frame : (i * sound_per_frame + sound_per_frame) : 1
+            i * sound_per_frame : (i * sound_per_frame + sound_per_frame)
         ]
         if not [] in sound:
             request_info = dm.RequestInfo(
@@ -231,4 +231,4 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
-    batches_video_without_sound()
+    batch_pictures()

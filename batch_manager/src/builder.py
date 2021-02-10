@@ -6,15 +6,14 @@ Main bussines logic of BatchManager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Tuple, Generator, AsyncIterable
-from functools import reduce
 import asyncio
 
+from functools import reduce
 from aiostream import stream  # type: ignore
+from typing import List, Tuple, Generator, AsyncIterable
 
 import src.data_models as dm
 from shared_modules.utils import uuid4_string_generator
-
 from shared_modules.data_objects import (
     BatchMapping,
     RequestObject,

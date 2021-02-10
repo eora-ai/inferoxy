@@ -11,9 +11,8 @@ import collections
 from typing import Dict, List, Deque
 
 import src.data_models as dm
-from src.load_analyzers.triggers import Trigger
-
 from .checker import Checker
+from src.load_analyzers.triggers import Trigger
 
 
 class RunningMeanStatelessChecker(Checker):

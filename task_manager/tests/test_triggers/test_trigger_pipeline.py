@@ -5,24 +5,26 @@ Tests for src.load_analyzers.triggers.TriggerPipeline
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from functools import reduce
 from typing import Dict
+from functools import reduce
 from collections import defaultdict
+
+import src.data_models as dm
+from src.batch_queue import OutputBatchQueue
+from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
+from src.model_instances_storage import ModelInstancesStorage
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
 from src.load_analyzers.triggers import (
     TriggerPipeline,
     DecreaseTrigger,
     IncreaseTrigger,
 )
-from src.utils.data_transfers.sender import BaseSender
-from src.utils.data_transfers.receiver import BaseReceiver
-from src.model_instances_storage import ModelInstancesStorage
-from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.batch_queue import OutputBatchQueue
-import src.data_models as dm
 from src.cloud_clients.mock_cloud_client import (
     MockCloudClient,
 )
+
 
 stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128

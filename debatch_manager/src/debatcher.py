@@ -5,9 +5,9 @@ This module needed to recieve response objects from batch
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-from typing import List
-
 import plyvel  # type: ignore
+
+from typing import List
 from loguru import logger
 
 import src.data_models as dm

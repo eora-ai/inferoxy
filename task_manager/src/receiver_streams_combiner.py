@@ -7,12 +7,10 @@ __email__ = "a.chertkov@eora.ru"
 
 import asyncio
 
-import src.data_models as dm
-
+from aiostream.stream import merge  # type: ignore
 from typing import AsyncIterator, Union, Dict, Optional
 
-from aiostream.stream import merge  # type: ignore
-
+import src.data_models as dm
 from src.batch_queue import OutputBatchQueue
 from src.utils.data_transfers.receiver import BaseReceiver
 

@@ -6,10 +6,10 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import time
-from typing import AsyncIterator
-
 import zmq.asyncio  # type: ignore
+
 from loguru import logger
+from typing import AsyncIterator
 
 from shared_modules.data_objects import ResponseBatch, ZMQConfig
 

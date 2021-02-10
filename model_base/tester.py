@@ -1,13 +1,13 @@
-import importlib
+import sys
+import cv2  # type: ignore
 import json
-import logging
 import math
 import pickle
-import sys
+import logging
 import traceback
-
-import cv2  # type: ignore
+import importlib
 import numpy as np  # type: ignore
+
 from PIL import Image  # type: ignore
 
 logging.basicConfig(level=logging.INFO)

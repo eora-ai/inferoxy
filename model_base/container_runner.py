@@ -1,6 +1,7 @@
-import argparse
 import sys
 import yaml
+import argparse
+
 from pathlib import Path
 
 import data_models as dm  # type: ignore

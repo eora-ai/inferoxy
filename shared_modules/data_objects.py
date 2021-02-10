@@ -7,12 +7,12 @@ __email__ = "a.chertkov@eora.ru"
 
 
 import json
+import numpy as np  # type: ignore
+
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, Type, NewType
-
-import numpy as np  # type: ignore
 
 
 @dataclass

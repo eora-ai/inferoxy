@@ -3,9 +3,10 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import Iterator
 
 import numpy as np  # type: ignore
+
+from typing import Iterator
 
 import src.data_models as dm
 from src.builder import (

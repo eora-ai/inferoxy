@@ -7,8 +7,8 @@ __email__ = "a.chertkov@eora.ru"
 
 from abc import ABC, abstractmethod
 
-from src.health_checker.errors import HealthCheckError
 import src.data_models as dm
+from src.health_checker.errors import HealthCheckError
 
 
 class BaseAlertManager(ABC):

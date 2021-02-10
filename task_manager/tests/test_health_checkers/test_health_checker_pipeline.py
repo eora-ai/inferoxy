@@ -6,20 +6,20 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import os
-
 import pytest
 
-from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-from src.model_instances_storage import ModelInstancesStorage
-from src.cloud_clients.mock_cloud_client import MockCloudClient
-from src.alert_sender.mock_alert_manager import MockAlertManager
-from src.receiver_streams_combiner import ReceiverStreamsCombiner
+import src.data_models as dm
 from src.batch_queue import OutputBatchQueue
 from src.health_checker.checker import Status
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
+from src.model_instances_storage import ModelInstancesStorage
+from src.cloud_clients.mock_cloud_client import MockCloudClient
+from src.alert_sender.mock_alert_manager import MockAlertManager
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
+from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
 from src.health_checker.errors import ContainerExited, ContainerDoesNotExists
-import src.data_models as dm
+
 
 config = dm.Config(
     zmq_input_address="",

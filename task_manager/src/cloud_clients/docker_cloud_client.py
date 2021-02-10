@@ -5,11 +5,11 @@ This module is responsible for docker based cloud(Actualy it is single machine)
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Set, Optional
 import random
-
 import docker  # type: ignore
+
 from loguru import logger
+from typing import List, Set, Optional
 
 import src.data_models as dm
 import src.exceptions as exc

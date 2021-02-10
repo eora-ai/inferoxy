@@ -3,10 +3,11 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import AsyncIterable
 
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
+
+from typing import AsyncIterable
 
 import src.data_models as dm
 

@@ -7,10 +7,10 @@ __email__ = "m.gafarova@eora.ru"
 
 
 import sys
-import asyncio
 import yaml
 import time
 import pathlib
+import asyncio
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
@@ -20,7 +20,6 @@ sys.path.append("..")
 import src.data_models as dm
 from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
-
 from src.data_models import MinimalBatchObject, ModelObject
 
 # load the image

@@ -5,14 +5,13 @@ This module is definning BaseChecker class
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import Optional
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
 
-from src.cloud_clients import BaseCloudClient
 import src.data_models as dm
-
 from .errors import HealthCheckError
+from src.cloud_clients import BaseCloudClient
 
 
 @dataclass

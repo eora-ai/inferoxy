@@ -6,8 +6,8 @@ Increase, decrease and get operations over model instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from abc import ABC, abstractmethod
 from typing import List, Optional
+from abc import ABC, abstractmethod
 
 import src.data_models as dm
 from src.health_checker.errors import HealthCheckError

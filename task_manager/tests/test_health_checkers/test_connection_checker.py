@@ -11,8 +11,8 @@ import os
 import pytest
 
 import src.data_models as dm
-from src.utils.data_transfers.receiver import BaseReceiver
 from src.utils.data_transfers.sender import BaseSender
+from src.utils.data_transfers.receiver import BaseReceiver
 from src.cloud_clients.mock_cloud_client import MockCloudClient
 from src.health_checker.connection_stable_checker import ConnectionChecker, Status
 

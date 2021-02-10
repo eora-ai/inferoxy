@@ -6,17 +6,18 @@ and increase or decrease amount of instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from threading import Thread
 import time
+
 from abc import ABC
 from typing import List, Type
+from threading import Thread
 
-from src.cloud_clients import BaseCloudClient
-from src.batch_queue import InputBatchQueue, OutputBatchQueue
-from src.model_instances_storage import ModelInstancesStorage
 import src.data_models as dm
+from src.cloud_clients import BaseCloudClient
 from src.load_analyzers.checkers import Checker
 from src.load_analyzers.triggers import TriggerPipeline
+from src.batch_queue import InputBatchQueue, OutputBatchQueue
+from src.model_instances_storage import ModelInstancesStorage
 
 
 class BaseLoadAnalyzer(Thread, ABC):

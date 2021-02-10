@@ -4,6 +4,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import uuid
+
 from typing import Generator
 
 

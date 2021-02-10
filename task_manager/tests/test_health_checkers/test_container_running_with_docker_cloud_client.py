@@ -9,9 +9,8 @@ import pytest
 import os
 
 import src.data_models as dm
-
-from src.health_checker.container_running_checker import ContainerRunningChecker, Status
 from src.cloud_clients import DockerCloudClient
+from src.health_checker.container_running_checker import ContainerRunningChecker, Status
 
 pytestmark = pytest.mark.asyncio
 

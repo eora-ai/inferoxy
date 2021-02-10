@@ -10,13 +10,14 @@ import sys
 import yaml
 import asyncio
 
-from datetime import datetime
 from pathlib import Path
 from loguru import logger
+from datetime import datetime
 
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
+
 from src.builder import builder
 from src.saver import save_mapping
 
@@ -52,7 +53,7 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=log_level)
 
-    path_log = "/tmp/batch_manager"
+    path_dir = "/tmp/batch_manager"
     path_input = "/tmp/batch_manager/input"
     path_output = "/tmp/batch_manager/result"
     path_db = "/tmp/batch_manager/db"
@@ -61,7 +62,7 @@ def main():
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
-    Path(path_log).mkdir(parents=True, exist_ok=True)
+    Path(path_dir).mkdir(parents=True, exist_ok=True)
     Path(path_input).touch()
     Path(path_output).touch()
     Path(path_db).touch()

@@ -13,16 +13,16 @@ import yaml
 
 from loguru import logger
 
-import src.data_models as dm
 import src.receiver as rc
 import src.sender as snd
+import src.data_models as dm
 from src.alert_sender import AlertManager
-from src.batch_processing.queue_processing import send_to_model
+from src.cloud_clients import DockerCloudClient
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
+from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.cloud_clients import DockerCloudClient
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
 
 

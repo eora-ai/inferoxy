@@ -6,10 +6,10 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import asyncio  # type: ignore
+
 import yaml
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
-
 from loguru import logger
 
 from src.connector import Connector  # type: ignore

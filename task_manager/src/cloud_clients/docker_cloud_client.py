@@ -6,10 +6,10 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import random
-import docker  # type: ignore
-
-from loguru import logger
 from typing import List, Set, Optional
+
+import docker  # type: ignore
+from loguru import logger
 
 import src.data_models as dm
 import src.exceptions as exc

@@ -5,8 +5,8 @@ Tests for connection checker
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import time
 import os
+import time
 
 import pytest
 

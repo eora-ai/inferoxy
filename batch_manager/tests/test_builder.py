@@ -4,9 +4,9 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 
-import numpy as np  # type: ignore
-
 from typing import Iterator
+
+import numpy as np  # type: ignore
 
 import src.data_models as dm
 from src.builder import (

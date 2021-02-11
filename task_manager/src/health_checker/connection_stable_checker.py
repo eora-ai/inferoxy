@@ -6,7 +6,6 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import time
-
 from typing import Optional
 
 import src.data_models as dm

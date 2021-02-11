@@ -5,8 +5,9 @@ Tests for ContainerRunningChecker with DockerCloudClient
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import pytest
 import os
+
+import pytest
 
 import src.data_models as dm
 from src.cloud_clients import DockerCloudClient

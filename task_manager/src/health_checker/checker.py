@@ -6,8 +6,8 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from typing import Optional
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 import src.data_models as dm
 from .errors import HealthCheckError

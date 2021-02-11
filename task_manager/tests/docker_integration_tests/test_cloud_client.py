@@ -8,9 +8,10 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import time
+import pathlib
+
 import yaml
 import pytest
-import pathlib
 
 import src.exceptions as ex
 import src.data_models as dm

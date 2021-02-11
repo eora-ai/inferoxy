@@ -7,10 +7,10 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
-
 from functools import reduce
-from aiostream import stream  # type: ignore
 from typing import List, Tuple, Generator, AsyncIterable
+
+from aiostream import stream  # type: ignore
 
 import src.data_models as dm
 from shared_modules.utils import uuid4_string_generator

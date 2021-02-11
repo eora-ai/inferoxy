@@ -6,10 +6,10 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
-
 from typing import List
-from loguru import logger
 from threading import Thread
+
+from loguru import logger
 
 import src.data_models as dm
 from src.cloud_clients import BaseCloudClient

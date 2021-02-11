@@ -7,10 +7,10 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import sys
-import yaml
 import asyncio
-
 from pathlib import Path
+
+import yaml
 from loguru import logger
 
 import src.sender as snd

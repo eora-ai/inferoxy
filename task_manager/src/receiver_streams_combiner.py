@@ -6,9 +6,9 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
+from typing import AsyncIterator, Union, Dict, Optional
 
 from aiostream.stream import merge  # type: ignore
-from typing import AsyncIterator, Union, Dict, Optional
 
 import src.data_models as dm
 from src.batch_queue import OutputBatchQueue

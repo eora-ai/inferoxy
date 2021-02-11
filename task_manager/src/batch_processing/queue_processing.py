@@ -6,10 +6,10 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
-
-from loguru import logger
 from asyncio import QueueEmpty
 from typing import List, Tuple, Optional
+
+from loguru import logger
 
 import src.data_models as dm
 from src.batch_queue import InputBatchQueue

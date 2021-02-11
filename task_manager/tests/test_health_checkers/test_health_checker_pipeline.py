@@ -6,6 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import os
+
 import pytest
 
 import src.data_models as dm

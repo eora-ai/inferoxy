@@ -7,17 +7,16 @@ __email__ = "a.chertkov@eora.ru"
 
 import os
 import sys
-import yaml
 import asyncio
-
 from pathlib import Path
-from loguru import logger
 from datetime import datetime
+
+import yaml
+from loguru import logger
 
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
-
 from src.builder import builder
 from src.saver import save_mapping
 

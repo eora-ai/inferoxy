@@ -5,11 +5,11 @@ Base class for trigger pipeline
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora"
 
-from loguru import logger
 from functools import reduce
 from collections import defaultdict
 from typing import List, Iterable, Dict, Optional, Type
 
+from loguru import logger
 
 import src.data_models as dm
 from src.cloud_clients import BaseCloudClient

@@ -7,7 +7,6 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import time
-
 from abc import ABC
 from typing import List, Type
 from threading import Thread

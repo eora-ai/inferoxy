@@ -9,8 +9,8 @@ import os
 import sys
 import asyncio
 import threading
-import yaml
 
+import yaml
 from loguru import logger
 
 import src.receiver as rc

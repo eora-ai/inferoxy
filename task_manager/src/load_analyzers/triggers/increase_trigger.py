@@ -7,9 +7,8 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import Optional
 
-import src.data_models as dm
-
 from . import Trigger
+import src.data_models as dm
 
 
 class IncreaseTrigger(Trigger):

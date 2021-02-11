@@ -1,8 +1,8 @@
 import sys
-import yaml
 import argparse
-
 from pathlib import Path
+
+import yaml
 
 import data_models as dm  # type: ignore
 from runner import Runner  # type: ignore

@@ -7,10 +7,10 @@ __email__ = "a.chertkov@eora.ru"
 
 import time
 import asyncio
+from typing import AsyncIterable
+
 import pytest
 import numpy as np  # type: ignore
-
-from typing import AsyncIterable
 
 import src.data_models as dm
 from src.builder import builder

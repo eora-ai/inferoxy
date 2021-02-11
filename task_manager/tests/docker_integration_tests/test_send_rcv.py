@@ -6,17 +6,10 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 
-import sys
 import yaml
-import pytest
-import time
-
-from src.cloud_clients import DockerCloudClient
-
-from src.utils.data_transfers.sender import Sender
-from src.utils.data_transfers.receiver import Receiver
 
 import src.data_models as dm
+from src.cloud_clients import DockerCloudClient
 
 
 model_object_pass = dm.ModelObject(

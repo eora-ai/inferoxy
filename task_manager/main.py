@@ -6,19 +6,23 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import os
+import sys
 import asyncio
 import threading
-import yaml
 
-import src.data_models as dm
+import yaml
+from loguru import logger
+
 import src.receiver as rc
 import src.sender as snd
-from src.batch_processing.queue_processing import send_to_model
+import src.data_models as dm
+from src.alert_sender import AlertManager
+from src.cloud_clients import DockerCloudClient
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
+from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.cloud_clients import DockerCloudClient
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
 
 
@@ -55,6 +59,13 @@ def main():
     4. Start sender
     In second thread: load analyzer.
     """
+
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config.from_dict(config_dict)
@@ -89,8 +100,9 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
+    alert_manager = AlertManager(input_batch_queue, output_batch_queue)
     health_check_thread = HealthCheckerPipeline(
-        model_instances_storage, cloud_client, config
+        model_instances_storage, cloud_client, alert_manager, config
     )
     pipeline_thread.start()
     load_analyzer_thread.start()

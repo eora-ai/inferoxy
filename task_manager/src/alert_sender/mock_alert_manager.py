@@ -8,9 +8,8 @@ __email__ = "a.chertkov@eora.ru"
 from typing import Dict
 
 import src.data_models as dm
-from src.health_checker.errors import HealthCheckError
-
 from .base_alert_manager import BaseAlertManager
+from src.health_checker.errors import HealthCheckError
 
 
 class MockAlertManager(BaseAlertManager):

@@ -5,13 +5,13 @@ Base checker class
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from abc import ABC, abstractmethod
 from typing import List, Optional
+from abc import ABC, abstractmethod
 
-from src.batch_queue import InputBatchQueue, OutputBatchQueue
-from src.load_analyzers.triggers import Trigger, IncreaseTrigger, DecreaseTrigger
-from src.model_instances_storage import ModelInstancesStorage
 import src.data_models as dm
+from src.batch_queue import InputBatchQueue, OutputBatchQueue
+from src.model_instances_storage import ModelInstancesStorage
+from src.load_analyzers.triggers import Trigger, IncreaseTrigger, DecreaseTrigger
 
 
 class Checker(ABC):

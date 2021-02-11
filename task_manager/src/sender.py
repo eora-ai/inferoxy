@@ -8,7 +8,6 @@ __email__ = "a.chertkov@eora.ru"
 
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
-
 from loguru import logger
 
 import src.data_models as dm

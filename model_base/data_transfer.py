@@ -1,6 +1,7 @@
 import sys
-import zmq  # type: ignore
 import time
+
+import zmq  # type: ignore
 from loguru import logger
 
 

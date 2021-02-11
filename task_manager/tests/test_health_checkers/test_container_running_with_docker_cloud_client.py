@@ -5,13 +5,13 @@ Tests for ContainerRunningChecker with DockerCloudClient
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import pytest
 import os
 
-import src.data_models as dm
+import pytest
 
-from src.health_checker.container_running_checker import ContainerRunningChecker, Status
+import src.data_models as dm
 from src.cloud_clients import DockerCloudClient
+from src.health_checker.container_running_checker import ContainerRunningChecker, Status
 
 pytestmark = pytest.mark.asyncio
 

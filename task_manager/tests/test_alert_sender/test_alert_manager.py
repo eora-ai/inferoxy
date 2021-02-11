@@ -7,12 +7,12 @@ __email__ = "a.chertkov@eora.ru"
 
 import pytest
 
+import src.data_models as dm
 from src.alert_sender import AlertManager
-from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
+from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.health_checker.errors import ContainerExited, ContainerDoesNotExists
-import src.data_models as dm
 
 pytestmark = pytest.mark.asyncio
 

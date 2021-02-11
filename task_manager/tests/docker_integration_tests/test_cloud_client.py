@@ -7,19 +7,17 @@ __email__ = "m.gafarova@eora.ru"
 
 
 import os
-import pathlib
 import time
+import pathlib
 
 import yaml
 import pytest
 
+import src.exceptions as ex
+import src.data_models as dm
 from src.cloud_clients import DockerCloudClient
-
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
-
-import src.data_models as dm
-import src.exceptions as ex
 
 
 model_object_fail = dm.ModelObject(

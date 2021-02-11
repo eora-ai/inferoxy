@@ -5,17 +5,16 @@ Base class for trigger pipeline
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora"
 
-from typing import List, Iterable, Dict, Optional, Type
 from functools import reduce
 from collections import defaultdict
+from typing import List, Iterable, Dict, Optional, Type
 
 from loguru import logger
 
-from src.cloud_clients import BaseCloudClient
 import src.data_models as dm
-from src.model_instances_storage import ModelInstancesStorage
-
+from src.cloud_clients import BaseCloudClient
 from . import Trigger, DecreaseTrigger, IncreaseTrigger
+from src.model_instances_storage import ModelInstancesStorage
 
 
 class TriggerPipeline:

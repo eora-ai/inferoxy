@@ -6,21 +6,20 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 
-import sys
 import os
-import yaml
-import zmq
+import sys
 import pathlib
-import numpy as np
 
-from moviepy.editor import VideoFileClip
+import zmq
+import yaml
+import numpy as np
 from PIL import Image  # type: ignore
 from loguru import logger
+from moviepy.editor import VideoFileClip
 
 sys.path.append("..")
 
 import src.data_models as dm
-
 from src.data_models import MinimalBatchObject, ModelObject
 from shared_modules.utils import uuid4_string_generator
 

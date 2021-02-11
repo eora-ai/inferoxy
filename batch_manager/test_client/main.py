@@ -7,14 +7,13 @@ __email__ = "a.chertkov@eora.ru"
 
 import sys
 
-import numpy as np
 import zmq
 import yaml
+import numpy as np
 
 sys.path.append("..")
 
 import src.data_models as dm
-
 from shared_modules.utils import uuid4_string_generator
 
 

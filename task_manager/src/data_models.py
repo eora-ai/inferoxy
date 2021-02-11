@@ -10,7 +10,6 @@ from typing import List, Optional, Generic, TypeVar
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
-
 from shared_modules.data_objects import (
     ModelObject,
     MinimalBatchObject,

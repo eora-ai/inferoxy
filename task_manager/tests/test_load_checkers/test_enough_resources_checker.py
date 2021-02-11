@@ -9,11 +9,11 @@ import pytest
 import numpy as np  # type: ignore
 
 import src.data_models as dm
+from src.load_analyzers.triggers import IncreaseTrigger
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
-from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.load_analyzers.checkers import EnoughResourcesChecker
-from src.load_analyzers.triggers import IncreaseTrigger
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
 pytestmark = pytest.mark.asyncio
 

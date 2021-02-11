@@ -5,8 +5,8 @@ This module is responsible for docker based cloud(Actualy it is single machine)
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Set, Optional
 import random
+from typing import List, Set, Optional
 
 import docker  # type: ignore
 from loguru import logger

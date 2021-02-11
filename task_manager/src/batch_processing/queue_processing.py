@@ -11,11 +11,11 @@ from typing import List, Tuple, Optional
 
 from loguru import logger
 
-from src.batch_queue import InputBatchQueue
-from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
-from src.model_instances_storage import ModelInstancesStorage
-from src.exceptions import TagDoesNotExists
 import src.data_models as dm
+from src.batch_queue import InputBatchQueue
+from src.exceptions import TagDoesNotExists
+from src.model_instances_storage import ModelInstancesStorage
+from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
 
 
 async def send_to_model(

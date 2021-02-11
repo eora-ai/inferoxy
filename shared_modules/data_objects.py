@@ -5,7 +5,6 @@ This is shared data objects.
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-
 import json
 from enum import Enum
 from datetime import datetime

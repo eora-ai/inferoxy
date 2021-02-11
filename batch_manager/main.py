@@ -5,16 +5,19 @@ Entry point of batch manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
+import sys
 import asyncio
+from pathlib import Path
 from datetime import datetime
 
 import yaml
-from pathlib import Path
 from loguru import logger
-import src.data_models as dm
-import src.receiver as rc
-from src.builder import builder
+
 import src.sender as snd
+import src.receiver as rc
+import src.data_models as dm
+from src.builder import builder
 from src.saver import save_mapping
 
 
@@ -44,7 +47,12 @@ def main():
     """
     Entry point run asyncio pipeline
     """
-    path_log = "/tmp/batch_manager"
+    # Set up log level of logger
+    log_level = os.getenv("LOGGING_LEVEL")
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
+    path_dir = "/tmp/batch_manager"
     path_input = "/tmp/batch_manager/input"
     path_output = "/tmp/batch_manager/result"
     path_db = "/tmp/batch_manager/db"
@@ -53,7 +61,7 @@ def main():
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
-    Path(path_log).mkdir(parents=True, exist_ok=True)
+    Path(path_dir).mkdir(parents=True, exist_ok=True)
     Path(path_input).touch()
     Path(path_output).touch()
     Path(path_db).touch()

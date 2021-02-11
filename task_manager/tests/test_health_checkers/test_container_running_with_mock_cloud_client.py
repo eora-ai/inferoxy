@@ -8,9 +8,8 @@ __email__ = "a.chertkov@eora.ru"
 import pytest
 
 import src.data_models as dm
-
-from src.health_checker.container_running_checker import ContainerRunningChecker, Status
 from src.cloud_clients.mock_cloud_client import MockCloudClient
+from src.health_checker.container_running_checker import ContainerRunningChecker, Status
 
 pytestmark = pytest.mark.asyncio
 

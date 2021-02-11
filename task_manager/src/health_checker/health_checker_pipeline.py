@@ -11,14 +11,13 @@ from threading import Thread
 
 from loguru import logger
 
-from src.cloud_clients import BaseCloudClient
-from src.model_instances_storage import ModelInstancesStorage
-from src.alert_sender import BaseAlertManager
 import src.data_models as dm
-
+from src.cloud_clients import BaseCloudClient
+from src.alert_sender import BaseAlertManager
 from .checker import BaseHealthChecker, Status
-from .container_running_checker import ContainerRunningChecker
 from .connection_stable_checker import ConnectionChecker
+from src.model_instances_storage import ModelInstancesStorage
+from .container_running_checker import ContainerRunningChecker
 
 
 class HealthCheckerPipeline(Thread):

@@ -8,9 +8,9 @@ __email__ = "a.chertkov@eora.ru"
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
 
-from src.receiver_streams_combiner import ReceiverStreamsCombiner
-from src.utils.data_transfers import Receiver
 import src.data_models as dm
+from src.utils.data_transfers import Receiver
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
 
 class ModelInstancesStorage:

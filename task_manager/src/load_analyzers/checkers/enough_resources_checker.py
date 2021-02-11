@@ -8,7 +8,6 @@ __email__ = "a.chertkov@eora.ru"
 from typing import List
 
 from src.load_analyzers.triggers import Trigger
-
 from . import Checker
 
 

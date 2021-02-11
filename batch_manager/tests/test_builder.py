@@ -3,6 +3,7 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+
 from typing import Iterator
 
 import numpy as np  # type: ignore

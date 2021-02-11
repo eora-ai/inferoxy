@@ -5,8 +5,8 @@ Base classes for health check errors
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from abc import ABC, abstractmethod
 from typing import Optional
+from abc import ABC, abstractmethod
 
 
 class HealthCheckError(ABC):

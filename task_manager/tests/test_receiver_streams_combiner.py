@@ -8,10 +8,10 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 from typing import AsyncIterator
 
-import numpy as np  # type: ignore
 import pytest
-import src.data_models as dm
+import numpy as np  # type: ignore
 
+import src.data_models as dm
 from src.batch_queue import OutputBatchQueue
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.utils.data_transfers.receiver import BaseReceiver

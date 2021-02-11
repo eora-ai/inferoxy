@@ -9,9 +9,8 @@ import time
 import asyncio
 from typing import AsyncIterable
 
-import numpy as np  # type: ignore
 import pytest
-
+import numpy as np  # type: ignore
 
 import src.data_models as dm
 from src.builder import builder

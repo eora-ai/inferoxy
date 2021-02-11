@@ -5,15 +5,13 @@ Concreter AlertManager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+from loguru import logger
 from datetime import datetime
 
-from loguru import logger
-
-from src.health_checker.errors import HealthCheckError
 import src.data_models as dm
-from src.batch_queue import InputBatchQueue, OutputBatchQueue
-
 from .base_alert_manager import BaseAlertManager
+from src.health_checker.errors import HealthCheckError
+from src.batch_queue import InputBatchQueue, OutputBatchQueue
 
 
 class AlertManager(BaseAlertManager):

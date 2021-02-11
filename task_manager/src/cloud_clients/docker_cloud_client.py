@@ -89,13 +89,14 @@ class DockerCloudClient(BaseCloudClient):
             logger.debug(f"GPU NUMBER: {num_gpu} for {model.name=}")
             self.gpu_busy.add(num_gpu)
 
-        logger.debug("Run container")
         try:
+            logger.debug("Run container")
             container = self.run_container(
                 image=model.address,
                 on_gpu=on_gpu,
                 num_gpu=num_gpu,
             )
+            logger.info(f"Container is up: {container}")
         except docker.errors.APIError as exception:
             raise exc.CloudAPIError() from exception
 
@@ -105,6 +106,7 @@ class DockerCloudClient(BaseCloudClient):
             hostname=container.name,
             num_gpu=num_gpu,
         )
+        logger.info(f"Build model instance: {model_instance}")
         return model_instance
 
     def stop_instance(self, model_instance: dm.ModelInstance):

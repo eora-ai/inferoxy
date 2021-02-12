@@ -4,7 +4,7 @@ __email__ = "m.gafarova@eora.ru"
 
 import sys
 
-import numpy as np
+import numpy as np  # type: ignore
 
 sys.path.append("..")
 
@@ -26,7 +26,7 @@ results_sync_address = "tcp://*:5545"
 batch_size = 1
 
 
-results = [
+results = [  # type: ignore
     {
         "prediction": [],
         "image": [],

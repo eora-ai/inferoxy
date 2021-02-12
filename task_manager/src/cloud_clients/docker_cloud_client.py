@@ -6,6 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import random
+import asyncio
 from typing import List, Set, Optional
 
 import docker  # type: ignore
@@ -63,6 +64,7 @@ class DockerCloudClient(BaseCloudClient):
                 model=model,
                 hostname=container.name,
             )
+
             model_instances.append(model_instance)
         return model_instances
 
@@ -88,13 +90,14 @@ class DockerCloudClient(BaseCloudClient):
             logger.debug(f"GPU NUMBER: {num_gpu} for {model.name=}")
             self.gpu_busy.add(num_gpu)
 
-        logger.debug("Run container")
         try:
+            logger.debug("Run container")
             container = self.run_container(
                 image=model.address,
                 on_gpu=on_gpu,
                 num_gpu=num_gpu,
             )
+            logger.info(f"Container is up: {container}")
         except docker.errors.APIError as exception:
             raise exc.CloudAPIError() from exception
 
@@ -104,6 +107,7 @@ class DockerCloudClient(BaseCloudClient):
             hostname=container.name,
             num_gpu=num_gpu,
         )
+        logger.info(f"Build model instance: {model_instance}")
         return model_instance
 
     def stop_instance(self, model_instance: dm.ModelInstance):
@@ -162,11 +166,7 @@ class DockerCloudClient(BaseCloudClient):
             },
         )
 
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        """
-        Build and return model instance object
-        """
-
+    async def setup_data_transfer(self, hostname):
         s_open_port = self.config.models.ports.sender_open_addr
         s_sync_port = self.config.models.ports.sender_sync_addr
         r_open_port = self.config.models.ports.receiver_open_addr
@@ -179,6 +179,7 @@ class DockerCloudClient(BaseCloudClient):
         receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
 
         # Create sender and receiver
+
         sender = Sender(
             open_address=sender_open_address,
             sync_address=sender_sync_address,
@@ -190,6 +191,10 @@ class DockerCloudClient(BaseCloudClient):
             sync_address=receiver_sync_address,
             config=self.config.models.zmq_config,
         )
+        return sender, receiver
+
+    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+        sender, receiver = asyncio.run(self.setup_data_transfer(hostname))
 
         return dm.ModelInstance(
             model=model,

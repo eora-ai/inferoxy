@@ -50,7 +50,7 @@ class HealthCheckerPipeline(Thread):
                     status = await checker.check(model_instance)
                     if not status.is_running:
                         error_statuses.append(status)
-                self.make_decision(error_statuses)
+                await self.make_decision(error_statuses)
 
             await asyncio.sleep(self.config.load_analyzer.sleep_time)
 

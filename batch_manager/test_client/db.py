@@ -7,8 +7,8 @@ __email__ = "a.chertkov@eora.ru"
 
 import sys
 
-import yaml
-import plyvel
+import yaml  # type: ignore
+import plyvel  # type: ignore
 
 sys.path.append("..")
 

@@ -7,9 +7,9 @@ __email__ = "a.chertkov@eora.ru"
 
 import sys
 
-import zmq
+import zmq  # type: ignore
 import yaml
-import numpy as np
+import numpy as np  # type: ignore
 
 sys.path.append("..")
 

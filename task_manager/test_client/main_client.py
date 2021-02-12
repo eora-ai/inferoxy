@@ -6,16 +6,15 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 
-import os
 import sys
 import pathlib
 
-import zmq
-import yaml
-import numpy as np
+import zmq  # type: ignore
+import yaml  # type: ignore
+import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from loguru import logger
-from moviepy.editor import VideoFileClip
+from moviepy.editor import VideoFileClip  # type: ignore
 
 sys.path.append("..")
 

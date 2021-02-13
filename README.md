@@ -48,10 +48,13 @@ python db.py
 ### How to run docker
 
 Create `.env` file with variables
-* CLOUD_CLIENT=docker
-* DOCKER_REGISTRY
-* DOCKER_LOGIN
-* DOCKER_PASSWORD
+* `CLOUD_CLIENT=docker`
+* `DOCKER_REGISTRY`
+* `DOCKER_LOGIN`
+* `DOCKER_PASSWORD`
+* `DB_HOST`
+* `DB_USER`
+* `DB_PASSWORD`
 
 Run commands:
 ```

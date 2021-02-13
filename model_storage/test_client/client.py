@@ -7,8 +7,8 @@ __email__ = "m.gafarova@eora.ru"
 
 import sys
 
-import zmq
-import yaml
+import zmq  # type: ignore
+import yaml  # type: ignore
 from loguru import logger
 
 sys.path.append("..")

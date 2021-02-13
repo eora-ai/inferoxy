@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import json
 from enum import Enum
 from datetime import datetime
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import List, Tuple, Optional, Dict, Type, NewType
 
 import numpy as np  # type: ignore
@@ -111,6 +111,9 @@ class ResponseObject:
     response_info: Optional[ResponseInfo]
     error: Optional[str]
     source_id: str
+
+    def to_dict(self):
+        return asdict(self)
 
 
 class Status(Enum):

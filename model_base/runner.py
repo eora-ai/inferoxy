@@ -88,6 +88,9 @@ class Runner:
             sample = dict()
             if "sound" in request_info.parameters:
                 sample["sound"] = request_info.parameters.get("sound")
+            if "init" in request_info.parameters:
+                sample["init"] = request_info.parameters.get("init")
+                self.init(**sample["init"])
             sample["image"] = request_info.input
             samples.append(sample)
 
@@ -98,8 +101,8 @@ class Runner:
             # (1,)(for mono) and dtype=np.uint8
             # - meta: serializable dict with keys required by model
 
-            # List of dictionaries prediciton and image
-            results = self.predict_batch(samples, draw=True)
+        # List of dictionaries prediciton and image
+        results = self.predict_batch(samples, draw=True)
 
         response_batch = self.build_response_batch(minimal_batch, results)
 

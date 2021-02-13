@@ -158,12 +158,6 @@ class DockerCloudClient(BaseCloudClient):
             detach=detach,
             runtime=runtime,
             environment=environment,
-            ports={
-                str(s_open_port): s_open_port,
-                str(s_sync_port): s_sync_port,
-                str(r_open_port): r_open_port,
-                str(r_sync_port): r_sync_port,
-            },
         )
 
     async def setup_data_transfer(self, hostname):

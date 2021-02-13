@@ -10,6 +10,7 @@ import sys
 import asyncio
 from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 import yaml
 from loguru import logger
@@ -52,20 +53,11 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=log_level)
 
-    path_dir = "/tmp/batch_manager"
-    path_input = "/tmp/batch_manager/input"
-    path_output = "/tmp/batch_manager/result"
-    path_db = "/tmp/batch_manager/db"
-
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
-    Path(path_dir).mkdir(parents=True, exist_ok=True)
-    Path(path_input).touch()
-    Path(path_output).touch()
-    Path(path_db).touch()
-
+    Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))
 
 

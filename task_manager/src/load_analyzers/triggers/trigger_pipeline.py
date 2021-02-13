@@ -70,9 +70,9 @@ class TriggerPipeline:
         conflicts = self.get_conflicted_triggers(
             self.__triggers + stateful_increase_triggers
         )
-        logger.debug(
-            f"Conflicts after appending stateful increase triggers {conflicts}"
-        )
+        #        logger.debug(
+        #            f"Conflicts after appending stateful increase triggers {conflicts}"
+        #        )
         while stateful_increase_triggers and conflicts:
             stateful_increase_triggers = filter(
                 lambda x: x not in conflicts, stateful_increase_triggers
@@ -103,9 +103,9 @@ class TriggerPipeline:
         conflicts = self.get_conflicted_triggers(
             self.__triggers + stateless_increase_triggers
         )
-        logger.debug(
-            f"Conflicts after appending stateless increase triggers {conflicts}"
-        )
+        # logger.debug(
+        #    f"Conflicts after appending stateless increase triggers {conflicts}"
+        # )
         while stateless_increase_triggers and conflicts:
             stateless_increase_triggers = list(
                 filter(lambda x: x not in conflicts, stateless_increase_triggers)

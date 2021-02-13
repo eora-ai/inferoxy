@@ -24,6 +24,7 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
+from src.alert_sender.alert_manager import AlertManager
 
 
 async def pipeline(
@@ -100,9 +101,14 @@ def main():
         model_instances_storage=model_instances_storage,
         config=config,
     )
-    alert_manager = AlertManager(input_batch_queue, output_batch_queue)
+    alert_manager = AlertManager(
+        input_queue=input_batch_queue, output_queue=output_batch_queue
+    )
     health_check_thread = HealthCheckerPipeline(
-        model_instances_storage, cloud_client, alert_manager, config
+        model_instances_storage=model_instances_storage,
+        cloud_client=cloud_client,
+        alert_manager=alert_manager,
+        config=config,
     )
     pipeline_thread.start()
     load_analyzer_thread.start()

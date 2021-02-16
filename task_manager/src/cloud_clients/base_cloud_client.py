@@ -6,10 +6,12 @@ Increase, decrease and get operations over model instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import asyncio
 from typing import List, Optional
 from abc import ABC, abstractmethod
 
 import src.data_models as dm
+from src.utils.data_transfers import Receiver, Sender
 from src.health_checker.errors import HealthCheckError
 
 
@@ -84,3 +86,43 @@ class BaseCloudClient(ABC):
         model_instance:
             The Model instance that we want to check
         """
+
+    async def setup_data_transfer(self, hostname):
+        s_open_port = self.config.models.ports.sender_open_addr
+        s_sync_port = self.config.models.ports.sender_sync_addr
+        r_open_port = self.config.models.ports.receiver_open_addr
+        r_sync_port = self.config.models.ports.receiver_sync_addr
+
+        sender_open_address = f"tcp://{hostname}:{s_open_port}"
+        sender_sync_address = f"tcp://{hostname}:{s_sync_port}"
+
+        receiver_open_address = f"tcp://{hostname}:{r_open_port}"
+        receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
+
+        # Create sender and receiver
+        sender = Sender(
+            open_address=sender_open_address,
+            sync_address=sender_sync_address,
+            config=self.config.models.zmq_config,
+        )
+
+        receiver = Receiver(
+            open_address=receiver_open_address,
+            sync_address=receiver_sync_address,
+            config=self.config.models.zmq_config,
+        )
+        return sender, receiver
+
+    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+        sender, receiver = asyncio.run(self.setup_data_transfer(hostname))
+
+        return dm.ModelInstance(
+            model=model,
+            sender=sender,
+            receiver=receiver,
+            lock=lock,
+            source_id=None,
+            hostname=hostname,
+            num_gpu=num_gpu,
+            running=True,
+        )

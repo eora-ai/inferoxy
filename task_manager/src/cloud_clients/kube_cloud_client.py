@@ -13,83 +13,21 @@ from typing import Set, Optional, List
 
 import yaml
 from loguru import logger
-from kubernetes import client, config
-from kubernetes.client.api import core_v1_api
+from kubernetes import client, config  # type: ignore
+from kubernetes.client.api import core_v1_api  # type: ignore
 
 import src.data_models as dm
+import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
 from src.health_checker.errors import (
-    ContainerDoesNotExists,
-    ContainerExited,
+    PodDoesNotExists,
+    PodExited,
     HealthCheckError,
 )
+from templates import pod_template, pod_gpu_template  # type: ignore
 
 
 config.load_kube_config()
-
-# TODO: слишком громозко выглядит
-# lable is model name
-# host is model instance host (actually is container name)
-pod_template = """
-apiVersion: v1
-kind: Pod
-metadata:
-    name: {pod_name}
-    label: {label}
-    host: {host}
-spec:
-    containers:
-        - name: {container_name}
-        image: {model_link}
-        imagePullPolicy: Always
-        env:
-            - name: dataset_addr
-            value: '{open_addr}'
-            - name: dataset_sync_addr
-            value: '{sync_addr}'
-            - name: result_addr
-            value: 'tcp://*:5555'
-            - name: result_sync_addr
-            value: 'tcp://*:5545'
-            - name: BATCH_SIZE
-            value: '{batch_size}'
-    restartPolicy: Never
-    imagePullSecrets:
-        - name: visionhub-registry
-"""
-
-pod_gpu_template = """
-apiVersion: v1
-kind: Pod
-metadata:
-    name: {pod_name}
-    label: {label}
-    host: {host}
-spec:
-    containers:
-        - name: {container_name}
-        image: {model_link}
-        imagePullPolicy: Always
-        env:
-            - name: dataset_addr
-            value: '{open_addr}'
-            - name: dataset_sync_addr
-            value: '{sync_addr}'
-            - name: result_addr
-            value: 'tcp://*:5555'
-            - name: result_sync_addr
-            value: 'tcp://*:5545'
-            - name: CUDA_VISIBLE_DEVICES
-            value: '{gpu_index}'
-            - name: BATCH_SIZE
-            value: '{batch_size}'
-        resources:
-            limits:
-                nvidia.com/gpu: 1
-    restartPolicy: Never
-    imagePullSecrets:
-        - name: visionhub-registry
-"""
 
 
 class KubeCloudClient(BaseCloudClient):
@@ -103,23 +41,25 @@ class KubeCloudClient(BaseCloudClient):
         """
         super().__init__(config)
 
+        if self.config is None:
+            raise exc.CloudClientErrors("Config does not provided")
         # Get env variables
-        self.host = os.getenv(["KUBERNETES_CLUSTER_ADDRESS"])
-        self.token = os.getenv(["KUBERNETES_API_TOKEN"])
-        self.namespace = os.getenv(["NAMESPACE"])
+        self.host = os.getenv("KUBERNETES_CLUSTER_ADDRESS")
+        self.token = os.getenv("KUBERNETES_API_TOKEN")
+        self.namespace = os.getenv("NAMESPACE")
 
         self.gpu_all = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
         self.kube_config = client.Configuration()
         self.kube_config.host = self.host
-        self.kube_config.api_key = {"authorization": "Bearer " + self.token}
+        self.kube_config.api_key = {"authorization": f"Bearer {self.token}"}
         self.kube_config.verify_ssl = False
 
         self.api_client = client.ApiClient(self.kube_config)
         self.api_instance = core_v1_api.CoreV1Api(self.api_client)
 
-    def generate_pod_config(self, model: dm.ModelObject, num_gpu):
+    def generate_pod_config(self, model: dm.ModelObject):
         """
         Generate pod config from templates for CPU and GPU
         separately
@@ -130,14 +70,13 @@ class KubeCloudClient(BaseCloudClient):
         pod_name = f"{model.name.replace('_', '-')}-pod-" + random_tail
         container_name = model.name.replace("_", "-").lower() + "-" + random_tail
 
-        # TODO:можно ли использовать порты receiver'a???
-        r_open_port = self.config.models.ports.receiver_open_addr
-        r_sync_port = self.config.models.ports.receiver_sync_addr
+        r_open_port = self.config.models.ports.receiver_open_addr  # type: ignore
+        s_open_port = self.config.models.ports.sender_open_addr  # type: ignore
 
-        sync_addr = f"tcp://*:{r_sync_port}"
-        open_addr = f"tcp://*:{r_open_port}"
+        s_open_addr = f"tcp://*:{s_open_port}"
+        r_open_addr = f"tcp://*:{r_open_port}"
 
-        if num_gpu is None:
+        if not model.run_on_gpu:
             # Generate pod config for CPU
 
             logger.info("Model will run on CPU")
@@ -147,8 +86,8 @@ class KubeCloudClient(BaseCloudClient):
                 host=container_name,
                 container_name=container_name,
                 model_link=model.address,
-                open_addr=open_addr,
-                sync_addr=sync_addr,
+                s_open_address=s_open_addr,
+                r_open_addr=r_open_addr,
                 batch_size=model.batch_size,
             )
         else:
@@ -161,9 +100,8 @@ class KubeCloudClient(BaseCloudClient):
                 host=container_name,
                 container_name=container_name,
                 model_link=model.address,
-                gpu_index=num_gpu,
-                open_addr=open_addr,
-                sync_addr=sync_addr,
+                s_open_address=s_open_addr,
+                r_open_addr=r_open_addr,
                 batch_size=model.batch_size,
             )
         pod_manifest = yaml.load(pod)
@@ -262,7 +200,7 @@ class KubeCloudClient(BaseCloudClient):
             logger.info(f"GPU number: {num_gpu}")
 
         logger.info("Generate pod manifest")
-        pod_manifest, container_name = self.generate_pod_config(model, num_gpu)
+        pod_manifest, container_name = self.generate_pod_config(model)
 
         logger.info("Apply generated pod")
         self.apply_pod(pod_manifest)
@@ -284,31 +222,35 @@ class KubeCloudClient(BaseCloudClient):
         v1 = client.CoreV1Api()
         ret = v1.list_pod_for_all_namespaces(watch=False)
         for item in ret:
-            if item.metadata.host == model_instance.host:
+            if item.metadata.host == model_instance.hostname:
                 self.delete_pod(item.metadata.pod_name)
 
     def get_maximum_running_instances(self) -> int:
         return 20  # TODO: replce magic number
 
     def is_instance_running(
+        self, model_instance: dm.ModelInstance
+    ) -> dm.ReasoningOutput[bool, HealthCheckError]:
         """
         Check status pod that it is running
         """
-        self, model_instance: dm.ModelInstance, pod_name: str
-    ) -> dm.ReasoningOutput[bool, HealthCheckError]:
+
         reason: Optional[HealthCheckError] = None
+
+        v1 = client.CoreV1Api()
+        ret = v1.list_pod_for_all_namespaces(watch=False)
         try:
-            resp = self.read_pod(pod_name)
+            for item in ret:
+                if item.metadata.host == model_instance.hostname:
+                    resp = self.read_pod(item.metadata.pod_name)
         except:
             is_running = False
             # TODO: Add exceptions for kube
-            reason = ContainerDoesNotExists(
-                "Pod {resp.metadata.pod_name} does not exists"
-            )
+            reason = PodDoesNotExists("Pod {resp.metadata.pod_name} does not exists")
             return dm.ReasoningOutput(is_running, reason)
 
         is_running = resp.status.phase != "Running"
         if not is_running:
             # TODO: Add exceptions for kube
-            reason = ContainerExited(f"""Pod status: {resp.status}""")
+            reason = PodExited(f"""Pod status: {resp.status}""")
         return dm.ReasoningOutput(is_running, reason)

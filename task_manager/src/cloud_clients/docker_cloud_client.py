@@ -129,7 +129,7 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.NotFound as exception:
             raise exc.ContainerNotFound() from exception
         except docker.errors.APIError as exception:
-            raise exc.DockerAPIError() from exception
+            raise exc.CloudAPIError() from exception
 
     def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """

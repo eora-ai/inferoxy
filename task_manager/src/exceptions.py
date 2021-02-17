@@ -49,3 +49,13 @@ class CloudAPIError(CloudClientErrors):
     def __init__(self, message="Cloud client API error"):
         super(CloudAPIError, self).__init__(message)
         logger.error(message)
+
+
+class PodNotFound(CloudClientErrors):
+    """
+    Rise when kubernetes pod not found
+    """
+
+    def __init__(self, message="Pod not found"):
+        self.message = message
+        logger.error(message)

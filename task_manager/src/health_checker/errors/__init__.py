@@ -26,3 +26,11 @@ class ConnectionIdleTimeout(FatalError):
     """
 
     code = "E011"
+
+
+# class PodDoesNotExists(RetriableError):
+#     """
+#     Retraible error, may occure when spot instance disable
+#     """
+#
+#     code = "W001"

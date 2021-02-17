@@ -169,6 +169,9 @@ class KubeCloudClient(BaseCloudClient):
         pod_manifest = yaml.load(pod)
         return pod_manifest, container_name
 
+    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+        return super().build_model_instance(model, hostname, lock, num_gpu)
+
     def id_generator(self, size=6, chars=string.ascii_lowercase):
         """
         Generate random string in lowercase
@@ -233,7 +236,7 @@ class KubeCloudClient(BaseCloudClient):
                     logger.info(
                         f"This instance {item.metadata.pod_name} is running on cpu"
                     )
-                model_instance = super().build_model_instance(
+                model_instance = self.build_model_instance(
                     model=model,
                     hostname=item.metadata.host,
                 )
@@ -265,7 +268,7 @@ class KubeCloudClient(BaseCloudClient):
         self.apply_pod(pod_manifest)
 
         # Build model instance
-        model_instance = super().build_model_instance(
+        model_instance = self.build_model_instance(
             model=model, hostname=container_name, num_gpu=num_gpu
         )
 

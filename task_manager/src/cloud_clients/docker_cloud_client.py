@@ -58,13 +58,16 @@ class DockerCloudClient(BaseCloudClient):
                 logger.info(f"This instance {container.name} is running on gpu")
             else:
                 logger.info(f"This instance {container.name} is running on cpu")
-            model_instance = super().build_model_instance(
+            model_instance = self.build_model_instance(
                 model=model,
                 hostname=container.name,
             )
 
             model_instances.append(model_instance)
         return model_instances
+
+    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
+        return super().build_model_instance(model, hostname, lock, num_gpu)
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         if not model.run_on_gpu:
@@ -100,7 +103,7 @@ class DockerCloudClient(BaseCloudClient):
             raise exc.CloudAPIError() from exception
 
         # Construct model instanse
-        model_instance = self.super().build_model_instance(
+        model_instance = self.build_model_instance(
             model=model,
             hostname=container.name,
             num_gpu=num_gpu,

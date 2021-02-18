@@ -67,7 +67,7 @@ class KubeCloudClient(BaseCloudClient):
         random_tail = self.id_generator()
 
         # Generate pod name and container name
-        pod_name = f"{model.name.replace('_', '-')}-pod-" + random_tail
+        pod_name = f"{model.name.replace('_', '-')}-pod-{random_tail}"
         container_name = model.name.replace("_", "-").lower() + "-" + random_tail
 
         r_open_port = self.config.models.ports.receiver_open_addr  # type: ignore

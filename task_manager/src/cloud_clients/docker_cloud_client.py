@@ -158,8 +158,8 @@ class DockerCloudClient(BaseCloudClient):
             environment=environment,
         )
 
-    def get_maximum_running_instances(self):
-        return 20  # TODO: replce magic number
+    def get_maximum_running_instances(self) -> int:
+        return int(self.config.max_running_instances)  # type: ignore
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance

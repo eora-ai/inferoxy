@@ -94,6 +94,7 @@ class Config(BaseConfig):
     health_check: HealthCheckerConfig
     load_analyzer: LoadAnalyzerConfig
     models: ModelsRunnerConfig
+    max_running_instances: int = 10
     docker: Optional[DockerConfig] = None
 
     @classmethod

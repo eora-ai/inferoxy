@@ -215,12 +215,8 @@ class KubeCloudClient(BaseCloudClient):
             if item.metadata.host == model_instance.hostname:
                 self.delete_pod(item.metadata.pod_name)
 
-    def get_maximum_running_instances(self):
-        magic_number = int(os.getenv("MAX_RUNNING_INSTANCES"))
-        if isinstance(magic_number, int):
-            return magic_number
-        logger.error("No defined max number of running instances")
-        return None
+    def get_maximum_running_instances(self) -> int:
+        return self.config.max_running_instances  # type: ignore
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance

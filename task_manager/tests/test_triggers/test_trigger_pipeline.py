@@ -48,6 +48,7 @@ stub_config = dm.Config(
     ),
     health_check=dm.HealthCheckerConfig(10),
     docker=dm.DockerConfig("", "", ""),
+    max_running_instances=10,
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(0, 0, 0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
     ),

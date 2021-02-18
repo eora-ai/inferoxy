@@ -69,7 +69,7 @@ class BaseCloudClient(ABC):
         """
 
     @abstractmethod
-    def get_maximum_running_instances(self) -> int:
+    def get_maximum_running_instances(self):
         """
         Return maximum number of running instances
         """

@@ -23,9 +23,7 @@ def uuid4_string_generator() -> Generator[str, None, None]:
         yield str(uid)
 
 
-def id_generator(
-    self, size=6, chars=string.ascii_lowercase
-) -> Generator[str, None, None]:
+def id_generator(size=6, chars=string.ascii_lowercase) -> Generator[str, None, None]:
     """
     Generate random string in lowercase
     """

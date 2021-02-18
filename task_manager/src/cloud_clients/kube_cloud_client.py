@@ -72,8 +72,8 @@ class KubeCloudClient(BaseCloudClient):
         pod_name = f"{model.name.replace('_', '-')}-pod-{random_tail}"
         container_name = model.name.replace("_", "-").lower()
 
-        s_open_addr = f"tcp://*:{self.config.models.ports.sender_open_addr}"
-        r_open_addr = f"tcp://*:{self.config.models.ports.receiver_open_addr}"
+        s_open_addr = f"tcp://*:{self.config.models.ports.sender_open_addr}"  # type: ignore
+        r_open_addr = f"tcp://*:{self.config.models.ports.receiver_open_addr}"  # type: ignore
 
         if not model.run_on_gpu:
             # Generate pod config for CPU
@@ -215,9 +215,12 @@ class KubeCloudClient(BaseCloudClient):
             if item.metadata.host == model_instance.hostname:
                 self.delete_pod(item.metadata.pod_name)
 
-    def get_maximum_running_instances(self) -> int:
-        magic_number = os.getenv("MAX_RUNNING_INSTANCES")
-        return magic_number
+    def get_maximum_running_instances(self):
+        magic_number = int(os.getenv("MAX_RUNNING_INSTANCES"))
+        if isinstance(magic_number, int):
+            return magic_number
+        logger.error("No defined max number of running instances")
+        return None
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance

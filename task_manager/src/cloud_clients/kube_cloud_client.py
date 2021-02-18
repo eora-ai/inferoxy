@@ -7,7 +7,6 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import time
-import string
 import random
 from typing import Set, Optional, List
 
@@ -24,6 +23,7 @@ from src.health_checker.errors import (
     PodExited,
     HealthCheckError,
 )
+from shared_modules.utils import id_generator
 from templates import pod_template, pod_gpu_template  # type: ignore
 
 
@@ -59,22 +59,21 @@ class KubeCloudClient(BaseCloudClient):
         self.api_client = client.ApiClient(self.kube_config)
         self.api_instance = core_v1_api.CoreV1Api(self.api_client)
 
+        self.id_generator = id_generator()
+
     def generate_pod_config(self, model: dm.ModelObject):
         """
         Generate pod config from templates for CPU and GPU
         separately
         """
-        random_tail = self.id_generator()
+        random_tail = next(self.id_generator)
 
         # Generate pod name and container name
         pod_name = f"{model.name.replace('_', '-')}-pod-{random_tail}"
         container_name = model.name.replace("_", "-").lower()
 
-        r_open_port = self.config.models.ports.receiver_open_addr  # type: ignore
-        s_open_port = self.config.models.ports.sender_open_addr  # type: ignore
-
-        s_open_addr = f"tcp://*:{s_open_port}"
-        r_open_addr = f"tcp://*:{r_open_port}"
+        s_open_addr = f"tcp://*:{self.config.models.ports.sender_open_addr}"
+        r_open_addr = f"tcp://*:{self.config.models.ports.receiver_open_addr}"
 
         if not model.run_on_gpu:
             # Generate pod config for CPU
@@ -106,12 +105,6 @@ class KubeCloudClient(BaseCloudClient):
             )
         pod_manifest = yaml.load(pod)
         return pod_manifest, container_name
-
-    def id_generator(self, size=6, chars=string.ascii_lowercase):
-        """
-        Generate random string in lowercase
-        """
-        return "".join(random.choice(chars) for _ in range(size))
 
     def apply_pod(self, pod_manifest):
         """
@@ -223,7 +216,8 @@ class KubeCloudClient(BaseCloudClient):
                 self.delete_pod(item.metadata.pod_name)
 
     def get_maximum_running_instances(self) -> int:
-        return 20  # TODO: replce magic number
+        magic_number = os.getenv("MAX_RUNNING_INSTANCES")
+        return magic_number
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance
@@ -236,11 +230,10 @@ class KubeCloudClient(BaseCloudClient):
 
         v1 = client.CoreV1Api()
         ret = v1.list_pod_for_all_namespaces(watch=False)
-        try:
-            for item in ret:
-                if item.metadata.host == model_instance.hostname:
-                    resp = self.read_pod(item.metadata.pod_name)
-        except:
+        for item in ret:
+            if item.metadata.host == model_instance.hostname:
+                resp = self.read_pod(item.metadata.pod_name)
+        else:
             is_running = False
             # TODO: Add exceptions for kube
             reason = PodDoesNotExists("Pod {resp.metadata.pod_name} does not exists")

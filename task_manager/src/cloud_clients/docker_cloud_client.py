@@ -66,9 +66,6 @@ class DockerCloudClient(BaseCloudClient):
             model_instances.append(model_instance)
         return model_instances
 
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        return super().build_model_instance(model, hostname, lock, num_gpu)
-
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         if not model.run_on_gpu:
             return True

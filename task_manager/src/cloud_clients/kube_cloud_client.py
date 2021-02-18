@@ -68,7 +68,7 @@ class KubeCloudClient(BaseCloudClient):
 
         # Generate pod name and container name
         pod_name = f"{model.name.replace('_', '-')}-pod-{random_tail}"
-        container_name = model.name.replace("_", "-").lower() + "-" + random_tail
+        container_name = model.name.replace("_", "-").lower()
 
         r_open_port = self.config.models.ports.receiver_open_addr  # type: ignore
         s_open_port = self.config.models.ports.sender_open_addr  # type: ignore
@@ -106,9 +106,6 @@ class KubeCloudClient(BaseCloudClient):
             )
         pod_manifest = yaml.load(pod)
         return pod_manifest, container_name
-
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        return super().build_model_instance(model, hostname, lock, num_gpu)
 
     def id_generator(self, size=6, chars=string.ascii_lowercase):
         """

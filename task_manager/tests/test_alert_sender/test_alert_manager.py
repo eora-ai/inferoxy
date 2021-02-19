@@ -46,7 +46,7 @@ async def test_send():
     input_queue, output_queue = InputBatchQueue(), OutputBatchQueue()
     alert_manager = AlertManager(input_queue, output_queue)
     error = ContainerExited("ContainerExited")
-    alert_manager.send(model_instance, error)
+    await alert_manager.send(model_instance, error)
     response_batch = await output_queue.get()
     assert response_batch.error == str(error)
 
@@ -55,6 +55,6 @@ async def test_retry():
     input_queue, output_queue = InputBatchQueue(), OutputBatchQueue()
     alert_manager = AlertManager(input_queue, output_queue)
     error = ContainerDoesNotExists("ContainerDoesNotExists")
-    alert_manager.retry_task(model_instance, error)
+    await alert_manager.retry_task(model_instance, error)
     input_batch = input_queue.get_nowait(model)
     assert input_batch == batch

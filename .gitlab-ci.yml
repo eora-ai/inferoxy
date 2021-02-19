@@ -41,11 +41,6 @@ debatch_manager_tests:
     - pytest debatch_manager
     - mypy debatch_manager
 
-model_base_tests:
-  script:
-    - pytest model_base
-    - mypy model_base
-
 listener_tests:
   script:
     - mypy listener

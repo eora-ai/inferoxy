@@ -5,6 +5,7 @@ This module is storing model instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+from loguru import logger
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
 
@@ -29,11 +30,16 @@ class ModelInstancesStorage:
         self.model_instances[model_instance.model].append(model_instance)
         self.receiver_streams_combiner.add_listener(model_instance.receiver)
 
-    def remove_model_instance(self, model_instance: dm.ModelInstance):
-        self.model_instances[model_instance.model].remove(model_instance)
+    async def remove_model_instance(self, model_instance: dm.ModelInstance):
+        try:
+            self.model_instances[model_instance.model].remove(model_instance)
+        except ValueError as exc:
+            logger.error(exc)
         if not self.model_instances[model_instance.model]:
             del self.model_instances[model_instance.model]
-        self.receiver_streams_combiner.remove_listener(model_instance.receiver)
+        model_instance.receiver.close()
+        model_instance.sender.close()
+        await self.receiver_streams_combiner.remove_listener(model_instance.receiver)
 
     def get_model_instance(
         self, model: dm.ModelObject, source_id: Optional[str] = None
@@ -49,6 +55,15 @@ class ModelInstancesStorage:
         """
         return self.model_instances.get(model, [])
 
+    def set_source_id(self, model: dm.ModelObject, source_id: str):
+        """
+        Set source_id to model_instance that have source_id == None
+        """
+        model_instance = self.get_model_instance(model, source_id=None)
+        if model_instance is None:
+            return
+        model_instance.source_id = source_id
+
     def get_running_models_with_source_ids(
         self, is_stateless: Optional[bool] = None
     ) -> List[Tuple[Optional[str], dm.ModelObject]]:
@@ -56,12 +71,12 @@ class ModelInstancesStorage:
         for model in self.model_instances.keys():
             if model.stateless and is_stateless in (None, True):
                 models_with_source_ids.append((None, model))
-            elif is_stateless in (None, False):
-                model_with_source_ids = [
+            elif not model.stateless and is_stateless in (None, False):
+                temp_model_instances = [
                     (model_instance.source_id, model)
                     for model_instance in self.model_instances[model]
                 ]
-                models_with_source_ids.extend(model_with_source_ids)
+                models_with_source_ids.extend(temp_model_instances)
 
         return models_with_source_ids
 

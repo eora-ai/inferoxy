@@ -5,6 +5,7 @@ Tests for ModelInstancesStorage
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import pytest
 
 import src.data_models as dm
 from src.batch_queue import OutputBatchQueue
@@ -13,6 +14,7 @@ from src.utils.data_transfers.receiver import BaseReceiver
 from src.model_instances_storage import ModelInstancesStorage
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
+pytestmark = pytest.mark.asyncio
 
 stub_model = dm.ModelObject(
     "stub",
@@ -55,7 +57,7 @@ def test_add_model_instance():
     assert models_with_source_ids == [(None, stub_model)]
 
 
-def test_remove_model_instance():
+async def test_remove_model_instance():
     """
     Remove model instance fro model instances storage
     """
@@ -74,7 +76,7 @@ def test_remove_model_instance():
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
 
     model_instances_storage.add_model_instance(model_instance=model_instance)
-    model_instances_storage.remove_model_instance(model_instance=model_instance)
+    await model_instances_storage.remove_model_instance(model_instance=model_instance)
     models_with_source_ids = (
         model_instances_storage.get_running_models_with_source_ids()
     )

@@ -7,20 +7,21 @@ __email__ = "a.chertkov@eora.ru"
 
 import asyncio
 from typing import List
-from threading import Thread
+import concurrent.futures
+from functools import partial
 
 from loguru import logger
 
 import src.data_models as dm
 from src.cloud_clients import BaseCloudClient
 from src.alert_sender import BaseAlertManager
+from src.model_instances_storage import ModelInstancesStorage
 from .checker import BaseHealthChecker, Status
 from .connection_stable_checker import ConnectionChecker
-from src.model_instances_storage import ModelInstancesStorage
 from .container_running_checker import ContainerRunningChecker
 
 
-class HealthCheckerPipeline(Thread):
+class HealthCheckerPipeline:
     def __init__(
         self,
         model_instances_storage: ModelInstancesStorage,
@@ -29,29 +30,47 @@ class HealthCheckerPipeline(Thread):
         config: dm.Config,
     ):
         super().__init__()
+        logger.info("Start heath checkr pipeline")
         self.model_instances_storage = model_instances_storage
         self.config = config
         self.checkers: List[BaseHealthChecker] = [
-            ContainerRunningChecker(cloud_client, config),
             ConnectionChecker(cloud_client, config),
+            ContainerRunningChecker(cloud_client, config),
         ]
         self.alert_manager = alert_manager
 
-    def run(self):
-        asyncio.run(self.pipeline())
-
     async def pipeline(self):
+        """
+        Entry point of health checker pipeline
+        """
+        loop = asyncio.get_event_loop()
         while True:
-            for (
-                model_instance
-            ) in self.model_instances_storage.get_all_model_instances():
-                error_statuses = []
-                for checker in self.checkers:
-                    status = await checker.check(model_instance)
-                    if not status.is_running:
-                        error_statuses.append(status)
-                await self.make_decision(error_statuses)
+            logger.debug("Health checker tick")
+            error_statuses = []
+            tasks = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                for (
+                    model_instance
+                ) in self.model_instances_storage.get_all_model_instances():
+                    for checker in self.checkers:
+                        tasks.append(
+                            loop.run_in_executor(
+                                executor,
+                                partial(checker.check, model_instance),
+                            )
+                        )
+                if tasks:
+                    done, _ = await asyncio.wait(tasks)
+                    logger.debug(f"Health checker results {done}")
+                    error_statuses = [
+                        d.result()
+                        for d in done
+                        if not d.result is None and not d.result().is_running
+                    ]
 
+                    logger.debug(f"Statuses {error_statuses}")
+
+            await self.make_decision(error_statuses)
             await asyncio.sleep(self.config.load_analyzer.sleep_time)
 
     async def make_decision(self, statuses: List[Status]):
@@ -65,5 +84,8 @@ class HealthCheckerPipeline(Thread):
                 logger.warning("Status reason can not be None")
                 continue
 
-            status.reason.process(status.model_instance, self.alert_manager)
-            self.model_instances_storage.remove_model_instance(status.model_instance)
+            status.model_instance.running = False
+            await status.reason.process(status.model_instance, self.alert_manager)
+            await self.model_instances_storage.remove_model_instance(
+                status.model_instance
+            )

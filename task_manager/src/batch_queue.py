@@ -5,6 +5,8 @@ This module is responsible for transfer Batches from receiver to process and fro
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+from loguru import logger
+
 import datetime
 from asyncio import Queue, QueueEmpty
 from typing import Optional, Dict, Tuple, List
@@ -27,6 +29,8 @@ class InputBatchQueue:
 
     @staticmethod
     def __prepare_for_put(item: dm.MinimalBatchObject):
+        if item.status == dm.Status.ERROR:
+            item.retries += 1
         item.queued_at = datetime.datetime.now()
         item.status = dm.Status.IN_QUEUE
 
@@ -224,6 +228,7 @@ class OutputBatchQueue(Queue):
                 "processing_time": item.processed_at - item.started_at,
                 "count": item.size,
             }
-        else:
-            self.error_batches.append(item)
         await super().put(item)
+        logger.info(
+            f"Batch {item.uid} put into the output queue with size {self.qsize()}"
+        )

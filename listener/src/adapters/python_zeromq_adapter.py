@@ -5,6 +5,7 @@ ZeroMQ adapter that receive python objects based on BaseAdapter
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+from loguru import logger
 import zmq  # type: ignore # type: ignore
 
 import src.data_models as dm
@@ -49,9 +50,7 @@ class ZMQPythonAdapter(BaseAdapter):
     def send_result(self, response: Response):
         if not isinstance(response, dict):
             raise ValueError("Response must be a dict")
-        self.output_zmq_socket.send_string(
-            response["source_id"].split(":")[1], zmq.SENDMORE
-        )
+        self.output_zmq_socket.send_string(response["source_id"], zmq.SNDMORE)
         self.output_zmq_socket.send_pyobj(response)
 
     def to_response(self, response: dm.ResponseObject) -> Response:

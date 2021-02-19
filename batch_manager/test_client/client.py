@@ -38,11 +38,10 @@ def main():
         config = dm.Config(**config_dict)
 
     ctx = zmq.Context()
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
 
     model_num = int(input(f"Choose model\n1: {stub_model}\n2: {stateful_model}: "))
     if model_num == 1:

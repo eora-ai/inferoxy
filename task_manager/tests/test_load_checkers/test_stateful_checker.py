@@ -5,6 +5,8 @@ Tests for StatefulChecker
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
+
 import pytest
 import numpy as np  # type: ignore
 
@@ -28,6 +30,31 @@ stub_stateful = dm.ModelObject(
     stateless=False,
     batch_size=128,
 )
+config = dm.Config(
+    zmq_input_address="",
+    zmq_output_address="",
+    docker=dm.DockerConfig(
+        registry="registry.visionhub.ru",
+        login=os.environ.get("DOCKER_LOGIN", ""),
+        password=os.environ.get("DOCKER_PASSWORD", ""),
+        network=os.environ.get("DOCKER_NETWORK", ""),
+    ),
+    gpu_all=[1],
+    load_analyzer=dm.LoadAnalyzerConfig(
+        sleep_time=0.1,
+        trigger_pipeline=dm.TriggerPipelineConfig(60),
+        running_mean=dm.RunningMeanConfig(50, 100, 10),
+        stateful_checker=dm.StatefulChecker(10),
+    ),
+    health_check=dm.HealthCheckerConfig(10),
+    models=dm.ModelsRunnerConfig(
+        ports=dm.PortConfig(
+            sender_open_addr=5566,
+            receiver_open_addr=4531,
+        ),
+        zmq_config=dm.ZMQConfig(sndhwm=123, rcvhwm=121, sndtimeo=123, rcvtimeo=123),
+    ),
+)
 
 
 async def test_requested_zero_models():
@@ -39,7 +66,7 @@ async def test_requested_zero_models():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     checker = StatefulChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue
+        model_instances_storage, input_batch_queue, output_batch_queue, config=config
     )
     triggers = checker.make_triggers()
     assert triggers == []
@@ -65,7 +92,7 @@ async def test_requested_one_stateless_model():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     checker = StatefulChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue
+        model_instances_storage, input_batch_queue, output_batch_queue, config=config
     )
     triggers = checker.make_triggers()
     assert triggers == []
@@ -92,7 +119,7 @@ async def test_requested_one_stateful_model():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     checker = StatefulChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue
+        model_instances_storage, input_batch_queue, output_batch_queue, config=config
     )
     triggers = checker.make_triggers()
     assert len(triggers) == 1
@@ -134,58 +161,9 @@ async def test_requested_many_stateful_model():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     checker = StatefulChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue
+        model_instances_storage, input_batch_queue, output_batch_queue, config=config
     )
     triggers = checker.make_triggers()
     assert len(triggers) == 2
     assert isinstance(triggers[0], IncreaseTrigger)
     assert triggers[0].model == stub_stateful
-
-
-async def test_decrease_stateful_instance():
-    """
-    Test that model not requested
-    """
-    input_batch_queue = InputBatchQueue()
-    output_batch_queue = OutputBatchQueue()
-    request_info1 = dm.RequestInfo(
-        input=np.array(range(10)),
-        parameters={},
-    )
-    item1 = dm.MinimalBatchObject(
-        uid="1",
-        requests_info=[request_info1],
-        model=stub_stateful,
-        status=dm.Status.CREATED,
-        source_id="1",
-    )
-    await input_batch_queue.put(item1)
-    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
-    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
-    model_instance1 = dm.ModelInstance(
-        stub_stateful,
-        "1",
-        sender=BaseSender(),
-        receiver=BaseReceiver(),
-        lock=True,
-        running=True,
-        hostname="test",
-    )
-    model_instance2 = dm.ModelInstance(
-        stub_stateful,
-        None,
-        sender=BaseSender(),
-        receiver=BaseReceiver(),
-        lock=False,
-        running=True,
-        hostname="test",
-    )
-    model_instances_storage.add_model_instance(model_instance1)
-    model_instances_storage.add_model_instance(model_instance2)
-    checker = StatefulChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue
-    )
-    triggers = checker.make_triggers()
-    assert len(triggers) == 1
-    assert isinstance(triggers[0], DecreaseTrigger)
-    assert triggers[0].model_instance == model_instance2

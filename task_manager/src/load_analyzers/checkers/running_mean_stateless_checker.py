@@ -10,6 +10,8 @@ __email__ = "a.chertkov@eora.ru"
 import collections
 from typing import Dict, List, Deque
 
+from loguru import logger
+
 import src.data_models as dm
 from .checker import Checker
 from src.load_analyzers.triggers import Trigger
@@ -80,6 +82,9 @@ class RunningMeanStatelessChecker(Checker):
                 estimated_time < self.min_threshold
                 and len(self.model_instances_storage.get_model_instances(model)) > 1
             ):
+                logger.critical(
+                    "Make decrease trigger, because {estimated_time=} < {self.min_threshold=}"
+                )
                 model_instance = (
                     self.model_instances_storage.get_not_locked_model_instances(
                         model=model
@@ -88,6 +93,7 @@ class RunningMeanStatelessChecker(Checker):
                 model_instance.lock = True
                 triggers += [self.make_decrease_trigger(model_instance=model_instance)]
             elif estimated_time == 0:
+                logger.critical("Make decrease trigger, because {estimated_time=} = 0")
                 model_instance = (
                     self.model_instances_storage.get_not_locked_model_instances(
                         model=model

@@ -37,12 +37,13 @@ stub_config = dm.Config(
         0,
         trigger_pipeline=dm.TriggerPipelineConfig(60),
         running_mean=dm.RunningMeanConfig(0, 10, 10),
+        stateful_checker=dm.StatefulChecker(10),
     ),
-    docker=dm.DockerConfig("", "", ""),
+    docker=dm.DockerConfig("", "", "", ""),
     health_check=dm.HealthCheckerConfig(10),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(
-        ports=dm.PortConfig(0, 0, 0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
+        ports=dm.PortConfig(0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
     ),
 )
 

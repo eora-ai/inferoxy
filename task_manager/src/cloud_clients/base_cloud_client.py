@@ -10,6 +10,8 @@ import asyncio
 from typing import List, Optional
 from abc import ABC, abstractmethod
 
+import zmq.asyncio  # type:ignore
+
 import src.data_models as dm
 from src.utils.data_transfers import Receiver, Sender
 from src.health_checker.errors import HealthCheckError
@@ -21,8 +23,12 @@ class BaseCloudClient(ABC):
     client, for k8s and for docker-compose/docker
     """
 
-    def __init__(self, config: Optional[dm.Config]):
+    def __init__(
+        self,
+        config: Optional[dm.Config],
+    ):
         self.config = config
+        self.context = zmq.asyncio.Context()
 
     @abstractmethod
     def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
@@ -87,28 +93,24 @@ class BaseCloudClient(ABC):
             The Model instance that we want to check
         """
 
-    async def setup_data_transfer(self, hostname):
+    def setup_data_transfer(self, hostname):
         s_open_port = self.config.models.ports.sender_open_addr
-        s_sync_port = self.config.models.ports.sender_sync_addr
         r_open_port = self.config.models.ports.receiver_open_addr
-        r_sync_port = self.config.models.ports.receiver_sync_addr
 
         sender_open_address = f"tcp://{hostname}:{s_open_port}"
-        sender_sync_address = f"tcp://{hostname}:{s_sync_port}"
-
         receiver_open_address = f"tcp://{hostname}:{r_open_port}"
-        receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
 
         # Create sender and receiver
+
         sender = Sender(
             open_address=sender_open_address,
-            sync_address=sender_sync_address,
+            context=self.context,
             config=self.config.models.zmq_config,
         )
 
         receiver = Receiver(
             open_address=receiver_open_address,
-            sync_address=receiver_sync_address,
+            context=self.context,
             config=self.config.models.zmq_config,
         )
         return sender, receiver

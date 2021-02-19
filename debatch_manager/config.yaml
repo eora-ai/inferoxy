@@ -1,5 +1,5 @@
 zmq_input_address: "ipc:///tmp/task_manager/result"
 zmq_output_address: "ipc:///tmp/debatch_manager/result"
-db_file: "/tmp/debatch_manager/db"
-create_db_file: "True"
-send_batch_mapping_timeout: 0.03
+db_file: "/tmp/batch_manager/db"
+create_db_file: true
+send_batch_mapping_timeout: 0.3

@@ -30,7 +30,7 @@ async def test_positive():
     mock_cloud_client = MockCloudClient(2, None)
     model_instance = mock_cloud_client.start_instance(model)
     checker = ContainerRunningChecker(mock_cloud_client)
-    status = await checker.check(model_instance)
+    status = checker.check(model_instance)
     assert status.is_running
     assert status.reason is None
     assert status.model_instance == model_instance
@@ -44,7 +44,7 @@ async def test_negative():
     model_instance = mock_cloud_client.start_instance(model)
     model_instance.running = False
     checker = ContainerRunningChecker(mock_cloud_client)
-    status = await checker.check(model_instance)
+    status = checker.check(model_instance)
     assert not status.is_running
     assert not status.reason is None
     assert status.model_instance == model_instance

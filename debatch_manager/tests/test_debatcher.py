@@ -97,7 +97,7 @@ request_info4 = dm.RequestInfo(
     parameters={},
 )
 response_info4 = dm.ResponseInfo(
-    output=[],
+    output={},
     picture=[],
     parameters={},
 )

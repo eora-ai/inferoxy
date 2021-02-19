@@ -23,9 +23,8 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
     config
         Config object, required field is a zmq_input_address
     """
-    sock = ctx.socket(zmq.SUB)
+    sock = ctx.socket(zmq.PULL)
     sock.bind(config.zmq_input_address)
-    sock.subscribe(b"")
     return sock
 
 

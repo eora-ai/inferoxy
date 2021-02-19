@@ -20,6 +20,8 @@ from src.health_checker.errors import (
     HealthCheckError,
 )
 
+from shared_modules.utils import uuid4_string_generator
+
 
 class DockerCloudClient(BaseCloudClient):
     """
@@ -31,14 +33,28 @@ class DockerCloudClient(BaseCloudClient):
         Authorize client
         """
         super().__init__(config)
+        self.uid_generator = uuid4_string_generator()
         self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
-        if self.config is None or self.config.docker is None:
+
+        if self.config is None:
+            raise exc.CloudClientErrors(
+                "Docker config does not provided"
+            )  # Make config not optional
+        self.config: dm.Config = self.config
+
+        self.docker_config_optional: Optional[dm.DockerConfig] = self.config.docker
+        if self.docker_config_optional is None:
             raise exc.CloudClientErrors("Docker config does not provided")
-        self.client.login(
-            username=self.config.docker.login,
-            password=self.config.docker.password,
-            registry=self.config.docker.registry,
-        )
+        self.docker_config: dm.DockerConfig = self.docker_config_optional
+
+        try:
+            self.client.login(
+                username=self.docker_config.login,
+                password=self.docker_config.password,
+                registry=self.docker_config.registry,
+            )
+        except:
+            logger.critical("Cannot login to Docker registry")
         self.gpu_all = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
@@ -90,7 +106,9 @@ class DockerCloudClient(BaseCloudClient):
 
         try:
             logger.debug("Run container")
+            name = f"{model.name}_{next(self.uid_generator)}"
             container = self.run_container(
+                name=name,
                 image=model.address,
                 on_gpu=on_gpu,
                 num_gpu=num_gpu,
@@ -102,7 +120,7 @@ class DockerCloudClient(BaseCloudClient):
         # Construct model instanse
         model_instance = self.build_model_instance(
             model=model,
-            hostname=container.name,
+            hostname=name,
             num_gpu=num_gpu,
         )
         logger.info(f"Build model instance: {model_instance}")
@@ -119,6 +137,8 @@ class DockerCloudClient(BaseCloudClient):
             if model_instance.num_gpu is not None:
                 self.gpu_busy.remove(model_instance.num_gpu)
 
+            logger.debug(f"Stop container {model_instance.hostname}")
+
             container = self.client.containers.get(model_instance.hostname)
             container.stop()
             container.remove()
@@ -128,23 +148,21 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.APIError as exception:
             raise exc.CloudAPIError() from exception
 
-    def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
+    def run_container(
+        self, name: str, image: str, num_gpu=None, detach=True, on_gpu=False
+    ):
         """
         Create and run docker container
         """
 
         s_open_port = self.config.models.ports.sender_open_addr
-        s_sync_port = self.config.models.ports.sender_sync_addr
         r_open_port = self.config.models.ports.receiver_open_addr
-        r_sync_port = self.config.models.ports.receiver_sync_addr
 
         # Run on GPU
         runtime = "runc"
         environment = {
             "dataset_addr": f"tcp://*:{s_open_port}",
-            "dataset_sync_addr": f"tcp://*:{s_sync_port}",
             "result_addr": f"tcp://*:{r_open_port}",
-            "result_sync_addr": f"tcp://*:{r_sync_port}",
         }
         if on_gpu:
             runtime = "nvidia"
@@ -152,10 +170,13 @@ class DockerCloudClient(BaseCloudClient):
 
         # Run on CPU
         return self.client.containers.run(
+            name=name,
             image=image,
             detach=detach,
             runtime=runtime,
             environment=environment,
+            network=self.docker_config.network,
+            hostname=name,
         )
 
     def get_maximum_running_instances(self) -> int:

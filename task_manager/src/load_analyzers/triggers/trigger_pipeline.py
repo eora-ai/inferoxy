@@ -193,7 +193,7 @@ class TriggerPipeline:
                 number_by_models[trigger.model] += 1
         return number_by_models
 
-    def apply(self) -> None:
+    async def apply(self) -> None:
         """
         Apply all triggers, and return all ModelInstances. Triggers must be optimized
         """
@@ -202,6 +202,12 @@ class TriggerPipeline:
             model_instance = trigger.apply()
             if model_instance is not None and trigger.model_instance != model_instance:
                 self.__model_instances_storage.add_model_instance(model_instance)
+            elif (
+                trigger.model_instance == model_instance and not model_instance is None
+            ):
+                await self.__model_instances_storage.remove_model_instance(
+                    model_instance
+                )
 
     def get_trigger(
         self,
@@ -234,3 +240,6 @@ class TriggerPipeline:
         Getter for `__triggers`
         """
         return self.__triggers
+
+    def __len__(self) -> int:
+        return len(self.__triggers)

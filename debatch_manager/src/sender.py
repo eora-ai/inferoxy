@@ -15,10 +15,10 @@ ctx = zmq.asyncio.Context()
 
 def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
     """
-    Connect to `somewhere`
+    bind socket
     """
-    sock = ctx.socket(zmq.PUB)
-    sock.connect(config.zmq_output_address)
+    sock = ctx.socket(zmq.PUSH)
+    sock.bind(config.zmq_output_address)
     return sock
 
 

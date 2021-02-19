@@ -40,11 +40,10 @@ def main():
     ctx = zmq.Context()
 
     # Create sockets
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
 
     try:
         db = plyvel.DB(config.db_file, create_if_missing=True)

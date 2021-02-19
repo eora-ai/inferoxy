@@ -26,7 +26,7 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
     config:
         Config object, required field is a zmq_output_address
     """
-    sock = ctx.socket(zmq.PUB)
+    sock = ctx.socket(zmq.PUSH)
     sock.connect(config.zmq_output_address)
     logger.info(f"Send results on {config.zmq_output_address}")
     return sock
@@ -43,4 +43,6 @@ async def send(sock: zmq.asyncio.Socket, output_batch_queue: OutputBatchQueue):
     """
     while True:
         batch = await output_batch_queue.get()
-        await sock.send_pyobj(batch.serialize())
+        logger.debug(f"Try to sent result batch {batch.uid=}")
+        await sock.send_pyobj(batch)
+        logger.debug(f"Batch {batch.uid=} sent")

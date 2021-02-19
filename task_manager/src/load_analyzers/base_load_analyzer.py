@@ -6,10 +6,11 @@ and increase or decrease amount of instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import time
+import asyncio
 from abc import ABC
 from typing import List, Type
-from threading import Thread
+
+from loguru import logger
 
 import src.data_models as dm
 from src.cloud_clients import BaseCloudClient
@@ -19,7 +20,7 @@ from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
 
 
-class BaseLoadAnalyzer(Thread, ABC):
+class BaseLoadAnalyzer(ABC):
     """
     Base class that analyze load, and increases/decreases amount of model instances
     """
@@ -31,10 +32,8 @@ class BaseLoadAnalyzer(Thread, ABC):
         output_batch_queue: OutputBatchQueue,
         model_instances_storage: ModelInstancesStorage,
         config: dm.Config,
-        *args,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        logger.info("Start load analyzer")
         self.sleep_time = config.load_analyzer.sleep_time
         self.cloud_client = cloud_client
         self.input_batch_queue = input_batch_queue
@@ -54,23 +53,22 @@ class BaseLoadAnalyzer(Thread, ABC):
     checkers: List[Type[Checker]] = []
     __checkers: List[Checker] = []
 
-    def run(self):
-        while True:
-            time.sleep(self.sleep_time)
-            self.analyzer_pipeline()
-
-    def analyzer_pipeline(self):
+    async def analyzer_pipeline(self):
         """
         Make triggers and apply them
         """
-        pipeline = TriggerPipeline(
-            cloud_client=self.cloud_client,
-            model_instances_storage=self.model_instances_storage,
-            # Add config
-            config=self.config,
-        )
-        for checker in self.__checkers:
-            triggers = checker.make_triggers()
-            pipeline.extend(triggers)
-        pipeline.optimize()
-        pipeline.apply()
+        while True:
+            await asyncio.sleep(self.sleep_time)
+            logger.debug("Load analyzer tick")
+            pipeline = TriggerPipeline(
+                cloud_client=self.cloud_client,
+                model_instances_storage=self.model_instances_storage,
+                config=self.config,
+            )
+            for checker in self.__checkers:
+                triggers = checker.make_triggers()
+                pipeline.extend(triggers)
+            pipeline.optimize()
+            if len(pipeline) != 0:
+                logger.info(f"Pipeline that will be applied {pipeline.get_triggers()}")
+            await pipeline.apply()

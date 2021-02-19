@@ -40,11 +40,10 @@ def batches_different_sources():
         config = dm.Config.from_dict(config_dict)
 
     ctx = zmq.Context()
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
     movie = VideoFileClip("without_sound_cutted.mp4")
     uid_generator = uuid4_string_generator()
 
@@ -115,11 +114,10 @@ def batches_video_with_sound():
         config = dm.Config.from_dict(config_dict)
 
     ctx = zmq.Context()
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
 
     movie = VideoFileClip("cat_with_sound.mp4")
     uid_generator = uuid4_string_generator()
@@ -162,11 +160,10 @@ def batches_video_without_sound():
         config = dm.Config.from_dict(config_dict)
 
     ctx = zmq.Context()
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
 
     movie = VideoFileClip("without_sound_cutted.mp4")
     uid_generator = uuid4_string_generator()
@@ -199,11 +196,10 @@ def batch_pictures():
         config = dm.Config.from_dict(config_dict)
 
     ctx = zmq.Context()
-    sock_sender = ctx.socket(zmq.PUB)
+    sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
-    sock_receiver = ctx.socket(zmq.SUB)
+    sock_receiver = ctx.socket(zmq.PULL)
     sock_receiver.bind(config.zmq_output_address)
-    sock_receiver.subscribe(b"")
 
     #  load the image
     image = Image.open("test.jpg")

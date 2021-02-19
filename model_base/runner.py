@@ -3,8 +3,8 @@ import importlib
 
 from loguru import logger
 
-import model_base.data_models as dm  # type: ignore
-from model_base.data_transfer import Sender, Receiver  # type: ignore
+import data_models as dm  # type: ignore
+from data_transfer import Sender, Receiver  # type: ignore
 
 
 class Runner:
@@ -15,8 +15,6 @@ class Runner:
         self,
         dataset_address,
         results_address,
-        dataset_sync_address,
-        results_sync_address,
         batch_size,
         config,
     ):
@@ -30,15 +28,14 @@ class Runner:
         self.batch_size = batch_size
         self.receiver = Receiver(
             open_address=dataset_address,
-            sync_address=dataset_sync_address,
             config=config,
         )
         self.sender = Sender(
             open_address=results_address,
-            sync_address=results_sync_address,
             config=config,
         )
         self._prepare_model()
+        logger.info("Runner inited")
 
     def _prepare_model(self):
         """
@@ -81,6 +78,7 @@ class Runner:
         samples = []
 
         minimal_batch = self.receiver.receive()
+        logger.debug(f"Batch recived {minimal_batch}")
         if minimal_batch is None:
             logger.warning("Batch object is None\n")
 

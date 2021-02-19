@@ -17,10 +17,10 @@ import src.data_models as dm
 
 def main():
     context = zmq.Context()
-    batch_manager_input_socket = context.socket(zmq.SUB)
+    batch_manager_input_socket = context.socket(zmq.PULL)
     batch_manager_input_socket.bind("ipc:///tmp/batch_manager/input")
     batch_manager_input_socket.subscribe(b"")
-    debatch_manager_output_socket = context.socket(zmq.PUB)
+    debatch_manager_output_socket = context.socket(zmq.PUSH)
     debatch_manager_output_socket.bind("ipc:///tmp/debatch_manager/result")
     time.sleep(5)
     image = Image.open("test.jpg")

@@ -12,7 +12,7 @@ from typing import List, Tuple, Optional
 from loguru import logger
 
 import src.data_models as dm
-from src.batch_queue import InputBatchQueue
+from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.exceptions import TagDoesNotExists
 from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
@@ -20,6 +20,7 @@ from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
 
 async def send_to_model(
     input_batch_queue: InputBatchQueue,
+    output_batch_queue: OutputBatchQueue,
     model_instances_storage: ModelInstancesStorage,
 ):
     """
@@ -35,15 +36,23 @@ async def send_to_model(
             Tuple[Optional[str], dm.ModelObject]
         ] = model_instances_storage.get_running_models_with_source_ids()
         tasks = []
+        if models_by_sources_ids:
+            logger.info(f"Models with source ids: {models_by_sources_ids}")
+        else:
+            logger.info(
+                f"Model instances: {model_instances_storage.get_all_model_instances()}"
+            )
         for (source_id, model) in models_by_sources_ids:
             try:
                 if not model.stateless:
-                    batch = await input_batch_queue.get_nowait(
+                    batch = input_batch_queue.get_nowait(
                         model=model, source_id=source_id
                     )
                 else:
-                    batch = await input_batch_queue.get_nowait(model=model)
-            except (QueueEmpty, TagDoesNotExists):
+                    batch = input_batch_queue.get_nowait(model=model)
+            except (QueueEmpty, TagDoesNotExists) as exc:
+                logger.warning(f"Queue is empty {exc}")
+                logger.info(f"input_batch_queue = {input_batch_queue.queues}")
                 continue
             model_instance = model_instances_storage.get_next_running_instance(
                 model, source_id
@@ -52,7 +61,16 @@ async def send_to_model(
                 logger.warning(
                     f"Model Instance Storage return None, for {model=} and {source_id=}"
                 )
+                await input_batch_queue.put(batch)
                 continue
-            adapter_model_instance = AdapterV1ModelInstance(model_instance)
+            model_instance.lock = True
+            logger.info(f"Selected {model_instance}")
+            adapter_model_instance = AdapterV1ModelInstance(
+                model_instance, input_batch_queue, output_batch_queue
+            )
+            logger.info(f"Add task for {batch}")
             tasks.append(adapter_model_instance.send(batch))
-        await asyncio.wait(tasks)
+        if tasks:
+            await asyncio.wait(tasks)
+        else:
+            await asyncio.sleep(5)

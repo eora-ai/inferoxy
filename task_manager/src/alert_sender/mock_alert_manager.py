@@ -21,10 +21,12 @@ class MockAlertManager(BaseAlertManager):
     def __init__(self):
         self.errors: Dict[dm.ModelInstance, HealthCheckError] = {}
 
-    def send(self, model_instance: dm.ModelInstance, error: HealthCheckError):
+    async def send(self, model_instance: dm.ModelInstance, error: HealthCheckError):
         self.errors[model_instance] = error
 
-    def retry_task(self, model_instance: dm.ModelInstance, error: HealthCheckError):
+    async def retry_task(
+        self, model_instance: dm.ModelInstance, error: HealthCheckError
+    ):
         pass
 
     def get_errors(self) -> Dict[dm.ModelInstance, HealthCheckError]:

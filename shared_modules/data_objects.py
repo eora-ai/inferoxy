@@ -51,10 +51,16 @@ class RequestInfo:
             return False
         return self.inputs == other.inputs and self.parameters == other.parameters
 
+    def __repr__(self) -> str:
+        parameters_string = {
+            k: str(v)[:7] + "..." for (k, v) in self.parameters.items()
+        }
+        return f"RequestInfo(input={self.input.shape}, parameters={parameters_string})"
+
 
 @dataclass
 class ResponseInfo:
-    output: np.ndarray
+    output: dict
     parameters: dict
     picture: Optional[np.ndarray]
 
@@ -64,6 +70,13 @@ class ResponseInfo:
         return np.array_equal(self.output, other.output) and np.array_equal(
             self.picture, other.picture
         )
+
+    def __repr__(self) -> str:
+        parameters_string = {
+            k: str(v)[:7] + "..." for (k, v) in self.parameters.items()
+        }
+        output_string = {k: str(v)[:7] + "..." for (k, v) in self.output.items()}
+        return f"ResponseInfo(output={output_string}, parameters={parameters_string}, picture={self.picture if self.picture is None else self.picture.shape})"
 
 
 @dataclass
@@ -152,6 +165,7 @@ class MinimalBatchObject:
     uid: str
     requests_info: List[RequestInfo]
     model: ModelObject
+    retries: int = 0
     status: Status = Status.CREATING
     source_id: Optional[str] = None
     created_at: Optional[datetime] = None
@@ -289,6 +303,4 @@ class PortConfig(BaseConfig):
     """
 
     sender_open_addr: int
-    sender_sync_addr: int
     receiver_open_addr: int
-    receiver_sync_addr: int

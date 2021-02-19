@@ -61,6 +61,7 @@ with open(config_path) as config_file:
         registry=os.environ.get("DOCKER_REGISTRY", ""),
         login=os.environ.get("DOCKER_LOGIN", ""),
         password=os.environ.get("DOCKER_PASSWORD", ""),
+        network=os.environ.get("DOCKER_NETWORK", ""),
     )
 
 

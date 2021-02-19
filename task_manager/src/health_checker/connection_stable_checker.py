@@ -6,21 +6,14 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import time
-from typing import Optional
 
 import src.data_models as dm
-from src.cloud_clients import BaseCloudClient
 from .errors import ConnectionIdleTimeout
 from .checker import BaseHealthChecker, Status
 
 
 class ConnectionChecker(BaseHealthChecker):
-    def __init__(
-        self, cloud_client: BaseCloudClient, config: Optional[dm.Config] = None
-    ):
-        super().__init__(cloud_client, config)
-
-    async def check(self, model_instance: dm.ModelInstance) -> Status:
+    def check(self, model_instance: dm.ModelInstance) -> Status:
         if not model_instance.lock:
             return Status(model_instance=model_instance, is_running=True, reason=None)
 

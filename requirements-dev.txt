@@ -6,3 +6,4 @@ pytest-asyncio
 mypy
 Pillow
 opencv-python
+aiomonitor

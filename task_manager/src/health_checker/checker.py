@@ -46,7 +46,7 @@ class BaseHealthChecker(ABC):
         self.config = config
 
     @abstractmethod
-    async def check(self, model_instance: dm.ModelInstance) -> Status:
+    def check(self, model_instance: dm.ModelInstance) -> Status:
         """
         Check that model is not working
         """

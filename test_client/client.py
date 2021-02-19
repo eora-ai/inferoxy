@@ -20,21 +20,24 @@ def main():
     input_socket = context.socket(zmq.PUSH)
     input_socket.connect("tcp://localhost:7787")
     logger.info("Connected to receiver")
-    output_socket = context.socket(zmq.PULL)
+    output_socket = context.socket(zmq.SUB)
     output_socket.connect("tcp://localhost:7788")
+    output_socket.subscribe(b"test.jpg")
     logger.info("Connected to sender")
 
     input_socket.send_pyobj(
         {
             "source_id": "test.jpg",
             "input": image_array,
-            "parameters": {},
+            "parameters": {"stateless": False},
             "model": "stub",
         }
     )
     logger.info("Sent")
 
+    topic = output_socket.recv_string()
     result = output_socket.recv_pyobj()
+    logger.info(topic)
     logger.info(result)
 
 

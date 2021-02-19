@@ -22,19 +22,9 @@ if __name__ == "__main__":
         default="tcp://*:5556",
     )
     parser.add_argument(
-        "--dataset_sync_addr",
-        help="Address of socket to sync dataset queue",
-        default="tcp://*:5546",
-    )
-    parser.add_argument(
         "--result_addr",
         help="Address to open socket for result queue",
         default="tcp://*:5555",
-    )
-    parser.add_argument(
-        "--result_sync_addr",
-        help="Address to open socket for sync result queue",
-        default="tcp://*:5545",
     )
     parser.add_argument(
         "--test_mode", type=str, default="0", help="Whether to run in test mode"
@@ -52,8 +42,6 @@ if __name__ == "__main__":
         runner = Runner(
             dataset_address=args.dataset_addr,
             results_address=args.result_addr,
-            dataset_sync_address=args.dataset_sync_addr,
-            results_sync_address=args.result_sync_addr,
             batch_size=args.batch_size,
             config=config,
         )

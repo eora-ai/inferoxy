@@ -44,6 +44,11 @@ class TriggerPipelineConfig(BaseConfig):
 
 
 @dataclass
+class StatefulChecker(BaseConfig):
+    keep_model: int
+
+
+@dataclass
 class LoadAnalyzerConfig(BaseConfig):
     """
     Configuration for load analyzer
@@ -52,6 +57,7 @@ class LoadAnalyzerConfig(BaseConfig):
     sleep_time: float
     trigger_pipeline: TriggerPipelineConfig
     running_mean: RunningMeanConfig
+    stateful_checker: StatefulChecker
 
 
 @dataclass
@@ -59,6 +65,7 @@ class DockerConfig(BaseConfig):
     registry: str
     login: str
     password: str
+    network: str
 
 
 @dataclass
@@ -104,13 +111,16 @@ class Config(BaseConfig):
         """
         load_analyzer_dict = config_dict.pop("load_analyzer")
         running_mean_dict = load_analyzer_dict.pop("running_mean")
+        stateful_checker_dict = load_analyzer_dict.pop("stateful_checker")
         trigger_pipeline_dict = load_analyzer_dict.pop("trigger_pipeline")
         health_check_dict = config_dict.pop("health_check")
         running_mean = RunningMeanConfig(**running_mean_dict)
         trigger_pipeline = TriggerPipelineConfig(**trigger_pipeline_dict)
+        stateful_checker = StatefulChecker(**stateful_checker_dict)
         load_analyzer = LoadAnalyzerConfig(
             running_mean=running_mean,
             trigger_pipeline=trigger_pipeline,
+            stateful_checker=stateful_checker,
             **load_analyzer_dict
         )
         models_dict = config_dict.pop("models")

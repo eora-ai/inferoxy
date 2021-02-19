@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import os
 import sys
 import asyncio
-import threading
+import logging
 
 import yaml
 from loguru import logger
@@ -24,29 +24,59 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-from src.alert_sender.alert_manager import AlertManager
 
 
 async def pipeline(
-    input_batch_queue: InputBatchQueue,
-    output_batch_queue: OutputBatchQueue,
-    receiver_streams_combiner: ReceiverStreamsCombiner,
-    model_instances_storage: ModelInstancesStorage,
     config: dm.Config,
 ):
     """
     Async pipeline of main IO process, Input is RequestBatches, Output is ResponseBatches
     """
-    receiver_socket = rc.create_socket(config)
-    receiver_task = rc.receive(receiver_socket, input_batch_queue)
-    send_to_model_task = send_to_model(
-        input_batch_queue, model_instances_storage=model_instances_storage
+    input_batch_queue = InputBatchQueue()
+    output_batch_queue = OutputBatchQueue()
+    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
+    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
+    cloud_client = DockerCloudClient(config)
+    load_analyzer = RunningMeanLoadAnalyzer(
+        cloud_client,
+        input_batch_queue,
+        output_batch_queue,
+        model_instances_storage=model_instances_storage,
+        config=config,
     )
-    receive_from_model_task = receiver_streams_combiner.converter()
+    alert_manager = AlertManager(
+        input_queue=input_batch_queue, output_queue=output_batch_queue
+    )
+    health_checker = HealthCheckerPipeline(
+        model_instances_storage=model_instances_storage,
+        cloud_client=cloud_client,
+        alert_manager=alert_manager,
+        config=config,
+    )
+    receiver_socket = rc.create_socket(config)
+    receiver_task = asyncio.create_task(rc.receive(receiver_socket, input_batch_queue))
+    send_to_model_task = asyncio.create_task(
+        send_to_model(
+            input_batch_queue,
+            output_batch_queue,
+            model_instances_storage=model_instances_storage,
+        )
+    )
+    receive_from_model_task = asyncio.create_task(receiver_streams_combiner.converter())
     sender_socket = snd.create_socket(config)
-    sender_task = snd.send(sender_socket, output_batch_queue)
-    await asyncio.wait(
-        [receiver_task, send_to_model_task, receive_from_model_task, sender_task]
+    sender_task = asyncio.create_task(snd.send(sender_socket, output_batch_queue))
+    health_checker_task = asyncio.create_task(health_checker.pipeline())
+    load_analyzer_task = asyncio.create_task(load_analyzer.analyzer_pipeline())
+
+    loop = asyncio.get_event_loop()
+
+    await asyncio.gather(
+        receiver_task,
+        send_to_model_task,
+        receive_from_model_task,
+        sender_task,
+        load_analyzer_task,
+        health_checker_task,
     )
 
 
@@ -71,52 +101,14 @@ def main():
         config_dict = yaml.full_load(config_file)
         config = dm.Config.from_dict(config_dict)
         if os.environ.get("CLOUD_CLIENT") == "docker":
-            config.docker = dm.DockerConfig(
-                registry=os.environ.get("DOCKER_REGISTRY"),
-                login=os.environ.get("DOCKER_LOGIN"),
-                password=os.environ.get("DOCKER_PASSWORD"),
-            )
+            docker_config_dict = dict(network=os.environ.get("DOCKER_NETWORK"))
+            docker_config_dict["registry"] = os.environ.get("DOCKER_REGISTRY")
+            docker_config_dict["login"] = os.environ.get("DOCKER_LOGIN")
+            docker_config_dict["password"] = os.environ.get("DOCKER_PASSWORD")
+            config.docker = dm.DockerConfig(**docker_config_dict)
 
-    input_batch_queue = InputBatchQueue()
-    output_batch_queue = OutputBatchQueue()
-    receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
-    model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
-    pipeline_thread = threading.Thread(
-        target=asyncio.run,
-        args=(
-            pipeline(
-                input_batch_queue=input_batch_queue,
-                output_batch_queue=output_batch_queue,
-                receiver_streams_combiner=receiver_streams_combiner,
-                model_instances_storage=model_instances_storage,
-                config=config,
-            ),
-        ),
-    )
-    cloud_client = DockerCloudClient(config)
-    load_analyzer_thread = RunningMeanLoadAnalyzer(
-        cloud_client,
-        input_batch_queue,
-        output_batch_queue,
-        model_instances_storage=model_instances_storage,
-        config=config,
-    )
-    alert_manager = AlertManager(
-        input_queue=input_batch_queue, output_queue=output_batch_queue
-    )
-    health_check_thread = HealthCheckerPipeline(
-        model_instances_storage=model_instances_storage,
-        cloud_client=cloud_client,
-        alert_manager=alert_manager,
-        config=config,
-    )
-    pipeline_thread.start()
-    load_analyzer_thread.start()
-    health_check_thread.start()
-
-    pipeline_thread.join()
-    load_analyzer_thread.join()
-    health_check_thread.join()
+    logging.getLogger("asyncio").setLevel(logging.DEBUG)
+    asyncio.run(pipeline(config))
 
 
 if __name__ == "__main__":

@@ -35,14 +35,13 @@ class BaseAdapter(ABC):
         self.init_server(config)
 
     def __make_batch_manager_channel(self, config: dm.Config):
-        socket = self.ctx.socket(zmq.PUB)
+        socket = self.ctx.socket(zmq.PUSH)
         socket.connect(config.batch_manager_input_address)
         return socket
 
     def __make_debatch_manager_channel(self, config: dm.Config):
-        socket = self.ctx.socket(zmq.SUB)
+        socket = self.ctx.socket(zmq.PULL)
         socket.connect(config.debatch_manager_output_address)
-        socket.subscribe(b"")
         return socket
 
     @abstractmethod
@@ -73,17 +72,10 @@ class BaseAdapter(ABC):
         return str(uuid4())
 
     def _get_model_object(self, slug: str) -> dm.ModelObject:
-        if slug == "stub":
-            return dm.ModelObject(
-                "stub",
-                address="registry.visionhub.ru/models/stub:v4",
-                stateless=True,
-                batch_size=128,
-            )
         sock = self.ctx.socket(zmq.REQ)
         sock.connect(self.config.model_storage_address)
         sock.send_string(slug)
-        model_object = sock.recv()
+        model_object = sock.recv_pyobj()
         sock.close()
         del sock
         return model_object
@@ -93,6 +85,11 @@ class BaseAdapter(ABC):
 
     def _receive_result(self) -> dm.ResponseObject:
         return self.debatch_manager_channel.recv_pyobj(zmq.NOBLOCK)
+
+    @staticmethod
+    def _decide_state(request_object: dm.RequestObject):
+        if not request_object.request_info.parameters.get("stateless", True):
+            request_object.model.stateless = False
 
     def start(self):
         """
@@ -104,6 +101,7 @@ class BaseAdapter(ABC):
                 req = self.receive_request()
                 logger.info("Something received. Ура!!!!!")
                 req_object = self.input_to_request_object(req)
+                self._decide_state(req_object)
                 logger.info(f"Request souce_id: {req_object.source_id}")
                 self._send_request_object(req_object)
                 logger.debug("Req object sent to batch_manager")

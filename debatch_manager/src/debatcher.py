@@ -71,12 +71,11 @@ def pull_batch_mapping(config: dm.Config, batch: dm.ResponseBatch) -> dm.BatchMa
     batch:
         Response Batch object
     """
+    # Open conndection
     try:
-        # Open conndection
         database = plyvel.DB(
             config.db_file,
         )
-
         # Pull batch mapping from database
         batch_mapping_bytes = database.get(bytes(batch.uid, "utf-8"))
         batch_mapping = dm.BatchMapping.from_key_value(
@@ -86,8 +85,10 @@ def pull_batch_mapping(config: dm.Config, batch: dm.ResponseBatch) -> dm.BatchMa
         # Delete mapping
         database.delete(bytes(batch.uid, "utf-8"))
 
+    except plyvel._plyvel.IOError as exc:
+        raise IOError() from exc
+    finally:
         # Close connection
         database.close()
-        return batch_mapping
-    except IOError:
-        raise RuntimeError("Failed to open database")
+
+    return batch_mapping

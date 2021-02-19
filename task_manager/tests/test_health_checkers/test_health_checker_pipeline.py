@@ -37,6 +37,7 @@ config = dm.Config(
         running_mean=dm.RunningMeanConfig(50, 100, 10),
     ),
     health_check=dm.HealthCheckerConfig(10),
+    max_running_instances=10,
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(
             sender_open_addr=5566,

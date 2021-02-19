@@ -12,7 +12,9 @@ class TagDoesNotExists(Exception):
 
 
 class CloudClientErrors(Exception):
-    pass
+    def __init__(self, message):
+        self.message = message
+        logger.error(message)
 
 
 class ImageNotFound(CloudClientErrors):
@@ -21,8 +23,7 @@ class ImageNotFound(CloudClientErrors):
     """
 
     def __init__(self, message="Image not found"):
-        self.message = message
-        logger.error(message)
+        super().__init__(message)
 
 
 class ContainerNotFound(CloudClientErrors):
@@ -31,21 +32,13 @@ class ContainerNotFound(CloudClientErrors):
     """
 
     def __init__(self, message="Container not found"):
-        super(ContainerNotFound, self).__init__(message)
-        logger.error(message)
-
-
-class DockerAPIError(CloudClientErrors):
-    """
-    Rise when unstable internet connection or server error
-    """
-
-    def __init__(self, message="Server error"):
-        super(DockerAPIError, self).__init__(message)
-        logger.error(message)
+        super().__init__(message)
 
 
 class CloudAPIError(CloudClientErrors):
-    def __init__(self, message="Cloud client API error"):
-        super(CloudAPIError, self).__init__(message)
-        logger.error(message)
+    """
+    Rise when error from cloud
+    """
+
+    def __init__(self, message="Cloud error"):
+        super().__init__(message)

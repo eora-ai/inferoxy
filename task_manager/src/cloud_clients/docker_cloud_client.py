@@ -6,7 +6,6 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import random
-import asyncio
 from typing import List, Set, Optional
 
 import docker  # type: ignore
@@ -15,7 +14,6 @@ from loguru import logger
 import src.data_models as dm
 import src.exceptions as exc
 from src.cloud_clients import BaseCloudClient
-from src.utils.data_transfers import Receiver, Sender
 from src.health_checker.errors import (
     ContainerDoesNotExists,
     ContainerExited,
@@ -128,7 +126,7 @@ class DockerCloudClient(BaseCloudClient):
         except docker.errors.NotFound as exception:
             raise exc.ContainerNotFound() from exception
         except docker.errors.APIError as exception:
-            raise exc.DockerAPIError() from exception
+            raise exc.CloudAPIError() from exception
 
     def run_container(self, image, num_gpu=None, detach=True, on_gpu=False):
         """
@@ -160,49 +158,8 @@ class DockerCloudClient(BaseCloudClient):
             environment=environment,
         )
 
-    async def setup_data_transfer(self, hostname):
-        s_open_port = self.config.models.ports.sender_open_addr
-        s_sync_port = self.config.models.ports.sender_sync_addr
-        r_open_port = self.config.models.ports.receiver_open_addr
-        r_sync_port = self.config.models.ports.receiver_sync_addr
-
-        sender_open_address = f"tcp://{hostname}:{s_open_port}"
-        sender_sync_address = f"tcp://{hostname}:{s_sync_port}"
-
-        receiver_open_address = f"tcp://{hostname}:{r_open_port}"
-        receiver_sync_address = f"tcp://{hostname}:{r_sync_port}"
-
-        # Create sender and receiver
-
-        sender = Sender(
-            open_address=sender_open_address,
-            sync_address=sender_sync_address,
-            config=self.config.models.zmq_config,
-        )
-
-        receiver = Receiver(
-            open_address=receiver_open_address,
-            sync_address=receiver_sync_address,
-            config=self.config.models.zmq_config,
-        )
-        return sender, receiver
-
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        sender, receiver = asyncio.run(self.setup_data_transfer(hostname))
-
-        return dm.ModelInstance(
-            model=model,
-            sender=sender,
-            receiver=receiver,
-            lock=lock,
-            source_id=None,
-            hostname=hostname,
-            num_gpu=num_gpu,
-            running=True,
-        )
-
     def get_maximum_running_instances(self) -> int:
-        return 20  # TODO: replce magic number
+        return int(self.config.max_running_instances)  # type: ignore
 
     def is_instance_running(
         self, model_instance: dm.ModelInstance

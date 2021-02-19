@@ -234,12 +234,10 @@ class KubeCloudClient(BaseCloudClient):
                 resp = self.read_pod(item.metadata.pod_name)
         else:
             is_running = False
-            # TODO: Add exceptions for kube
             reason = PodDoesNotExists("Pod {resp.metadata.pod_name} does not exists")
             return dm.ReasoningOutput(is_running, reason)
 
         is_running = resp.status.phase != "Running"
         if not is_running:
-            # TODO: Add exceptions for kube
             reason = PodExited(f"""Pod status: {resp.status}""")
         return dm.ReasoningOutput(is_running, reason)

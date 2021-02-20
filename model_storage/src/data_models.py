@@ -20,3 +20,4 @@ class DatabaseConfig(BaseConfig):
     port: int
     user: str
     password: str
+    dbname: str

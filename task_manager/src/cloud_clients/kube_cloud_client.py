@@ -5,14 +5,14 @@ This module is responsible for kubernetes based cloud
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-import os
 import time
-import random
-from typing import Set, Optional, List
+import asyncio
+import concurrent.futures
+from typing import Optional, List
 
 import yaml
 from loguru import logger
-from kubernetes import client, config  # type: ignore
+from kubernetes import client  # type: ignore
 from kubernetes.client.api import core_v1_api  # type: ignore
 
 import src.data_models as dm
@@ -24,10 +24,7 @@ from src.health_checker.errors import (
     HealthCheckError,
 )
 from shared_modules.utils import id_generator
-from templates import pod_template, pod_gpu_template  # type: ignore
-
-
-config.load_kube_config()
+from .templates import pod_template, pod_gpu_template  # type: ignore
 
 
 class KubeCloudClient(BaseCloudClient):
@@ -44,12 +41,9 @@ class KubeCloudClient(BaseCloudClient):
         if self.config is None:
             raise exc.CloudClientErrors("Config does not provided")
         # Get env variables
-        self.host = os.getenv("KUBERNETES_CLUSTER_ADDRESS")
-        self.token = os.getenv("KUBERNETES_API_TOKEN")
-        self.namespace = os.getenv("NAMESPACE")
-
-        self.gpu_all = set(config.gpu_all)
-        self.gpu_busy: Set[int] = set()
+        self.host = self.config.kube.address
+        self.token = self.config.kube.token
+        self.namespace = self.config.kube.namespace
 
         self.kube_config = client.Configuration()
         self.kube_config.host = self.host
@@ -72,54 +66,49 @@ class KubeCloudClient(BaseCloudClient):
         pod_name = f"{model.name.replace('_', '-')}-pod-{random_tail}"
         container_name = model.name.replace("_", "-").lower()
 
-        s_open_addr = f"tcp://*:{self.config.models.ports.sender_open_addr}"  # type: ignore
-        r_open_addr = f"tcp://*:{self.config.models.ports.receiver_open_addr}"  # type: ignore
+        s_open_addr = f"tcp://*:{self.config.models.ports.sender_open_addr}"
+        r_open_addr = f"tcp://*:{self.config.models.ports.receiver_open_addr}"
 
         if not model.run_on_gpu:
-            # Generate pod config for CPU
-
             logger.info("Model will run on CPU")
-            pod = pod_template.format(
-                pod_name=pod_name,
-                label=model.name,
-                host=container_name,
-                container_name=container_name,
-                model_link=model.address,
-                s_open_address=s_open_addr,
-                r_open_addr=r_open_addr,
-                batch_size=model.batch_size,
-            )
+            template = pod_template
         else:
-            # Generate pod config for GPU
-
             logger.info("Model will run on GPU")
-            pod = pod_gpu_template.format(
-                pod_name=pod_name,
-                label=model.name,
-                host=container_name,
-                container_name=container_name,
-                model_link=model.address,
-                s_open_address=s_open_addr,
-                r_open_addr=r_open_addr,
-                batch_size=model.batch_size,
-            )
+            template = pod_gpu_template
+        pod = template.format(
+            pod_name=pod_name,
+            label=model.name,
+            host=container_name,
+            container_name=container_name,
+            model_link=model.address,
+            s_open_addr=s_open_addr,
+            r_open_addr=r_open_addr,
+            batch_size=model.batch_size,
+        )
         pod_manifest = yaml.load(pod)
-        return pod_manifest, container_name
+        return pod_manifest, pod_name
 
     def apply_pod(self, pod_manifest):
         """
         Create pod based on pod configuration
         """
+
         resp = self.api_instance.create_namespaced_pod(
             body=pod_manifest, namespace=self.namespace
         )
-        while True:
+        start_time = time.time()
+        current_time = start_time
+        while current_time - start_time < self.config.kube.create_timeout:
             resp = self.api_instance.read_namespaced_pod(
                 name=pod_manifest["metadata"]["name"], namespace=self.namespace
             )
-            if self.resp.status.phase != "Pending":
+            if resp.status.phase != "Pending":
                 break
             time.sleep(1)
+            current_time = time.time()
+        else:
+            self.delete_pod(pod_manifest["metadata"]["name"])
+            raise exc.CannotCreatePod("Cannot create a pod. Timeout error")
         return resp
 
     def read_pod(self, pod_name):
@@ -146,58 +135,28 @@ class KubeCloudClient(BaseCloudClient):
             return None
         return resp
 
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
-        """
-        Get running instances
-        """
-        model_instances = []
-
-        v1 = client.CoreV1Api()
-        ret = v1.list_pod_for_all_namespaces(watch=False)
-        for item in ret:
-            if item.metadata.label == model.name:
-                if model.run_on_gpu:
-                    logger.info(
-                        f"This instance {item.metadata.pod_name} is running on gpu"
-                    )
-                else:
-                    logger.info(
-                        f"This instance {item.metadata.pod_name} is running on cpu"
-                    )
-                model_instance = self.build_model_instance(
-                    model=model,
-                    hostname=item.metadata.host,
-                )
-                model_instances.append(model_instance)
-        return model_instances
-
     def can_create_instance(self, model: dm.ModelObject) -> bool:
-        if not model.run_on_gpu:
-            return True
-        if len(self.gpu_busy) == len(self.gpu_all):
-            return False
         return True
 
-    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+    async def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
         Create pod based on model image
         """
-        num_gpu = None
-
-        if model.run_on_gpu:
-            gpu_available = self.gpu_all.difference(self.gpu_busy)
-            num_gpu = random.sample(gpu_available, 1)[0]
-            logger.info(f"GPU number: {num_gpu}")
 
         logger.info("Generate pod manifest")
-        pod_manifest, container_name = self.generate_pod_config(model)
+        pod_manifest, _ = self.generate_pod_config(model)
 
         logger.info("Apply generated pod")
-        self.apply_pod(pod_manifest)
+        loop = asyncio.get_running_loop()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+            resp = await loop.run_in_executor(executor, self.apply_pod, pod_manifest)
+        pod_ip = resp.status.pod_ip
 
         # Build model instance
         model_instance = self.build_model_instance(
-            model=model, hostname=container_name, num_gpu=num_gpu
+            model=model,
+            name=pod_manifest["metadata"]["name"],
+            hostname=pod_ip,
         )
 
         return model_instance
@@ -206,14 +165,7 @@ class KubeCloudClient(BaseCloudClient):
         """
         Stop instance (actually it removes pod by container name)
         """
-        if model_instance.num_gpu:
-            self.gpu_busy.remove(model_instance.num_gpu)
-
-        v1 = client.CoreV1Api()
-        ret = v1.list_pod_for_all_namespaces(watch=False)
-        for item in ret:
-            if item.metadata.host == model_instance.hostname:
-                self.delete_pod(item.metadata.pod_name)
+        self.delete_pod(model_instance.name)
 
     def get_maximum_running_instances(self) -> int:
         return self.config.max_running_instances  # type: ignore
@@ -226,18 +178,13 @@ class KubeCloudClient(BaseCloudClient):
         """
 
         reason: Optional[HealthCheckError] = None
+        resp = self.read_pod(model_instance.name)
+        #    is_running = False
+        #    reason = PodDoesNotExists("Pod {resp.metadata.pod_name} does not exists")
+        #    return dm.ReasoningOutput(is_running, reason)
 
-        v1 = client.CoreV1Api()
-        ret = v1.list_pod_for_all_namespaces(watch=False)
-        for item in ret:
-            if item.metadata.host == model_instance.hostname:
-                resp = self.read_pod(item.metadata.pod_name)
-        else:
-            is_running = False
-            reason = PodDoesNotExists("Pod {resp.metadata.pod_name} does not exists")
-            return dm.ReasoningOutput(is_running, reason)
-
-        is_running = resp.status.phase != "Running"
+        is_running = resp.status.phase == "Running"
         if not is_running:
-            reason = PodExited(f"""Pod status: {resp.status}""")
+            logger.warning(f"Pod status {resp.status.phase}")
+            reason = PodExited(f"Pod status: {resp.status}")
         return dm.ReasoningOutput(is_running, reason)

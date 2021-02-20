@@ -16,7 +16,7 @@ class IncreaseTrigger(Trigger):
     Create new instance, when applied
     """
 
-    def apply(self) -> Optional[dm.ModelInstance]:
+    async def apply(self) -> Optional[dm.ModelInstance]:
         """
         Start a new instance
         """
@@ -24,6 +24,7 @@ class IncreaseTrigger(Trigger):
             return None
 
         if self.cloud_client.can_create_instance(self.model):
-            return self.cloud_client.start_instance(self.model)
+            instance = await self.cloud_client.start_instance(self.model)
+            return instance
 
         return None

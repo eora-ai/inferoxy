@@ -69,6 +69,14 @@ class DockerConfig(BaseConfig):
 
 
 @dataclass
+class KubeConfig(BaseConfig):
+    address: str
+    token: str
+    namespace: str
+    create_timeout: int
+
+
+@dataclass
 class ModelsRunnerConfig(BaseConfig):
     ports: PortConfig
     zmq_config: ZMQConfig
@@ -103,6 +111,7 @@ class Config(BaseConfig):
     models: ModelsRunnerConfig
     max_running_instances: int = 10
     docker: Optional[DockerConfig] = None
+    kube: Optional[KubeConfig] = None
 
     @classmethod
     def from_dict(cls, config_dict: dict) -> "Config":
@@ -147,11 +156,12 @@ class ModelInstance:
     lock: bool
     hostname: str
     running: bool
+    name: str
     num_gpu: Optional[int] = None
     current_processing_batch: Optional[MinimalBatchObject] = None
 
     def __hash__(self):
-        return hash(self.model)
+        return hash(self.name)
 
 
 RequestBatch = MinimalBatchObject

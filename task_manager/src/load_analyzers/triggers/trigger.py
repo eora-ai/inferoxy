@@ -40,7 +40,7 @@ class Trigger(ABC):
         self.cloud_client = cloud_client
 
     @abstractmethod
-    def apply(self) -> Optional[dm.ModelInstance]:
+    async def apply(self) -> Optional[dm.ModelInstance]:
         """
         Apply trigger to cloud client
         """

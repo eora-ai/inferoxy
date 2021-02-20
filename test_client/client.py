@@ -14,6 +14,7 @@ import shared_modules.data_objects as dm
 
 
 def main():
+    stateless = input("y/n: ") == "y"
     context = zmq.Context()
     image = Image.open("test.jpg")
     image_array = np.asarray(image)
@@ -29,7 +30,7 @@ def main():
         {
             "source_id": "test.jpg",
             "input": image_array,
-            "parameters": {"stateless": False},
+            "parameters": {"stateless": stateless},
             "model": "stub",
         }
     )

@@ -42,3 +42,9 @@ class CloudAPIError(CloudClientErrors):
 
     def __init__(self, message="Cloud error"):
         super().__init__(message)
+
+
+class CannotCreatePod(CloudClientErrors):
+    """
+    Rise when creation of pod is not successful.
+    """

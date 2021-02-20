@@ -17,7 +17,7 @@ import src.receiver as rc
 import src.sender as snd
 import src.data_models as dm
 from src.alert_sender import AlertManager
-from src.cloud_clients import DockerCloudClient
+from src.cloud_clients import DockerCloudClient, KubeCloudClient
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
@@ -36,7 +36,14 @@ async def pipeline(
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
-    cloud_client = DockerCloudClient(config)
+
+    if not config.docker is None:
+        cloud_client = DockerCloudClient(config)
+    elif not config.kube is None:
+        cloud_client = KubeCloudClient(config)
+    else:
+        raise ValueError("Cloud client must be selected")
+
     load_analyzer = RunningMeanLoadAnalyzer(
         cloud_client,
         input_batch_queue,
@@ -68,8 +75,6 @@ async def pipeline(
     health_checker_task = asyncio.create_task(health_checker.pipeline())
     load_analyzer_task = asyncio.create_task(load_analyzer.analyzer_pipeline())
 
-    loop = asyncio.get_event_loop()
-
     await asyncio.gather(
         receiver_task,
         send_to_model_task,
@@ -99,6 +104,7 @@ def main():
 
     with open("config.yaml") as config_file:
         config_dict = yaml.full_load(config_file)
+        kube_config_dict = config_dict.pop("kube")
         config = dm.Config.from_dict(config_dict)
         if os.environ.get("CLOUD_CLIENT") == "docker":
             docker_config_dict = dict(network=os.environ.get("DOCKER_NETWORK"))
@@ -106,6 +112,11 @@ def main():
             docker_config_dict["login"] = os.environ.get("DOCKER_LOGIN")
             docker_config_dict["password"] = os.environ.get("DOCKER_PASSWORD")
             config.docker = dm.DockerConfig(**docker_config_dict)
+        elif os.environ.get("CLOUD_CLIENT") == "kube":
+            kube_config_dict["address"] = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
+            kube_config_dict["token"] = os.environ.get("KUBERNETES_API_TOKEN")
+            kube_config_dict["namespace"] = os.environ.get("NAMESPACE")
+            config.kube = dm.KubeConfig(**kube_config_dict)
 
     logging.getLogger("asyncio").setLevel(logging.DEBUG)
     asyncio.run(pipeline(config))

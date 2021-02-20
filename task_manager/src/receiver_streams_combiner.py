@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import asyncio
-from typing import AsyncIterator, Union, Dict, Optional, Tuple, List
+from typing import Union, Dict, Optional, Tuple, List, Awaitable
 
 from aiostream.stream import merge  # type: ignore
 from loguru import logger
@@ -30,22 +30,11 @@ class ReceiverStreamsCombiner:
 
     def __init__(self, output_batch_queue: OutputBatchQueue):
         self.output_batch_queue = output_batch_queue
-        self.sources: Dict[
-            Optional[BaseReceiver],
-            Union[
-                AsyncIterator[Union[str, Tuple[BaseReceiver, dm.ResponseBatch]]],
-                AsyncIterator[str],
-            ],
-        ] = {None: self.check_source_interaptor()}
-        self.sources_to_remove: List[
-            Union[
-                AsyncIterator[Union[str, Tuple[BaseReceiver, dm.ResponseBatch]]],
-                AsyncIterator[str],
-            ]
-        ] = []
-        self.combined_streams = merge(*self.sources.values())
+        self.tasks: Dict[
+            BaseReceiver, Awaitable[Tuple[BaseReceiver, dm.ResponseBatch]]
+        ] = {}
         self.running = True
-        self.sourcers_updated = False
+        self.receivers_to_delete: List[BaseReceiver] = []
 
     def add_listener(self, receiver: BaseReceiver) -> None:
         """
@@ -53,44 +42,25 @@ class ReceiverStreamsCombiner:
         """
         logger.debug("Add listener")
 
-        async def __converter_function(
-            iterator: AsyncIterator[dm.ResponseBatch],
-        ) -> AsyncIterator[Union[str, Tuple[BaseReceiver, dm.ResponseBatch]]]:
-            async for batch in iterator:
-                if batch == 0:
-                    yield self.BREAK
-                yield (receiver, batch)
+        self.tasks[receiver] = asyncio.create_task(
+            self.__converter_function(receiver, receiver.receive())
+        )
 
-        self.sources[receiver] = __converter_function(receiver.receive())
-        self.combined_streams = merge(*self.sources.values())
-        self.sourcers_updated = True
+    @staticmethod
+    async def __converter_function(
+        receiver: BaseReceiver,
+        future: Awaitable[dm.ResponseBatch],
+    ) -> Tuple[BaseReceiver, dm.ResponseBatch]:
+        batch = await future
+        return (receiver, batch)
 
     async def remove_listener(self, receiver: BaseReceiver):
         """
         Remove receiver listener from combining sourcers
         """
         logger.debug("Try to remove listener")
-
-        try:
-            receiver_iterator = self.sources.pop(receiver)
-            self.sources_to_remove.append(receiver_iterator)
-        except KeyError as exc:
-            logger.error(exc)
-        self.combined_streams = merge(*self.sources.values())
-        self.sourcers_updated = True
+        self.receivers_to_delete.append(receiver)
         logger.info("Listener is removed")
-
-    async def check_source_interaptor(self) -> AsyncIterator[str]:
-        """
-        Interaptor async iterator, needed to recombine receiver streamms.
-        """
-        while True:
-            await asyncio.sleep(0.001)
-            if self.sourcers_updated:
-                self.sourcers_updated = False
-                logger.info("Sources updated")
-                yield self.BREAK
-                self.sources_to_remove = []
 
     def stop(self):
         """
@@ -104,15 +74,28 @@ class ReceiverStreamsCombiner:
         Main method, receive dm.ResponseBatch, and put it to output_batch_queue
         """
         while self.running:
-            async with self.combined_streams.stream() as stream:
-                async for response in stream:
-                    logger.info(f"Receive from model {response}")
-                    if response == self.BREAK:
-                        break
-                    receiver = response[0]
-                    batch = response[1]
+            await asyncio.sleep(0.1)
+            tasks_to_process = self.tasks.values()
+            if not tasks_to_process:
+                continue
+            done, _ = await asyncio.wait(
+                tasks_to_process, return_when=asyncio.FIRST_COMPLETED
+            )
+            for task in done:
+                result = task.result()
+
+                receiver = result[0]
+                batch = result[1]
+                if batch is not None:
+                    await self.output_batch_queue.put(batch)
                     model_instance = receiver.get_model_instance()
                     model_instance.lock = False
                     model_instance.current_processing_batch = None
 
-                    await self.output_batch_queue.put(batch)
+                if receiver in self.receivers_to_delete:
+                    self.tasks.pop(receiver)
+
+                if receiver in self.tasks:
+                    self.tasks[receiver] = asyncio.create_task(
+                        self.__converter_function(receiver, receiver.receive())
+                    )

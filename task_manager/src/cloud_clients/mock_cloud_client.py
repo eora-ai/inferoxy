@@ -28,9 +28,6 @@ class MockCloudClient(BaseCloudClient):
         self.maximum_running_instances = maximum_running_instances
         self.model_instances: List[dm.ModelInstance] = []
 
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
-        return []
-
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         return True
 

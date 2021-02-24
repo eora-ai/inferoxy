@@ -12,6 +12,7 @@ import pathlib
 
 import cv2  # type: ignore
 import yaml
+import zmq.asyncio  # type: ignore
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from numpy import asarray  # type: ignore
@@ -34,6 +35,8 @@ stub_model = model = ModelObject(
     stateless=True,
     batch_size=256,
 )
+
+context = zmq.asyncio.Context()
 
 
 def join_clips_with_audio(source_video, sound_frames, audio_fps, result_path):
@@ -194,14 +197,14 @@ async def main():
         batch = build_batch_video()
     sender = Sender(
         open_address="tcp://127.0.0.1:5556",
-        sync_address="tcp://127.0.0.1:5546",
         config=config.models.zmq_config,
+        context=context,
     )
 
     receiver = Receiver(
         open_address="tcp://127.0.0.1:5555",
-        sync_address="tcp://127.0.0.1:5545",
         config=config.models.zmq_config,
+        context=context,
     )
     print("Send data\n")
     await sender.send(batch)

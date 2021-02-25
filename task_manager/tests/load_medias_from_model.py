@@ -9,6 +9,7 @@ __email__ = "m.gafarova@eora.ru"
 import sys
 import asyncio
 import pathlib
+from typing import List
 
 import cv2  # type: ignore
 import yaml
@@ -40,7 +41,7 @@ stub_model = model = ModelObject(
 )
 
 context = zmq.asyncio.Context()
-response_batches = []
+response_batches: List[dm.ResponseBatch] = []
 
 
 def join_clips_with_audio(source_video, sound_frames, audio_fps, result_path):

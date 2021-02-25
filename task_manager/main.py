@@ -17,7 +17,7 @@ import src.receiver as rc
 import src.sender as snd
 import src.data_models as dm
 from src.alert_sender import AlertManager
-from src.cloud_clients import DockerCloudClient, KubeCloudClient
+from src.cloud_clients import DockerCloudClient, KubeCloudClient, BaseCloudClient
 from src.load_analyzers import RunningMeanLoadAnalyzer
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.model_instances_storage import ModelInstancesStorage
@@ -38,7 +38,7 @@ async def pipeline(
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
 
     if not config.docker is None:
-        cloud_client = DockerCloudClient(config)
+        cloud_client: BaseCloudClient = DockerCloudClient(config)
     elif not config.kube is None:
         cloud_client = KubeCloudClient(config)
     else:

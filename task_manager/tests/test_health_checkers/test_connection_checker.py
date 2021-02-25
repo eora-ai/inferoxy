@@ -58,6 +58,7 @@ config = dm.Config(
 async def test_was_received_in_10_seconds():
     model_instance = dm.ModelInstance(
         model=model,
+        name="",
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=True,
@@ -73,6 +74,7 @@ async def test_was_received_in_10_seconds():
 async def test_wasnot_received_in_10_seconds():
     model_instance = dm.ModelInstance(
         model=model,
+        name="",
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=True,
@@ -89,6 +91,7 @@ async def test_wasnot_received_in_10_seconds():
 async def test_wasnot_received_sent_in_10_seconds():
     model_instance = dm.ModelInstance(
         model=model,
+        name="",
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=True,
@@ -106,6 +109,7 @@ async def test_wasnot_received_sent_in_10_seconds():
 async def test_model_doesnot_locked():
     model_instance = dm.ModelInstance(
         model=model,
+        name="",
         sender=BaseSender(),
         receiver=BaseReceiver(),
         lock=False,

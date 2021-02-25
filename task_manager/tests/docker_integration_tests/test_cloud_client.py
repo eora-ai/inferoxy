@@ -43,6 +43,7 @@ model_object_gpu = dm.ModelObject(
 
 model_instance_fail = dm.ModelInstance(
     model=model_object_pass,
+    name="",
     source_id=None,
     sender=BaseSender(),
     receiver=BaseReceiver(),

@@ -32,6 +32,7 @@ batch = dm.MinimalBatchObject(
 )
 model_instance = dm.ModelInstance(
     model=model,
+    name="Test1",
     sender=BaseSender(),
     receiver=BaseReceiver(),
     lock=True,

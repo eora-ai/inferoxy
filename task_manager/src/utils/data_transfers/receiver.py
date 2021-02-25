@@ -58,9 +58,9 @@ class Receiver(BaseReceiver):
                 batch = await self.zmq_socket.recv_pyobj()
                 self.last_received_batch = time.time()
                 return batch
-            return
+            return None
         except zmq.Again:
-            return
+            return None
 
     def close(self):
         self.zmq_socket.close()

@@ -28,6 +28,9 @@ from src.utils.data_transfers.sender import Sender
 from src.utils.data_transfers.receiver import Receiver
 from shared_modules.utils import uuid4_string_generator
 from src.data_models import MinimalBatchObject, ModelObject
+from src.batch_queue import OutputBatchQueue
+from src.receiver_streams_combiner import ReceiverStreamsCombiner
+
 
 stub_model = model = ModelObject(
     name="stub",
@@ -37,6 +40,7 @@ stub_model = model = ModelObject(
 )
 
 context = zmq.asyncio.Context()
+response_batches = []
 
 
 def join_clips_with_audio(source_video, sound_frames, audio_fps, result_path):
@@ -48,16 +52,22 @@ def join_clips_with_audio(source_video, sound_frames, audio_fps, result_path):
         clip.write_videofile(result_path, codec="libx264", audio_codec="aac")
 
 
-async def get_response_batches_video(receiver):
+async def get_response_batches_video(receiver_streams):
     print("Enter get response batches")
-    response_iterable = receiver.receive()
-    print("Receive response iterable")
-    async for item in response_iterable:
+    done, _ = await asyncio.wait(
+        (
+            receiver_streams.converter(),
+            get_from_queue(receiver_streams.output_batch_queue),
+        ),
+        return_when=asyncio.FIRST_COMPLETED,
+    )
+    for batch in response_batches:
+        print("Receive response iterable")
         images = []
         audio = []
-        fps = item.responses_info[0].parameters["init"]["fps"]
+        fps = batch.responses_info[0].parameters["init"]["fps"]
 
-        for info in item.responses_info:
+        for info in batch.responses_info:
             print("Processing response info of batch")
             image = info.picture
             images.append(image)
@@ -68,29 +78,43 @@ async def get_response_batches_video(receiver):
 
             audio.extend(sound)
 
-        print("Create videofile")
-        out = cv2.VideoWriter(
-            "result_without_sound.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, size
-        )
-        for i in range(len(images)):
-            out.write(images[i])
-        out.release()
+    print("Create videofile")
+    out = cv2.VideoWriter(
+        "result_without_sound.mp4", cv2.VideoWriter_fourcc(*"mp4v"), fps, size
+    )
+    for i in range(len(images)):
+        out.write(images[i])
+    out.release()
 
-        audio = np.array(audio, dtype=np.float32)
-        print("Video file without is created")
-        # scaled = np.int16(audio / np.max(np.abs(audio)) * 32767)
+    audio = np.array(audio, dtype=np.float32)
+    print("Video file without is created")
+    # scaled = np.int16(audio / np.max(np.abs(audio)) * 32767)
 
-        join_clips_with_audio(
-            "result_without_sound.mp4", audio, 44100, "result_with_sound.mp4"
-        )
+    join_clips_with_audio(
+        "result_without_sound.mp4", audio, 44100, "result_with_sound.mp4"
+    )
 
 
-async def get_response_batches_picture(receiver):
+async def get_from_queue(output_batch_queue):
+    response_batch = await output_batch_queue.get()
+    print(response_batch)
+    response_batches.append(response_batch)
+
+
+async def get_response_batches_picture(receiver_streams):
     print("Enter get response batches")
-    response_iterable = receiver.receive()
+    done, _ = await asyncio.wait(
+        (
+            receiver_streams.converter(),
+            get_from_queue(receiver_streams.output_batch_queue),
+        ),
+        return_when=asyncio.FIRST_COMPLETED,
+    )
     print("Receive response iterable")
-    async for item in response_iterable:
-        for info in item.responses_info:
+
+    print(response_batches)
+    for batch in response_batches:
+        for info in batch.responses_info:
             image = info.picture
             im = Image.fromarray(image)
             im.save("result.png")
@@ -206,12 +230,27 @@ async def main():
         config=config.models.zmq_config,
         context=context,
     )
+    model_instance = dm.ModelInstance(
+        model=stub_model,
+        source_id="test.jpg",
+        sender=sender,
+        receiver=receiver,
+        lock=False,
+        hostname="stub_v1",
+        running=True,
+        name="stub-v1",
+    )
+    receiver.set_model_instance(model_instance)
+    output_batch_queue = OutputBatchQueue()
+    receiver_streams = ReceiverStreamsCombiner(output_batch_queue)
+    receiver_streams.add_listener(receiver)
+
     print("Send data\n")
     await sender.send(batch)
     if choice == 1:
-        await get_response_batches_picture(receiver)
+        await get_response_batches_picture(receiver_streams)
     if choice == 2:
-        await get_response_batches_video(receiver)
+        await get_response_batches_video(receiver_streams)
 
 
 if __name__ == "__main__":

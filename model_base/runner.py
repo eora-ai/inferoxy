@@ -1,10 +1,14 @@
 import sys
 import importlib
 
+import zmq  # type: ignore
 from loguru import logger
 
 import data_models as dm  # type: ignore
 from data_transfer import Sender, Receiver  # type: ignore
+
+
+context = zmq.Context()
 
 
 class Runner:
@@ -29,10 +33,12 @@ class Runner:
         self.receiver = Receiver(
             open_address=dataset_address,
             config=config,
+            context=context,
         )
         self.sender = Sender(
             open_address=results_address,
             config=config,
+            context=context,
         )
         self._prepare_model()
         logger.info("Runner inited")
@@ -78,7 +84,7 @@ class Runner:
         samples = []
 
         minimal_batch = self.receiver.receive()
-        logger.debug(f"Batch recived {minimal_batch}")
+        logger.debug(f"Batch received {minimal_batch}")
         if minimal_batch is None:
             logger.warning("Batch object is None\n")
 

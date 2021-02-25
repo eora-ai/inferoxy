@@ -34,6 +34,7 @@ class MockCloudClient(BaseCloudClient):
     def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         model_instance = dm.ModelInstance(
             model=model,
+            name=model.name + "_model_instance",
             sender=BaseSender(),
             receiver=BaseReceiver(),
             source_id=None,

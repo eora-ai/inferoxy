@@ -32,12 +32,13 @@ stub_stateful = dm.ModelObject(
 )
 
 
-def test_add_model_instance():
+async def test_add_model_instance():
     """
     Test for add_model_instance
     """
     model_instance = dm.ModelInstance(
         model=stub_model,
+        name="",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -64,6 +65,7 @@ async def test_remove_model_instance():
 
     model_instance = dm.ModelInstance(
         model=stub_model,
+        name="",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -84,12 +86,13 @@ async def test_remove_model_instance():
     assert models_with_source_ids == []
 
 
-def test_stateful_batch_routing():
+async def test_stateful_batch_routing():
     """
     Add three stateful model instances, but only one is compatible by source id
     """
     model_instance1 = dm.ModelInstance(
         model=stub_stateful,
+        name="",
         source_id="test1",
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -99,6 +102,7 @@ def test_stateful_batch_routing():
     )
     model_instance2 = dm.ModelInstance(
         model=stub_stateful,
+        name="2",
         source_id="test2",
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -108,6 +112,7 @@ def test_stateful_batch_routing():
     )
     model_instance3 = dm.ModelInstance(
         model=stub_stateful,
+        name="3",
         source_id="test3",
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -143,12 +148,13 @@ def test_stateful_batch_routing():
     )
 
 
-def test_stateless_batch_routing():
+async def test_stateless_batch_routing():
     """
     Add three stateless model instance, check that round robin
     """
     model_instance1 = dm.ModelInstance(
         model=stub_model,
+        name="",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -158,6 +164,7 @@ def test_stateless_batch_routing():
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
+        name="2",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -167,6 +174,7 @@ def test_stateless_batch_routing():
     )
     model_instance3 = dm.ModelInstance(
         model=stub_model,
+        name="3",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),

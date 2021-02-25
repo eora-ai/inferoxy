@@ -58,6 +58,7 @@ model = dm.ModelObject(
 )
 model_instance1 = dm.ModelInstance(
     model=model,
+    name="Test",
     sender=BaseSender(),
     receiver=BaseReceiver(),
     lock=True,
@@ -67,6 +68,7 @@ model_instance1 = dm.ModelInstance(
 )
 model_instance2 = dm.ModelInstance(
     model=model,
+    name="Test2",
     sender=BaseSender(),
     receiver=BaseReceiver(),
     lock=True,
@@ -76,6 +78,7 @@ model_instance2 = dm.ModelInstance(
 )
 model_instance3 = dm.ModelInstance(
     model=model,
+    name="Test3",
     sender=BaseSender(),
     receiver=BaseReceiver(),
     lock=True,

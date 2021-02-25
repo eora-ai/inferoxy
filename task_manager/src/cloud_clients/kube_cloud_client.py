@@ -38,19 +38,25 @@ class KubeCloudClient(BaseCloudClient):
         """
         super().__init__(config)
 
-        if self.config is None:
+        if config is None:
             raise exc.CloudClientErrors("Config does not provided")
+
+        self.config: dm.Config = config
         # Get env variables
-        self.host = self.config.kube.address
-        self.token = self.config.kube.token
-        self.namespace = self.config.kube.namespace
+        self.kube_config = self.config.kube
+        if self.kube_config is None:
+            raise exc.CloudClientErrors("Config does not provided")
 
-        self.kube_config = client.Configuration()
-        self.kube_config.host = self.host
-        self.kube_config.api_key = {"authorization": f"Bearer {self.token}"}
-        self.kube_config.verify_ssl = False
+        self.host = self.kube_config.address
+        self.token = self.kube_config.token
+        self.namespace = self.kube_config.namespace
 
-        self.api_client = client.ApiClient(self.kube_config)
+        self.auth_config = client.Configuration()
+        self.auth_config.host = self.host
+        self.auth_config.api_key = {"authorization": f"Bearer {self.token}"}
+        self.auth_config.verify_ssl = False
+
+        self.api_client = client.ApiClient(self.auth_config)
         self.api_instance = core_v1_api.CoreV1Api(self.api_client)
 
         self.id_generator = id_generator()
@@ -98,7 +104,7 @@ class KubeCloudClient(BaseCloudClient):
         )
         start_time = time.time()
         current_time = start_time
-        while current_time - start_time < self.config.kube.create_timeout:
+        while current_time - start_time < self.kube_config.create_timeout:
             resp = self.api_instance.read_namespaced_pod(
                 name=pod_manifest["metadata"]["name"], namespace=self.namespace
             )

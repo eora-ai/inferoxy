@@ -6,8 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import time
-import asyncio
-from typing import AsyncIterator, Union
+from typing import Optional
 
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
@@ -52,23 +51,16 @@ class Receiver(BaseReceiver):
         self.zmq_socket.setsockopt(zmq.RCVHWM, config.rcvhwm)
         self.zmq_socket.setsockopt(zmq.RCVTIMEO, config.rcvtimeo)
         self.zmq_socket.connect(open_address)
-        self.receiving = True
 
-    async def receive(self) -> AsyncIterator[Union[int, ResponseBatch]]:
-        while self.receiving:
-            try:
-                response_batch = await self.zmq_socket.recv_pyobj()
-            except zmq.error.Again:
-                continue
-
-            if response_batch is None:
-                logger.warning("Response batch object is None")
-
-            self.last_received_batch = time.time()
-
-            yield response_batch
-        yield 0
+    async def receive(self) -> Optional[ResponseBatch]:
+        try:
+            if not self.zmq_socket.closed:
+                batch = await self.zmq_socket.recv_pyobj()
+                self.last_received_batch = time.time()
+                return batch
+            return None
+        except zmq.Again:
+            return None
 
     def close(self):
-        self.receiving = False
         self.zmq_socket.close()

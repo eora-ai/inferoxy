@@ -5,9 +5,7 @@ Tests for src.load_analyzers.triggers.TriggerPipeline
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import Dict
-from functools import reduce
-from collections import defaultdict
+import pytest
 
 import src.data_models as dm
 from src.batch_queue import OutputBatchQueue
@@ -25,6 +23,8 @@ from src.cloud_clients.mock_cloud_client import (
     MockCloudClient,
 )
 
+
+pytestmark = pytest.mark.asyncio
 
 stub_model = dm.ModelObject(
     "stub", "registry.visionhub.ru/models/stub:v3", stateless=True, batch_size=128
@@ -56,12 +56,13 @@ stub_config = dm.Config(
 )
 
 
-def test_decrease_stateful_in_pipeline():
+async def test_decrease_stateful_in_pipeline():
     """
     Test that DecreaseTrigger with stateful model_instances does not removed after pipeline optimization
     """
     model_instance1 = dm.ModelInstance(
         model=stub_stateful,
+        name="",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -71,6 +72,7 @@ def test_decrease_stateful_in_pipeline():
     )
     model_instance2 = dm.ModelInstance(
         model=stub_stateful,
+        name="test",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -101,11 +103,12 @@ def test_decrease_stateful_in_pipeline():
     assert pipeline.get_triggers() == [decrease_trigger1, decrease_trigger2]
 
 
-def test_decrease_stateless_in_pipeline():
+async def test_decrease_stateless_in_pipeline():
     """
     Left only one decrease trigger for stateless trigger
     """
     model_instance1 = dm.ModelInstance(
+        name="1",
         model=stub_model,
         source_id=None,
         sender=BaseSender(),
@@ -115,6 +118,7 @@ def test_decrease_stateless_in_pipeline():
         hostname="test",
     )
     model_instance2 = dm.ModelInstance(
+        name="2",
         model=stub_model,
         source_id=None,
         sender=BaseSender(),
@@ -146,12 +150,13 @@ def test_decrease_stateless_in_pipeline():
     assert pipeline.get_triggers() == [decrease_trigger1]
 
 
-def test_not_enough_resources_decrease_in_pipeline():
+async def test_not_enough_resources_decrease_in_pipeline():
     """
     Left all decerease triggers if there are no space to create new model instance
     """
     model_instance1 = dm.ModelInstance(
         model=stub_model,
+        name="1",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -161,6 +166,7 @@ def test_not_enough_resources_decrease_in_pipeline():
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
+        name="2",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -191,12 +197,13 @@ def test_not_enough_resources_decrease_in_pipeline():
     assert pipeline.get_triggers() == [decrease_trigger1]
 
 
-def test_percent_rule():
+async def test_percent_rule():
     """
     Check that after trieng append IncreaseTrigger, if number of model more than 70%
     """
     model_instance1 = dm.ModelInstance(
         model=stub_model,
+        name="1",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),
@@ -206,6 +213,7 @@ def test_percent_rule():
     )
     model_instance2 = dm.ModelInstance(
         model=stub_model,
+        name="2",
         source_id=None,
         sender=BaseSender(),
         receiver=BaseReceiver(),

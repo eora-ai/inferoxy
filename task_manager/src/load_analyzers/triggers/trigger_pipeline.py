@@ -5,16 +5,16 @@ Base class for trigger pipeline
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora"
 
-from functools import reduce
-from collections import defaultdict
+import asyncio
+import concurrent.futures
 from typing import List, Iterable, Dict, Optional, Type
 
 from loguru import logger
 
 import src.data_models as dm
 from src.cloud_clients import BaseCloudClient
-from . import Trigger, DecreaseTrigger, IncreaseTrigger
 from src.model_instances_storage import ModelInstancesStorage
+from . import Trigger, DecreaseTrigger, IncreaseTrigger
 
 
 class TriggerPipeline:
@@ -199,7 +199,7 @@ class TriggerPipeline:
         """
         for trigger in self.__triggers:
             trigger.set_cloud_client(self.__cloud_client)
-            model_instance = trigger.apply()
+            model_instance = await trigger.apply()
             if model_instance is not None and trigger.model_instance != model_instance:
                 self.__model_instances_storage.add_model_instance(model_instance)
             elif (

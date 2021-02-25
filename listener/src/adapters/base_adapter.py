@@ -88,8 +88,9 @@ class BaseAdapter(ABC):
 
     @staticmethod
     def _decide_state(request_object: dm.RequestObject):
-        if not request_object.request_info.parameters.get("stateless", True):
-            request_object.model.stateless = False
+        request_object.model.stateless = request_object.request_info.parameters.get(
+            "stateless", False
+        )
 
     def start(self):
         """

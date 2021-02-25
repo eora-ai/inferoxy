@@ -6,7 +6,9 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 import random
+import asyncio
 from typing import List, Set, Optional
+import concurrent.futures
 
 import docker  # type: ignore
 from loguru import logger
@@ -58,30 +60,6 @@ class DockerCloudClient(BaseCloudClient):
         self.gpu_all = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
-        """
-        Get running instances
-
-        `docker ps`
-        """
-        containers = self.client.containers.list()
-        if len(containers) == 0:
-            return []
-
-        model_instances = []
-        for container in containers:
-            if model.run_on_gpu:
-                logger.info(f"This instance {container.name} is running on gpu")
-            else:
-                logger.info(f"This instance {container.name} is running on cpu")
-            model_instance = self.build_model_instance(
-                model=model,
-                hostname=container.name,
-            )
-
-            model_instances.append(model_instance)
-        return model_instances
-
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         if not model.run_on_gpu:
             return True
@@ -89,7 +67,7 @@ class DockerCloudClient(BaseCloudClient):
             return False
         return True
 
-    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+    async def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
         Start instance base on model image
 
@@ -107,13 +85,18 @@ class DockerCloudClient(BaseCloudClient):
         try:
             logger.debug("Run container")
             name = f"{model.name}_{next(self.uid_generator)}"
-            container = self.run_container(
-                name=name,
-                image=model.address,
-                on_gpu=on_gpu,
-                num_gpu=num_gpu,
-            )
-            logger.info(f"Container is up: {container}")
+            loop = asyncio.get_running_loop()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                container = await loop.run_in_executor(
+                    executor,
+                    self.run_container,
+                    name,
+                    model.address,
+                    num_gpu,
+                    True,
+                    on_gpu,
+                )
+                logger.info(f"Container is up: {container}")
         except docker.errors.APIError as exception:
             raise exc.CloudAPIError() from exception
 
@@ -122,6 +105,7 @@ class DockerCloudClient(BaseCloudClient):
             model=model,
             hostname=name,
             num_gpu=num_gpu,
+            name=name,
         )
         logger.info(f"Build model instance: {model_instance}")
         return model_instance

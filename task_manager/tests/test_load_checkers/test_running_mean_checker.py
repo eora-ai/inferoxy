@@ -79,6 +79,7 @@ async def test_low_load():
     model_instances_storage.add_model_instance(
         dm.ModelInstance(
             model=stub_model,
+            name="",
             source_id=None,
             sender=BaseSender(),
             receiver=BaseReceiver(),
@@ -90,6 +91,7 @@ async def test_low_load():
 
     model_instances_storage.add_model_instance(
         dm.ModelInstance(
+            name="",
             model=stub_model,
             source_id=None,
             sender=BaseSender(),
@@ -183,6 +185,7 @@ async def test_high_load():
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     model_instances_storage.add_model_instance(
         dm.ModelInstance(
+            name="",
             model=stub_model,
             source_id=None,
             sender=BaseSender(),
@@ -195,6 +198,7 @@ async def test_high_load():
 
     model_instances_storage.add_model_instance(
         dm.ModelInstance(
+            name="",
             model=stub_model,
             source_id=None,
             sender=BaseSender(),

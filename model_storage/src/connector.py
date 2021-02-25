@@ -17,23 +17,24 @@ class Connector:
         if config is None:
             logger.error("No database config")
         self.config = config
-        self.connection = psycopg2.connect(
-            user=self.config.user,
-            host=self.config.host,
-            password=self.config.password,
-            port=self.config.port,
-        )
 
     def fetch_model(self, model_slug: str):
         try:
             logger.info("Connecting to the PostgreSQL database...")
+            self.connection = psycopg2.connect(
+                user=self.config.user,
+                host=self.config.host,
+                password=self.config.password,
+                port=self.config.port,
+                dbname=self.config.dbname,
+            )
             cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
             sql_query = f"""SELECT
             slug,
-            name,
             link,
             batch_size,
+            gpu,
             supported_modes  FROM  models_model WHERE slug='{model_slug}'"""
             cursor.execute(sql_query)
 
@@ -53,9 +54,10 @@ class Connector:
     @staticmethod
     def build_model_object(model_params):
         model = dm.ModelObject(
-            name=model_params["name"],
+            name=model_params["slug"],
             address=model_params["link"],
             batch_size=model_params["batch_size"],
+            run_on_gpu=model_params["gpu"],
             # TODO replace field
             stateless=any([s in [1, 3] for s in model_params["supported_modes"]]),
         )

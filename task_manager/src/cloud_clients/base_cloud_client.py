@@ -31,17 +31,6 @@ class BaseCloudClient(ABC):
         self.context = zmq.asyncio.Context()
 
     @abstractmethod
-    def get_running_instances(self, model: dm.ModelObject) -> List[dm.ModelInstance]:
-        """
-        Get all running model instances by model
-
-        Parameters
-        ----------
-        model:
-            Model object, need to get name of the model
-        """
-
-    @abstractmethod
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         """
         Check, if there are a space/instances for new model instances
@@ -53,7 +42,7 @@ class BaseCloudClient(ABC):
         """
 
     @abstractmethod
-    def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
+    async def start_instance(self, model: dm.ModelObject) -> dm.ModelInstance:
         """
         Start a model instance
 
@@ -115,10 +104,10 @@ class BaseCloudClient(ABC):
         )
         return sender, receiver
 
-    def build_model_instance(self, model, hostname, lock=False, num_gpu=None):
-        sender, receiver = asyncio.run(self.setup_data_transfer(hostname))
+    def build_model_instance(self, model, name, hostname, lock=False, num_gpu=None):
+        sender, receiver = self.setup_data_transfer(hostname)
 
-        return dm.ModelInstance(
+        model_instance = dm.ModelInstance(
             model=model,
             sender=sender,
             receiver=receiver,
@@ -127,4 +116,7 @@ class BaseCloudClient(ABC):
             hostname=hostname,
             num_gpu=num_gpu,
             running=True,
+            name=name,
         )
+        receiver.set_model_instance(model_instance)
+        return model_instance

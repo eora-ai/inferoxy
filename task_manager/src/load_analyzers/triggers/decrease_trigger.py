@@ -16,7 +16,7 @@ class DecreaseTrigger(Trigger):
     Stop instance, when applied
     """
 
-    def apply(self) -> Optional[dm.ModelInstance]:
+    async def apply(self) -> Optional[dm.ModelInstance]:
         """
         Stop instance
         """

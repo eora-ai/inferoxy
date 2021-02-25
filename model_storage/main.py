@@ -55,6 +55,7 @@ def main():
         port=os.environ.get("DB_PORT"),
         user=os.environ.get("DB_USER"),
         password=os.environ.get("DB_PASSWORD"),
+        dbname=os.environ.get("DB_NAME"),
     )
 
     asyncio.run(pipeline(config_db))

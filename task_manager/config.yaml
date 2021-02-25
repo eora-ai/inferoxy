@@ -26,3 +26,6 @@ models:
     rcvhwm: 10
     sndtimeo: 3600000
     rcvtimeo: 3
+
+kube:
+  create_timeout: 90

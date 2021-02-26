@@ -38,13 +38,13 @@ class StatefulChecker(Checker):
 
         triggers: List[Trigger] = []
 
-        logger.info(f"Request models with sources ids {requested_models_with_sources}")
-        logger.info(f"Running models with sources {running_models_with_sources}")
+        logger.debug(f"Request models with sources ids {requested_models_with_sources}")
+        logger.debug(f"Running models with sources {running_models_with_sources}")
         if not running_models_with_sources:
             logger.debug(f"{self.model_instances_storage.model_instances}")
 
         for source_id, model in requested_models_with_sources:
-            logger.info(
+            logger.debug(
                 f"Search for {(source_id, model)} in {running_models_with_sources}"
             )
             if (source_id, model) in running_models_with_sources:
@@ -53,14 +53,14 @@ class StatefulChecker(Checker):
             if (None, model) in running_models_with_sources:
                 i = running_models_with_sources.index((None, model))
                 running_models_with_sources[i] = (source_id, model)
-                logger.info(f"Try to set {source_id=} for {model=}")
+                logger.debug(f"Try to set {source_id=} for {model=}")
                 if not source_id is None:
                     self.model_instances_storage.set_source_id(model, source_id)
                 continue
 
-            triggers += [self.make_incerease_trigger(model)]
+            triggers += [self.make_increase_trigger(model)]
 
-        logger.info(f"Left {running_models_with_sources=}")
+        logger.debug(f"Left {running_models_with_sources=}")
         for (source_id, model) in running_models_with_sources:
             model_instance = self.model_instances_storage.get_model_instance(
                 model=model, source_id=source_id

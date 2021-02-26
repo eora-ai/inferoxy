@@ -77,7 +77,7 @@ class RunningMeanStatelessChecker(Checker):
                 model, average_processing_time
             )
             if estimated_time > self.max_threshold:
-                triggers += [self.make_incerease_trigger(model)]
+                triggers += [self.make_increase_trigger(model)]
             elif (
                 estimated_time < self.min_threshold
                 and len(self.model_instances_storage.get_model_instances(model)) > 1

@@ -41,7 +41,7 @@ class Checker(ABC):
         """
 
     @staticmethod
-    def make_incerease_trigger(model: dm.ModelObject) -> IncreaseTrigger:
+    def make_increase_trigger(model: dm.ModelObject) -> IncreaseTrigger:
         """
         Make increase trigger out of ModelObject
 

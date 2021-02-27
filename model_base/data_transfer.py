@@ -1,10 +1,12 @@
 import zmq  # type: ignore
 
+context = zmq.Context()
+
 
 class Sender:
     """Opens zmq PUSH socket and sends python obj."""
 
-    def __init__(self, open_address, config, context):
+    def __init__(self, open_address, config):
 
         self.zmq_context = context
         self.zmq_socket = self.zmq_context.socket(zmq.PUSH)

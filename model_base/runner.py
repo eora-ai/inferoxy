@@ -8,9 +8,6 @@ import data_models as dm  # type: ignore
 from data_transfer import Sender, Receiver  # type: ignore
 
 
-context = zmq.Context()
-
-
 class Runner:
     predict_batch = None
     init = None
@@ -33,12 +30,10 @@ class Runner:
         self.receiver = Receiver(
             open_address=dataset_address,
             config=config,
-            context=context,
         )
         self.sender = Sender(
             open_address=results_address,
             config=config,
-            context=context,
         )
         self._prepare_model()
         logger.info("Runner inited")

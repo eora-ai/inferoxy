@@ -28,4 +28,4 @@ models:
     rcvtimeo: 3
 
 kube:
-  create_timeout: 90
+  create_timeout: 180

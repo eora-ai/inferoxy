@@ -92,6 +92,12 @@ class BaseAdapter(ABC):
             "stateless", False
         )
 
+    @staticmethod
+    def _decide_runtime(request_object: dm.RequestObject):
+        request_object.model.run_on_gpu = request_object.request_info.parameters.get(
+            "on_gpu", request_object.model.run_on_gpu
+        )
+
     def start(self):
         """
         Start adapter
@@ -103,6 +109,7 @@ class BaseAdapter(ABC):
                 logger.info("Something received. Ура!!!!!")
                 req_object = self.input_to_request_object(req)
                 self._decide_state(req_object)
+                self._decide_runtime(req_object)
                 logger.info(f"Request souce_id: {req_object.source_id}")
                 self._send_request_object(req_object)
                 logger.debug("Req object sent to batch_manager")

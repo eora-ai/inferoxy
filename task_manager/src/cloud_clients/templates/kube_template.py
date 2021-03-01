@@ -50,6 +50,8 @@ spec:
         value: '{r_open_addr}'
       - name: BATCH_SIZE
         value: '{batch_size}'
+      - name: GPU_ON
+        value: '1'
       resources:
         limits:
           nvidia.com/gpu: 1

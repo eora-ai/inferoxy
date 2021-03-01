@@ -140,6 +140,13 @@ class KubeCloudClient(BaseCloudClient):
         except Exception:
             return None
         return resp
+    
+    def read_logs(self, pod_name, length=10):
+        try:
+            resp = self.api_instance.read_namespaced_pod_log(name=pod_name, namespace=self.namespace, tail_lines=length)
+        except Exception:
+            return ""
+        return resp
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
         return True
@@ -192,5 +199,6 @@ class KubeCloudClient(BaseCloudClient):
         is_running = resp.status.phase == "Running"
         if not is_running:
             logger.warning(f"Pod status {resp.status.phase}")
-            reason = PodExited(f"Pod status: {resp.status}")
+            logs = self.read_logs(model_instance.name, length=10)
+            reason = PodExited(f"Pod logs : {logs}")
         return dm.ReasoningOutput(is_running, reason)

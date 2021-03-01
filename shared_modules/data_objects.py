@@ -8,8 +8,8 @@ __email__ = "a.chertkov@eora.ru"
 import json
 from enum import Enum
 from datetime import datetime
-from dataclasses import dataclass, field, asdict
-from typing import List, Tuple, Optional, Dict, Type, NewType
+from dataclasses import dataclass, asdict
+from typing import List, Tuple, Optional, Type, NewType, Union
 
 import numpy as np  # type: ignore
 
@@ -49,7 +49,7 @@ class RequestInfo:
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return False
-        return self.inputs == other.inputs and self.parameters == other.parameters
+        return self.input == other.input and self.parameters == other.parameters
 
     def __repr__(self) -> str:
         parameters_string = {
@@ -60,7 +60,7 @@ class RequestInfo:
 
 @dataclass
 class ResponseInfo:
-    output: dict
+    output: Union[dict, str]
     parameters: dict
     picture: Optional[np.ndarray]
 
@@ -75,7 +75,14 @@ class ResponseInfo:
         parameters_string = {
             k: str(v)[:7] + "..." for (k, v) in self.parameters.items()
         }
-        output_string = {k: str(v)[:7] + "..." for (k, v) in self.output.items()}
+        if isinstance(self.output, dict):
+            output_string = str(
+                {k: str(v)[:7] + "..." for (k, v) in self.output.items()}
+            )
+        elif isinstance(self.output, str):
+            output_string = self.output
+        else:
+            raise ValueError("output must be str or dict")
         return f"ResponseInfo(output={output_string}, parameters={parameters_string}, picture={self.picture if self.picture is None else self.picture.shape})"
 
 

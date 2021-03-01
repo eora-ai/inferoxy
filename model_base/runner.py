@@ -1,6 +1,7 @@
 import sys
 import importlib
 
+import zmq  # type: ignore
 from loguru import logger
 
 import data_models as dm  # type: ignore
@@ -78,7 +79,7 @@ class Runner:
         samples = []
 
         minimal_batch = self.receiver.receive()
-        logger.debug(f"Batch recived {minimal_batch}")
+        logger.debug(f"Batch received {minimal_batch}")
         if minimal_batch is None:
             logger.warning("Batch object is None\n")
 

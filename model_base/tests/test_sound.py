@@ -21,8 +21,6 @@ zmq_config = dm.ZMQConfig(
 
 dataset_address = "tcp://*:5556"
 results_address = "tcp://*:5546"
-dataset_sync_address = "tcp://*:5555"
-results_sync_address = "tcp://*:5545"
 batch_size = 1
 
 

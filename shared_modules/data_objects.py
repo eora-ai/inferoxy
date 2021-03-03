@@ -81,6 +81,8 @@ class ResponseInfo:
             )
         elif isinstance(self.output, str):
             output_string = self.output
+        elif self.output is None:
+            output_string = str(self.output)
         else:
             raise ValueError("output must be str or dict")
         return f"ResponseInfo(output={output_string}, parameters={parameters_string}, picture={self.picture if self.picture is None else self.picture.shape})"

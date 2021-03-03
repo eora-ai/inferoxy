@@ -6,13 +6,11 @@ image: python:3.9
 services:
   - docker:dind
 
-variables:
-  DOCKER_TLS_CERTDIR: ""
-
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  DOCKER_TLS_CERTDIR: ""
 
 # Pip's cache doesn't store the python packages
 # https://pip.pypa.io/en/stable/reference/pip_install/#caching
@@ -29,34 +27,51 @@ stages:
   - build
 
 
-before_script:
-  - python -V  # Print out python version for debugging
-  - pip install virtualenv
-  - virtualenv venv
-  - source venv/bin/activate
-  - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
 
 batch_manager_tests:
   stage: test
+  before_script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
   script:
     - pytest batch_manager
     - mypy batch_manager
 
 task_manager_tests:
   stage: test
+  before_script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
   script:
     - pytest task_manager
     - mypy task_manager
 
 debatch_manager_tests:
   stage: test
+  before_script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
   script:
     - pytest debatch_manager
     - mypy debatch_manager
 
 listener_tests:
   stage: test
+  before_script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
   script:
     - mypy listener
 

@@ -24,8 +24,8 @@ models:
   zmq_config:
     sndhwm: 10
     rcvhwm: 10
-    sndtimeo: 3600000
-    rcvtimeo: 3
+    sndtimeo: 3600000 # ms
+    rcvtimeo: 3 # ms
 
 kube:
-  create_timeout: 180
+  create_timeout: 300 # seconds

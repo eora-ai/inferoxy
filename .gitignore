@@ -1,0 +1,13 @@
+__pycache__
+*.swp
+*.swo
+.ropeproject/
+/*/.DS_Store
+.DS_Store
+.env.dev
+.env
+*.jpg
+*.wav
+*.png
+*.mp4
+*.mp3

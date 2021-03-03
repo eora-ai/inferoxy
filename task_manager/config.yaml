@@ -1,0 +1,31 @@
+zmq_input_address: "ipc:///tmp/batch_manager/result"
+zmq_output_address: "ipc:///tmp/task_manager/result"
+gpu_all: [1]
+max_running_instances: 10
+
+health_check:
+  connection_idle_timeout: 10
+
+load_analyzer:
+  sleep_time: 3 
+  trigger_pipeline:
+    max_model_percent: 60
+  running_mean:
+    min_threshold: 5
+    max_threshold: 10
+    window_size: 10
+  stateful_checker:
+    keep_model: 30
+
+models:
+  ports:
+    sender_open_addr: 5556
+    receiver_open_addr: 5546
+  zmq_config:
+    sndhwm: 10
+    rcvhwm: 10
+    sndtimeo: 3600000 # ms
+    rcvtimeo: 3 # ms
+
+kube:
+  create_timeout: 300 # seconds

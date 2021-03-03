@@ -1,0 +1,9 @@
+neovim
+black
+pylint
+pytest
+pytest-asyncio
+mypy
+Pillow
+opencv-python
+aiomonitor

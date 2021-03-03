@@ -1,0 +1,7 @@
+model_base/
+__pycache__
+.coverage
+.git
+.mypy_cache
+.pytest_cache
+.env*

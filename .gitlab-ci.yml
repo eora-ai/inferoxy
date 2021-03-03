@@ -3,6 +3,12 @@
 # https://hub.docker.com/r/library/python/tags/
 image: python:3.9
 
+services:
+  - docker:dind
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
@@ -18,6 +24,11 @@ cache:
     - .cache/pip
     - venv/
 
+stages:
+  - test
+  - build
+
+
 before_script:
   - python -V  # Print out python version for debugging
   - pip install virtualenv
@@ -27,20 +38,34 @@ before_script:
   - pip install -r requirements-dev.txt
 
 batch_manager_tests:
+  stage: test
   script:
     - pytest batch_manager
     - mypy batch_manager
 
 task_manager_tests:
+  stage: test
   script:
     - pytest task_manager
     - mypy task_manager
 
 debatch_manager_tests:
+  stage: test
   script:
     - pytest debatch_manager
     - mypy debatch_manager
 
 listener_tests:
+  stage: test
   script:
     - mypy listener
+
+build_release_image:
+  image: docker:latest
+  stage: build
+  script:
+    - export INFEROXY_VERSION=$CI_COMMIT_TAG
+    - make build
+    - make push
+  only:
+    - tags

@@ -9,7 +9,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, asdict
-from typing import List, Tuple, Optional, Type, NewType, Union
+from typing import List, Tuple, Optional, Type, NewType, Union, Any
 
 import numpy as np  # type: ignore
 
@@ -60,7 +60,7 @@ class RequestInfo:
 
 @dataclass
 class ResponseInfo:
-    output: Union[dict, str]
+    output: Any
     parameters: dict
     picture: Optional[np.ndarray]
 
@@ -81,10 +81,8 @@ class ResponseInfo:
             )
         elif isinstance(self.output, str):
             output_string = self.output
-        elif self.output is None:
-            output_string = str(self.output)
         else:
-            raise ValueError("output must be str or dict")
+            output_string = str(self.output)
         return f"ResponseInfo(output={output_string}, parameters={parameters_string}, picture={self.picture if self.picture is None else self.picture.shape})"
 
 

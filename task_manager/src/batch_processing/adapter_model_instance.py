@@ -50,8 +50,8 @@ class AdapterV1ModelInstance:
                 )
                 await self.output_queue.put(response_batch)
         self.model_instance.current_processing_batch = batch
+        batch.status = dm.Status.SENT_TO_MODEL
+        batch.started_at = datetime.now()
         logger.info("Try to send batch")
         await self.sender.send(batch)
         logger.info("Batch sent")
-        batch.status = dm.Status.SENT_TO_MODEL
-        batch.started_at = datetime.now()

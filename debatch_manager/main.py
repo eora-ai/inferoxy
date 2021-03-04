@@ -84,10 +84,10 @@ async def pipeline(config: dm.Config):
                 batch_mapping = pull_batch_mapping(config=config, batch=response_batch)
                 break
             except IOError as exc:
-                logger.exception(exc)
+                logger.debug(f"Database locked try in {sleep_time}")
                 await asyncio.sleep(sleep_time)
             except TypeError as exc:
-                logger.exception("Mapping doesnot exists for {response_batch=}")
+                logger.exception(f"Mapping doesnot exists for {response_batch=}")
                 break
 
         if batch_mapping is None:

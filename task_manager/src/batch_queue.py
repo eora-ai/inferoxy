@@ -236,10 +236,12 @@ class OutputBatchQueue(Queue):
             processed_time = item.processed_at - item.started_at
 
             if isinstance(processed_time, datetime.timedelta):
-                processed_time = processed_time.total_seconds()
+                processed_time_float = processed_time.total_seconds()
+            else:
+                processed_time_float = processed_time
 
             self.batches_time_processing[item] = {
-                "processing_time": processed_time,
+                "processing_time": processed_time_float,
                 "count": item.size,
             }
         await super().put(item)

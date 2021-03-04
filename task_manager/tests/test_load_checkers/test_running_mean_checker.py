@@ -108,7 +108,7 @@ async def test_low_load():
     )
     response_info1 = dm.ResponseInfo(
         output=np.array(range(10)),
-        picture=[],
+        picture=np.array(range(10)),
         parameters={},
     )
     response1 = dm.ResponseBatch(
@@ -127,7 +127,7 @@ async def test_low_load():
     )
     response_info2 = dm.ResponseInfo(
         output=np.array(range(10)),
-        picture=[],
+        picture=np.array(range(10)),
         parameters={},
     )
     response2 = dm.ResponseBatch(
@@ -219,7 +219,7 @@ async def test_high_load():
     )
     response_info1 = dm.ResponseInfo(
         output=np.array(range(10)),
-        picture=[],
+        picture=np.array(range(10)),
         parameters={},
     )
     response1 = dm.ResponseBatch(
@@ -238,7 +238,7 @@ async def test_high_load():
     )
     response_info2 = dm.ResponseInfo(
         output=np.array(range(10)),
-        picture=[],
+        picture=np.array(range(10)),
         parameters={},
     )
     response2 = dm.ResponseBatch(

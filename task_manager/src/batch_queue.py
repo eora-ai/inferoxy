@@ -224,7 +224,8 @@ class OutputBatchQueue(Queue):
 
         if item.responses_info is not None:
             item.status = dm.Status.PROCESSED
-            item.processed_at = datetime.datetime.now()
+            if item.processed_at is None:
+                item.processed_at = datetime.datetime.now()
 
         logger.debug(f"Response status {item.status}, {item}")
         if (
@@ -232,10 +233,13 @@ class OutputBatchQueue(Queue):
             and not item.processed_at is None
             and not item.started_at is None
         ):
+            processed_time = item.processed_at - item.started_at
+
+            if isinstance(processed_time, datetime.timedelta):
+                processed_time = processed_time.total_seconds()
+
             self.batches_time_processing[item] = {
-                "processing_time": (
-                    item.processed_at - item.started_at
-                ).total_seconds(),
+                "processing_time": processed_time,
                 "count": item.size,
             }
         await super().put(item)

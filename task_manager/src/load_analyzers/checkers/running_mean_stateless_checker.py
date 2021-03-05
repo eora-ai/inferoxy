@@ -82,7 +82,10 @@ class RunningMeanStatelessChecker(Checker):
                 model, average_processing_time
             )
             logger.debug(f"Estimated processing time for {model} = {estimated_time}")
-            if estimated_time > self.max_threshold:
+            if (
+                estimated_time > self.max_threshold
+                and len(self.model_instances_storage.get_model_instances(model)) > 1
+            ):
                 logger.debug(
                     f"Make increase trigger, because {estimated_time=} > {self.max_threshold=}"
                 )

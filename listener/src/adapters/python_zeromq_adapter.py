@@ -21,7 +21,7 @@ class ZMQPythonAdapter(BaseAdapter):
     def init_server(self, config: dm.Config):
         self.input_zmq_socket = self.ctx.socket(zmq.PULL)
         self.input_zmq_socket.bind(config.zmq_python.listen_address)
-        self.output_zmq_socket = self.ctx.socket(zmq.PUB)
+        self.output_zmq_socket = self.ctx.socket(zmq.ROUTER)
         self.output_zmq_socket.bind(config.zmq_python.send_address)
 
     def receive_request(self) -> Request:

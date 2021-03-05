@@ -61,7 +61,7 @@ class ModelInstancesStorage:
         """
         model_instance = self.get_model_instance(model, source_id=None)
         if model_instance is None:
-            return
+            return None
         model_instance.source_id = source_id
 
     def get_running_models_with_source_ids(
@@ -131,5 +131,5 @@ class ModelInstancesStorage:
         self.indexes[model] = (index + 1) % len(self.model_instances[model])
         model_instance = self.model_instances[model][index]
         if model_instance.lock:
-            return
+            return None
         return model_instance

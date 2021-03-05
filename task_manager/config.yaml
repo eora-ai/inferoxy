@@ -13,7 +13,7 @@ load_analyzer:
   running_mean:
     min_threshold: 5
     max_threshold: 10
-    window_size: 10
+    window_size: 20
   stateful_checker:
     keep_model: 30
 

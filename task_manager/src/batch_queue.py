@@ -5,11 +5,11 @@ This module is responsible for transfer Batches from receiver to process and fro
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from loguru import logger
-
 import datetime
 from asyncio import Queue, QueueEmpty
 from typing import Optional, Dict, Tuple, List
+
+from loguru import logger
 
 import src.data_models as dm
 from src.exceptions import TagDoesNotExists
@@ -219,13 +219,29 @@ class OutputBatchQueue(Queue):
         item:
             dm.ResponseBatch item, that will save into queue, batch status is PROCESSED
         """
+        if item.error is not None:
+            item.status = dm.Status.FAILED
+
+        if item.responses_info is not None:
+            item.status = dm.Status.PROCESSED
+            if item.processed_at is None:
+                item.processed_at = datetime.datetime.now()
+
+        logger.debug(f"Response status {item.status}, {item}")
         if (
             item.status == dm.Status.PROCESSED
             and not item.processed_at is None
             and not item.started_at is None
         ):
+            processed_time = item.processed_at - item.started_at
+
+            if isinstance(processed_time, datetime.timedelta):
+                processed_time_float = processed_time.total_seconds()
+            else:
+                processed_time_float = processed_time
+
             self.batches_time_processing[item] = {
-                "processing_time": item.processed_at - item.started_at,
+                "processing_time": processed_time_float,
                 "count": item.size,
             }
         await super().put(item)

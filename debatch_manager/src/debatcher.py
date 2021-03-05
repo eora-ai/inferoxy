@@ -76,19 +76,16 @@ def pull_batch_mapping(config: dm.Config, batch: dm.ResponseBatch) -> dm.BatchMa
         database = plyvel.DB(
             config.db_file,
         )
-        # Pull batch mapping from database
-        batch_mapping_bytes = database.get(bytes(batch.uid, "utf-8"))
-        batch_mapping = dm.BatchMapping.from_key_value(
-            (bytes(batch.uid, "utf-8"), batch_mapping_bytes)
-        )
-
-        # Delete mapping
-        database.delete(bytes(batch.uid, "utf-8"))
-
     except plyvel._plyvel.IOError as exc:
         raise IOError() from exc
-    finally:
-        # Close connection
-        database.close()
+    # Pull batch mapping from database
+    batch_mapping_bytes = database.get(bytes(batch.uid, "utf-8"))
+    batch_mapping = dm.BatchMapping.from_key_value(
+        (bytes(batch.uid, "utf-8"), batch_mapping_bytes)
+    )
+
+    # Delete mapping
+    database.delete(bytes(batch.uid, "utf-8"))
+    database.close()
 
     return batch_mapping

@@ -12,9 +12,9 @@ from typing import Dict, List, Deque
 
 from loguru import logger
 
+from src.load_analyzers.triggers import Trigger
 import src.data_models as dm
 from .checker import Checker
-from src.load_analyzers.triggers import Trigger
 
 
 class RunningMeanStatelessChecker(Checker):
@@ -40,6 +40,8 @@ class RunningMeanStatelessChecker(Checker):
         batches_time_processing = self.output_batch_queue.batches_time_processing.copy()
         self.output_batch_queue.batches_time_processing.clear()
         for response_batch in batches_time_processing:
+            if not response_batch.model.stateless:
+                continue
             processing_time = batches_time_processing[response_batch]["processing_time"]
             count = batches_time_processing[response_batch]["count"]
             if response_batch.model not in self.processing_times:
@@ -60,7 +62,10 @@ class RunningMeanStatelessChecker(Checker):
         """
         Calculate how long it takes to process input_queue for model
         """
-        requests_in_queue = self.input_batch_queue.get_num_requests_in_queue(model)
+        try:
+            requests_in_queue = self.input_batch_queue.get_num_requests_in_queue(model)
+        except KeyError:
+            return 0
         if len(self.model_instances_storage.get_model_instances(model)) == 0:
             return self.max_threshold + 1
         return (
@@ -71,19 +76,28 @@ class RunningMeanStatelessChecker(Checker):
 
     def make_triggers(self) -> List[Trigger]:
         self.calculate_means()
+        logger.debug(f"Means {self.means}")
+
         triggers: List[Trigger] = []
         for model, average_processing_time in self.means.items():
             estimated_time = self.estimate_processing_time(
                 model, average_processing_time
             )
-            if estimated_time > self.max_threshold:
+            logger.debug(f"Estimated processing time for {model} = {estimated_time}")
+            if (
+                estimated_time > self.max_threshold
+                and len(self.model_instances_storage.get_model_instances(model)) > 1
+            ):
+                logger.debug(
+                    f"Make increase trigger, because {estimated_time=} > {self.max_threshold=}"
+                )
                 triggers += [self.make_increase_trigger(model)]
             elif (
                 estimated_time < self.min_threshold
                 and len(self.model_instances_storage.get_model_instances(model)) > 1
             ):
-                logger.critical(
-                    "Make decrease trigger, because {estimated_time=} < {self.min_threshold=}"
+                logger.debug(
+                    f"Make decrease trigger, because {estimated_time=} < {self.min_threshold=}"
                 )
                 model_instance = (
                     self.model_instances_storage.get_not_locked_model_instances(
@@ -93,14 +107,18 @@ class RunningMeanStatelessChecker(Checker):
                 model_instance.lock = True
                 triggers += [self.make_decrease_trigger(model_instance=model_instance)]
             elif estimated_time == 0:
-                logger.critical("Make decrease trigger, because {estimated_time=} = 0")
-                model_instance = (
+                logger.debug(f"Make decrease trigger, because {estimated_time=} = 0")
+                model_instances = (
                     self.model_instances_storage.get_not_locked_model_instances(
                         model=model
                     )
-                )[0]
+                )
+                if not model_instances:
+                    continue
+                model_instance = model_instances[0]
                 model_instance.lock = True
                 triggers += [self.make_decrease_trigger(model_instance=model_instance)]
             else:
                 continue
+        logger.debug(f"Triggers after running_mean_stateless_checker = {triggers}")
         return triggers

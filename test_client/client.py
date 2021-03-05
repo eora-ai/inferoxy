@@ -2,44 +2,50 @@
 Test clients for listener
 """
 
-import time
-import sys
+import uuid
 
 from loguru import logger
 import zmq
 import numpy as np
 from PIL import Image
 
-import shared_modules.data_objects as dm
-
 
 def main():
-    stateless = input("y/n: ") == "y"
     context = zmq.Context()
-    image = Image.open("test.jpg")
-    image_array = np.asarray(image)
+
     input_socket = context.socket(zmq.PUSH)
     input_socket.connect("tcp://localhost:7787")
     logger.info("Connected to receiver")
-    output_socket = context.socket(zmq.SUB)
+    output_socket = context.socket(zmq.DEALER)
+    uid = f"test_{uuid.uuid4()}.jpg"
+    output_socket.setsockopt(zmq.IDENTITY, uid.encode("utf-8"))
     output_socket.connect("tcp://localhost:7788")
-    output_socket.subscribe(b"test.jpg")
+
+    stateless = input("y/n: ") == "y"
+    number_of_request = int(input("Number of request: "))
+
+    image = Image.open("test.jpg")
+    image_array = np.asarray(image)
+
     logger.info("Connected to sender")
 
-    input_socket.send_pyobj(
-        {
-            "source_id": "test.jpg",
-            "input": image_array,
-            "parameters": {"stateless": stateless},
-            "model": "stub",
-        }
-    )
-    logger.info("Sent")
+    for i in range(number_of_request):
 
-    topic = output_socket.recv_string()
-    result = output_socket.recv_pyobj()
-    logger.info(topic)
-    logger.info(result)
+        input_socket.send_pyobj(
+            {
+                "source_id": uid,
+                "input": image_array,
+                "parameters": {"stateless": stateless, "index": i},
+                "model": "stub",
+            }
+        )
+        logger.info(f"Sent {i}")
+
+    for i in range(number_of_request):
+        result = output_socket.recv_pyobj()
+        logger.info(
+            f"{i} -> {result['uid']} -> {result['response_info']['parameters']['index']}"
+        )
 
 
 if __name__ == "__main__":

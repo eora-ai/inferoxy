@@ -129,4 +129,7 @@ class ModelInstancesStorage:
         # For stateless models
         index = self.indexes[model]
         self.indexes[model] = (index + 1) % len(self.model_instances[model])
-        return self.model_instances[model][index]
+        model_instance = self.model_instances[model][index]
+        if model_instance.lock:
+            return
+        return model_instance

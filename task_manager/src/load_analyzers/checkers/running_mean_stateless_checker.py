@@ -40,6 +40,8 @@ class RunningMeanStatelessChecker(Checker):
         batches_time_processing = self.output_batch_queue.batches_time_processing.copy()
         self.output_batch_queue.batches_time_processing.clear()
         for response_batch in batches_time_processing:
+            if not response_batch.model.stateless:
+                continue
             processing_time = batches_time_processing[response_batch]["processing_time"]
             count = batches_time_processing[response_batch]["count"]
             if response_batch.model not in self.processing_times:

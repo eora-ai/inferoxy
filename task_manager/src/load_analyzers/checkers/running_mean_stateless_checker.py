@@ -40,6 +40,8 @@ class RunningMeanStatelessChecker(Checker):
         batches_time_processing = self.output_batch_queue.batches_time_processing.copy()
         self.output_batch_queue.batches_time_processing.clear()
         for response_batch in batches_time_processing:
+            if not response_batch.model.stateless:
+                continue
             processing_time = batches_time_processing[response_batch]["processing_time"]
             count = batches_time_processing[response_batch]["count"]
             if response_batch.model not in self.processing_times:
@@ -82,7 +84,10 @@ class RunningMeanStatelessChecker(Checker):
                 model, average_processing_time
             )
             logger.debug(f"Estimated processing time for {model} = {estimated_time}")
-            if estimated_time > self.max_threshold:
+            if (
+                estimated_time > self.max_threshold
+                and len(self.model_instances_storage.get_model_instances(model)) > 1
+            ):
                 logger.debug(
                     f"Make increase trigger, because {estimated_time=} > {self.max_threshold=}"
                 )

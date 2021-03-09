@@ -2,6 +2,10 @@
 Entrypoint of listener component
 """
 
+import os
+import sys
+import argparse
+
 import yaml
 from loguru import logger
 
@@ -10,8 +14,22 @@ import src.data_models as dm
 
 
 def main():
-    with open("config.yaml") as f:
-        config_dict = yaml.full_load(f)
+    log_level = os.getenv("LOGGING_LEVEL")
+    logger.remove()
+    logger.add(sys.stderr, level=log_level)
+
+    logger.info("Read config file")
+    parser = argparse.ArgumentParser(description="Listener process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/listener.yaml",
+    )
+    args = parser.parse_args()
+
+    with open(args.config) as config_file:
+        config_dict = yaml.full_load(config_file)
         config = dm.Config.from_dict(config_dict)
 
     adapter = ZMQPythonAdapter(config)

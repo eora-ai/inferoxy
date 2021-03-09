@@ -8,9 +8,9 @@ __email__ = "a.chertkov@eora.ru"
 import os
 import sys
 import asyncio
+import argparse
 from pathlib import Path
 from datetime import datetime
-from pathlib import Path
 
 import yaml
 from loguru import logger
@@ -53,7 +53,16 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=log_level)
 
-    with open("config.yaml") as config_file:
+    parser = argparse.ArgumentParser(description="Batch manager process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/batch_manager.yaml",
+    )
+    args = parser.parse_args()
+
+    with open(args.config) as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 

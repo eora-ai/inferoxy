@@ -8,6 +8,7 @@ __email__ = "m.gafarova@eora.ru"
 import os
 import sys
 import asyncio
+import argparse
 from pathlib import Path
 
 import yaml
@@ -30,22 +31,25 @@ def main():
 
     logger.info("Read config file")
 
-    path_dir_debatch = "/tmp/debatch_manager"
-    path_dir_task = "/tmp/task_manager"
+    parser = argparse.ArgumentParser(description="Debatch manager process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/debatch_manager.yaml",
+    )
+    args = parser.parse_args()
 
-    path_input = "/tmp/task_manager/result"
-    path_output = "/tmp/debatch_manager/result"
-    path_db = "/tmp/debatch_manager/db"
-
-    with open("config.yaml") as config_file:
+    with open(args.config) as config_file:
         config_dict = yaml.full_load(config_file)
         config = dm.Config(**config_dict)
 
-    Path(path_dir_debatch).mkdir(parents=True, exist_ok=True)
-    Path(path_dir_task).mkdir(parents=True, exist_ok=True)
-    Path(path_input).touch()
-    Path(path_output).touch()
-    Path(path_db).touch()
+    Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
+        exist_ok=True, parents=True
+    )
+    Path(config.zmq_output_address.replace("ipc://", "")).parent.mkdir(
+        exist_ok=True, parents=True
+    )
 
     logger.info("Configs loaded")
     logger.info("Run pipeline")

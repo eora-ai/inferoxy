@@ -6,6 +6,7 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import asyncio  # type: ignore
+import argparse
 
 import yaml
 import zmq  # type: ignore
@@ -27,7 +28,16 @@ async def pipeline(config_db: dm.DatabaseConfig):
     config_db
         Config of remote database
     """
-    with open("config.yaml") as config_file:
+    parser = argparse.ArgumentParser(description="Model storage process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/model_storage.yaml",
+    )
+    args = parser.parse_args()
+
+    with open(args.config) as config_file:
         config_dict = yaml.full_load(config_file)
 
     context = zmq.asyncio.Context()

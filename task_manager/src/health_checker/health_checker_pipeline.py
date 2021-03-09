@@ -83,9 +83,6 @@ class HealthCheckerPipeline:
             if status.reason is None:
                 logger.warning("Status reason can not be None")
                 continue
-
-            status.model_instance.running = False
-            await status.reason.process(status.model_instance, self.alert_manager)
-            await self.model_instances_storage.remove_model_instance(
-                status.model_instance
+            await status.reason.process(
+                self.model_instances_storage, status.model_instance, self.alert_manager
             )

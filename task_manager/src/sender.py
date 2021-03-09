@@ -27,7 +27,7 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
         Config object, required field is a zmq_output_address
     """
     sock = ctx.socket(zmq.PUSH)
-    sock.connect(config.zmq_output_address)
+    sock.bind(config.zmq_output_address)
     logger.info(f"Send results on {config.zmq_output_address}")
     return sock
 

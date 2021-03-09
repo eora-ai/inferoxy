@@ -9,6 +9,8 @@ import os
 import sys
 import asyncio
 import logging
+import argparse
+from pathlib import Path
 
 import yaml
 from loguru import logger
@@ -102,7 +104,16 @@ def main():
     logger.remove()
     logger.add(sys.stderr, level=log_level)
 
-    with open("config.yaml") as config_file:
+    parser = argparse.ArgumentParser(description="Task manager process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/task_manager.yaml",
+    )
+    args = parser.parse_args()
+
+    with open(args.config) as config_file:
         config_dict = yaml.full_load(config_file)
         kube_config_dict = config_dict.pop("kube")
         config = dm.Config.from_dict(config_dict)
@@ -117,6 +128,8 @@ def main():
             kube_config_dict["token"] = os.environ.get("KUBERNETES_API_TOKEN")
             kube_config_dict["namespace"] = os.environ.get("NAMESPACE")
             config.kube = dm.KubeConfig(**kube_config_dict)
+
+    Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 
     logging.getLogger("asyncio").setLevel(logging.DEBUG)
     asyncio.run(pipeline(config))

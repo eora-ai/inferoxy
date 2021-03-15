@@ -4,61 +4,76 @@ Connector to remote vision-hub database
 
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
+import json
 
-import psycopg2
-import psycopg2.extras
-from loguru import logger
+import yaml
 
-import src.data_models as dm
+import src.data_models as dm    # type: ignore
+from src.database import Database   # type: ignore
+import src.exceptions as exc    # type: ignore
+from src.schemas import Model   # type: ignore
 
 
 class Connector:
-    def __init__(self, config: dm.DatabaseConfig):
-        if config is None:
-            logger.error("No database config")
-        self.config = config
+    def __init__(self, database: Database):
+        """
+        Initialize connector
+        """
+        self.database = database
 
-    def fetch_model(self, model_slug: str):
+    def load_models(self):
+        with open("/etc/inferoxy/models.yaml") as config_file:
+            models_dict = yaml.full_load(config_file)
+        for key, value in models_dict.items():
+            self.save_to_db(key, json.dumps(value))
+
+    def save_model(self, model: Model):
+        key = model.name
+        model_dict = model.dict()
         try:
-            logger.info("Connecting to the PostgreSQL database...")
-            self.connection = psycopg2.connect(
-                user=self.config.user,
-                host=self.config.host,
-                password=self.config.password,
-                port=self.config.port,
-                dbname=self.config.dbname,
-            )
-            cursor = self.connection.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            key = model_dict.pop("name", None)
+        except KeyError:
+            raise exc.ValidationError("`name` field is required")
+        self.save_to_db(key, json.dumps(model_dict))
 
-            sql_query = f"""SELECT
-            slug,
-            link,
-            batch_size,
-            gpu,
-            supported_modes  FROM  models_model WHERE slug='{model_slug}'"""
-            cursor.execute(sql_query)
+    def update_model(self, model_slug: str, model_params: dict):
+        model_dict = self.fetch_model(model_slug)
+        model_dict.update(model_params)
 
-            model_params = cursor.fetchone()
+        # Remove `name` from model dict to save in database
+        slug = model_dict.pop("name", None)
 
-            model = self.build_model_object(model_params)
+        self.save_to_db(slug, json.dumps(model_dict))
 
-            return model
+        # Put `name` in model_dict
+        model_dict["name"] = slug
 
-        except (Exception, psycopg2.DatabaseError) as error:
-            logger.error(error)
-        finally:
-            if self.connection is not None:
-                self.connection.close()
-                logger.info("Database connection closed")
+        return model_dict
+
+    def fetch_model_obj(self, model_slug: str) -> dm.ModelObject:
+        data = self.fetch_model(model_slug)
+        model_obj = self.build_model_object(data)
+        return model_obj
+
+    def fetch_model(self, model_slug: str) -> dict:
+        self.database.ping()
+        data = json.loads(self.database.get(model_slug))   # type: ignore
+        data["name"] = model_slug
+        return data
+
+    def delete_model(self, model_slug: str):
+        self.database.delete(model_slug)
+
+    def save_to_db(self, key, value):
+        self.database.set(key, value)
 
     @staticmethod
     def build_model_object(model_params):
         model = dm.ModelObject(
-            name=model_params["slug"],
-            address=model_params["link"],
+            name=model_params["name"],
+            address=model_params["address"],
             batch_size=model_params["batch_size"],
-            run_on_gpu=model_params["gpu"],
-            # TODO replace field
-            stateless=any([s in [1, 3] for s in model_params["supported_modes"]]),
+            run_on_gpu=model_params["run_on_gpu"],
+            stateless=model_params["stateless"],
         )
         return model

@@ -1,7 +1,8 @@
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-
+import sys
+import pathlib
 from dataclasses import dataclass
 
 from shared_modules.data_objects import (
@@ -18,6 +19,3 @@ class DatabaseConfig(BaseConfig):
 
     host: str
     port: int
-    user: str
-    password: str
-    dbname: str

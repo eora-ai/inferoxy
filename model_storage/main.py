@@ -49,7 +49,7 @@ async def pipeline(config_db: dm.DatabaseConfig):
     logger.info("Start listening")
     while True:
         model_slug = await socket.recv()
-        model = connector.fetch_model(model_slug.decode("utf-8"))
+        model = connector.fetch_model_obj(model_slug.decode("utf-8"))
         logger.info(f"Build model object {model}")
         await socket.send_pyobj(model)
 
@@ -62,10 +62,7 @@ def main():
 
     config_db = dm.DatabaseConfig(
         host=os.environ.get("DB_HOST"),
-        port=os.environ.get("DB_PORT"),
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD"),
-        dbname=os.environ.get("DB_NAME"),
+        port=os.environ.get("DB_PORT", 6379),
     )
 
     asyncio.run(pipeline(config_db))

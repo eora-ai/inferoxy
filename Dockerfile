@@ -21,5 +21,6 @@ COPY . .
 
 EXPOSE 7787
 EXPOSE 7788
+EXPOSE 8000
 
 CMD ["/usr/bin/supervisord"]

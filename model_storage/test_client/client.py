@@ -13,7 +13,7 @@ from loguru import logger
 
 sys.path.append("..")
 
-import src.data_models as dm
+import src.data_models as dm    # type: ignore
 
 
 def main():

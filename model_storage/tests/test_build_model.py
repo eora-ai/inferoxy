@@ -13,9 +13,10 @@ from src.connector import Connector  # type: ignore
 def test_build_model():
     model_params = {
         "name": "stub",
-        "link": "address",
+        "address": "address",
         "batch_size": 1,
-        "supported_modes": [1, 3],
+        "run_on_gpu": False,
+        "stateless": True,
     }
 
     model = Connector.build_model_object(model_params)

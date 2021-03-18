@@ -8,6 +8,7 @@ __email__ = "m.gafarova@eora.ru"
 import os
 
 from fastapi import FastAPI, Depends, HTTPException
+from loguru import logger
 
 import src.data_models as dm  # type: ignore
 import src.exceptions as exc    # type: ignore
@@ -57,7 +58,7 @@ def create_models(
     """
     try:
         connector.save_model(model)
-    except exc.CannotSaveModel:
+    except exc.CannotSaveModel as ex:
         raise HTTPException(status_code=500, detail="Cannot save model")
 
     except exc.CannotConnectToDatabase as ex:

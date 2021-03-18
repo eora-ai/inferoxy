@@ -14,6 +14,7 @@ import zmq.asyncio  # type: ignore
 from loguru import logger
 
 from src.connector import Connector  # type: ignore
+from src.database import Redis  # type: ignore
 import src.data_models as dm  # type: ignore
 
 
@@ -44,7 +45,8 @@ async def pipeline(config_db: dm.DatabaseConfig):
     socket = context.socket(zmq.REP)
     socket.bind(config_dict["address"])
 
-    connector = Connector(config_db)
+    database = Redis(config_db)
+    connector = Connector(database)
 
     logger.info("Start listening")
     while True:

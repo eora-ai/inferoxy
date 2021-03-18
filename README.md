@@ -53,8 +53,8 @@ Create `.env` file with variables
 * `DOCKER_LOGIN`
 * `DOCKER_PASSWORD`
 * `DB_HOST`
-* `DB_USER`
-* `DB_PASSWORD`
+* `DB_PORT`
+* `LOGGING_LEVEL`
 
 Run commands:
 ```

@@ -47,6 +47,8 @@ async def pipeline(config_db: dm.DatabaseConfig):
 
     database = Redis(config_db)
     connector = Connector(database)
+    connector.load_models()
+    logger.info("Models loaded")
 
     logger.info("Start listening")
     while True:
@@ -65,6 +67,7 @@ def main():
     config_db = dm.DatabaseConfig(
         host=os.environ.get("DB_HOST"),
         port=os.environ.get("DB_PORT", 6379),
+        db_num=os.environ.get("DB_NUMBER", 0),
     )
 
     asyncio.run(pipeline(config_db))

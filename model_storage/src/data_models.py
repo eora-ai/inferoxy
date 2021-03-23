@@ -19,3 +19,4 @@ class DatabaseConfig(BaseConfig):
 
     host: str
     port: int
+    db_num: int

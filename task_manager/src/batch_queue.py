@@ -27,6 +27,9 @@ class InputBatchQueue:
             str, Dict[Tuple[Optional[str], dm.ModelObject], (QueueSize, Queue)]
         ] = dict(stateless={}, stateful={})
 
+    def __str__(self) -> str:
+        return str(self.queues)
+
     @staticmethod
     def __prepare_for_put(item: dm.MinimalBatchObject):
         if item.status == dm.Status.ERROR:
@@ -52,6 +55,17 @@ class InputBatchQueue:
         queue = self.__select_or_create_queue(item.model, source_id=source_id)
         self.__increase_queue_size(item)
         await queue.put(item)
+
+    def get_source_ids(self, model: dm.ModelObject) -> List[Optional[str]]:
+        """
+        Return all source ids for model from queues
+        """
+        if model.stateless:
+            return [None]
+        try:
+            return next(zip(*self.queues["stateful"].keys()))
+        except StopIteration:
+            return []
 
     def put_nowait(self, item: dm.MinimalBatchObject):
         """

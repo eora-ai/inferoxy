@@ -57,7 +57,8 @@ class FatalError(HealthCheckError):
         alert_manager: "BaseAlertManager",
     ):
         model_instance.running = False
-        model_instance_storage.remove_model_instance(model_instance)
+        await model_instance_storage.remove_model_instance(model_instance)
+        model_instance_storage.errors[model_instance.model] += 1
         await alert_manager.send(model_instance, self)
 
 

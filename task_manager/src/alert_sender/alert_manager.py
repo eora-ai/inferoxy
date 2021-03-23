@@ -23,6 +23,7 @@ class AlertManager(BaseAlertManager):
 
     async def send(self, model_instance: dm.ModelInstance, error: HealthCheckError):
         batch = model_instance.current_processing_batch
+        model_instance.current_processing_batch = None
         if batch is None:
             logger.warning(f"{model_instance=} has error {repr(error)}, without task")
             return

@@ -56,7 +56,6 @@ class Connector:
         return model_obj
 
     def fetch_model(self, model_slug: str) -> dict:
-        self.database.ping()
         data = json.loads(self.database.get(model_slug))   # type: ignore
         data["name"] = model_slug
         return data

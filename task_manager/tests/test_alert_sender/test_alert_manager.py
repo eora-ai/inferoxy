@@ -5,6 +5,7 @@ Tests for src.alert_sender.alert_manager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import asyncio
 import pytest
 
 import src.data_models as dm
@@ -35,15 +36,16 @@ model_instance = dm.ModelInstance(
     name="Test1",
     sender=BaseSender(),
     receiver=BaseReceiver(),
-    lock=True,
+    lock=False,
     hostname="",
     source_id="",
     running=True,
-    current_processing_batch=batch,
+    current_processing_batch=None,
 )
 
 
 async def test_send():
+    model_instance.current_processing_batch = batch
     input_queue, output_queue = InputBatchQueue(), OutputBatchQueue()
     alert_manager = AlertManager(input_queue, output_queue)
     error = ContainerExited("ContainerExited")
@@ -53,9 +55,10 @@ async def test_send():
 
 
 async def test_retry():
+    model_instance.current_processing_batch = batch
     input_queue, output_queue = InputBatchQueue(), OutputBatchQueue()
     alert_manager = AlertManager(input_queue, output_queue)
     error = ContainerDoesNotExists("ContainerDoesNotExists")
     await alert_manager.retry_task(model_instance, error)
-    input_batch = input_queue.get_nowait(model)
+    input_batch = input_queue.get_nowait(model, source_id=None)
     assert input_batch == batch

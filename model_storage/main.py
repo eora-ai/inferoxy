@@ -5,7 +5,7 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 import os
-import asyncio  # type: ignore
+import asyncio
 import argparse
 
 import yaml

@@ -61,7 +61,6 @@ class HealthCheckerPipeline:
                         )
                 if tasks:
                     done, _ = await asyncio.wait(tasks)
-                    logger.debug(f"Health checker results {done}")
                     error_statuses = [
                         d.result()
                         for d in done

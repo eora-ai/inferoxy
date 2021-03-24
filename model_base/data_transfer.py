@@ -24,7 +24,7 @@ class Sender:
 class Receiver:
     """Opens zmq PULL socket and receives python obj."""
 
-    def __init__(self, open_address, config, context):
+    def __init__(self, open_address, config):
 
         self.zmq_context = context
         self.zmq_socket = self.zmq_context.socket(zmq.PULL)

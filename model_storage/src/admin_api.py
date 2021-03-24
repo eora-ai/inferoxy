@@ -8,6 +8,7 @@ __email__ = "m.gafarova@eora.ru"
 import os
 
 from fastapi import FastAPI, Depends, HTTPException
+from loguru import logger
 
 import src.data_models as dm  # type: ignore
 import src.exceptions as exc    # type: ignore

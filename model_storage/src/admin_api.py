@@ -58,7 +58,7 @@ def create_models(
     """
     try:
         connector.save_model(model)
-    except exc.CannotSaveModel as ex:
+    except exc.CannotSaveModel:
         raise HTTPException(status_code=500, detail="Cannot save model")
 
     except exc.CannotConnectToDatabase as ex:

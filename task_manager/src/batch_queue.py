@@ -63,7 +63,8 @@ class InputBatchQueue:
         if model.stateless:
             return [None]
         try:
-            return next(zip(*self.queues["stateful"].keys()))
+
+            return [source_id for source_id, _ in self.queues["stateful"].keys()]
         except StopIteration:
             return []
 

@@ -5,13 +5,14 @@ Connector to remote vision-hub database
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 import json
+from typing import Iterable
 
 import yaml
 
-import src.data_models as dm    # type: ignore
-from src.database import Database   # type: ignore
-import src.exceptions as exc    # type: ignore
-from src.schemas import Model   # type: ignore
+import src.data_models as dm  # type: ignore
+from src.database import Database  # type: ignore
+import src.exceptions as exc  # type: ignore
+from src.schemas import Model  # type: ignore
 
 
 class Connector:
@@ -24,8 +25,16 @@ class Connector:
     def load_models(self):
         with open("/etc/inferoxy/models.yaml") as config_file:
             models_dict = yaml.full_load(config_file)
+        models = []
         for key, value in models_dict.items():
             self.save_to_db(key, json.dumps(value))
+            data = {"name": key, **value}
+            models.append(self.build_model_object(data))
+        return models
+
+    def save_models(self, models: Iterable[Model]):
+        for model in models:
+            self.save_model(model)
 
     def save_model(self, model: Model):
         key = model.name
@@ -56,7 +65,7 @@ class Connector:
         return model_obj
 
     def fetch_model(self, model_slug: str) -> dict:
-        data = json.loads(self.database.get(model_slug))   # type: ignore
+        data = json.loads(self.database.get(model_slug))  # type: ignore
         data["name"] = model_slug
         return data
 

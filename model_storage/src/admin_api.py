@@ -7,6 +7,7 @@ __email__ = "m.gafarova@eora.ru"
 
 import os
 import time
+from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException
 from uvicorn.config import logger  # type: ignore
@@ -24,6 +25,7 @@ def get_connection():
     config_db = dm.DatabaseConfig(
         host=os.environ.get("DB_HOST"),
         port=os.environ.get("DB_PORT", 6379),
+        db_num=os.environ.get("DB_NUMBER", 0),
     )
     database = Redis(config_db)
     connector = Connector(database)
@@ -36,14 +38,39 @@ def get_model(model_slug: str, connector: Connector = Depends(get_connection)):
     Get model object via model slug
     """
     try:
-        model_dict = connector.fetch_model(model_slug)
+        model = connector.fetch_model_obj(model_slug)
 
     except exc.SlugDoesNotExist as ex:
         raise HTTPException(status_code=404, detail=ex.message)
 
     except exc.CannotConnectToDatabase as ex:
         raise HTTPException(status_code=500, detail=ex.message)
-    return model_dict
+    return model
+
+
+@app.put("/models")
+def update_all_models(
+    models: Optional[List[Model]] = None, connector: Connector = Depends(get_connection)
+):
+    """
+    Replace all models using `load_models` + `models`
+    """
+    try:
+        if models is None:
+            models = []
+
+        connector.save_models(models)
+        models += connector.load_models()
+    except exc.CannotSaveModel:
+        raise HTTPException(status_code=500, detail="Cannot save model")
+
+    except exc.CannotConnectToDatabase as ex:
+        raise HTTPException(status_code=500, detail=ex.message)
+    except exc.ValidationError as ex:
+        raise HTTPException(status_code=400, detail=ex.message)
+
+    logger.info(f"Inserted models {models}")
+    return models
 
 
 @app.post("/models", response_model=Model)

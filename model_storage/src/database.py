@@ -1,14 +1,14 @@
-
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 from abc import ABC, abstractmethod
+import time
 
 import redis
 from loguru import logger
 
-import src.exceptions as exc    # type: ignore
-import src.data_models as dm    # type: ignore
+import src.exceptions as exc  # type: ignore
+import src.data_models as dm  # type: ignore
 
 
 class Database(ABC):
@@ -41,12 +41,6 @@ class Database(ABC):
         Get item
         """
 
-    @abstractmethod
-    def ping(self):
-        """
-        Check connection
-        """
-
 
 class Redis(Database):
     def __init__(self, config: dm.DatabaseConfig):
@@ -64,44 +58,30 @@ class Redis(Database):
 
     def set(self, key: str, value: str):
         try:
-            self.redis.set(key, value)
-            self.redis.save()
+            start_time = time.time()
+            self.redis.set(key, value.encode("utf-8"))
+            end_time = time.time()
+            logger.info(f"Set {key} and {value} to redis in {end_time - start_time}")
 
         except redis.RedisError as ex:
             raise exc.CannotSaveModel(ex.args)
             logger.error("Failed to save model in model storage")
 
         except redis.exceptions.ConnectionError:
-            raise exc.CannotConnectToDatabase(
-                "Cannot connect to database"
-            )
+            raise exc.CannotConnectToDatabase("Cannot connect to database")
 
     def delete(self, key: str):
         try:
             res = self.redis.delete(key)
         except redis.exceptions.ConnectionError:
-            raise exc.CannotConnectToDatabase(
-                "Cannot connect to database"
-            )
+            raise exc.CannotConnectToDatabase("Cannot connect to database")
         if res == 0:
-            raise exc.SlugDoesNotExist(
-                "Model with this slug does not exist"
-            )
+            raise exc.SlugDoesNotExist("Model with this slug does not exist")
 
     def get(self, key: str):
         if not self.redis.exists(key):
-            raise exc.SlugDoesNotExist(
-                "Model with this slug does not exist"
-            )
+            raise exc.SlugDoesNotExist("Model with this slug does not exist")
         return self.redis.get(key)
-
-    def ping(self):
-        try:
-            self.redis.ping()
-        except redis.exceptions.ConnectionError:
-            raise exc.CannotConnectToDatabase(
-                "Cannot connect to database"
-            )
 
 
 class MockRedis(Database):
@@ -113,18 +93,11 @@ class MockRedis(Database):
 
     def delete(self, key: str):
         if key not in self.database:
-            raise exc.SlugDoesNotExist(
-                "Model with this slug does not exist"
-            )
+            raise exc.SlugDoesNotExist("Model with this slug does not exist")
         self.database.pop(key, None)
 
     def get(self, key: str):
         if key not in self.database:
-            raise exc.SlugDoesNotExist(
-                "Model with this slug does not exist"
-            )
+            raise exc.SlugDoesNotExist("Model with this slug does not exist")
         res = self.database[key]
         return res
-
-    def ping(self):
-        print("PONG")

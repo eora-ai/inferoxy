@@ -32,7 +32,7 @@ def get_connection():
     yield connector
 
 
-@app.get("/models/{model_slug}", response_model=Model)
+@app.get("/models/{model_slug}")
 def get_model(model_slug: str, connector: Connector = Depends(get_connection)):
     """
     Get model object via model slug

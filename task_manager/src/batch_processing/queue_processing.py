@@ -16,6 +16,7 @@ from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.exceptions import TagDoesNotExists
 from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
+from src.health_checker.errors import ContainerExited
 
 
 async def send_to_model(
@@ -48,7 +49,8 @@ async def send_to_model(
                     logger.debug(input_batch_queue)
                     continue
                 response_batch = dm.ResponseBatch.from_minimal_batch_object(
-                    batch, error="[E001] Cannot start model"
+                    batch,
+                    error=str(ContainerExited(f"Cannot start model {model.name}")),
                 )
                 await output_batch_queue.put(response_batch)
 

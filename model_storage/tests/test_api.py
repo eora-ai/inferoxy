@@ -9,9 +9,9 @@ import json
 from pytest import fixture
 from fastapi.testclient import TestClient
 
-from src.admin_api import app   # type: ignore
-from src.admin_api import get_connection   # type: ignore
-from src.connector import Connector     # type: ignore
+from src.admin_api import app  # type: ignore
+from src.admin_api import get_connection  # type: ignore
+from src.connector import Connector  # type: ignore
 from src.database import MockRedis  # type: ignore
 
 
@@ -21,7 +21,7 @@ def db_fixture():
         "address": "test_address",
         "stateless": True,
         "batch_size": 256,
-        "run_on_gpu": False
+        "run_on_gpu": False,
     }
     mock_redis = MockRedis()
     connector = Connector(mock_redis)
@@ -50,10 +50,10 @@ def test_create_model(client: TestClient):
         "address": "another_test_address",
         "stateless": True,
         "batch_size": 256,
-        "run_on_gpu": False
+        "run_on_gpu": False,
     }
 
-    response = client.post("/models/", json=test_model)
+    response = client.post("/models", json=test_model)
     assert response.status_code == 200
     assert response.json() == test_model
 
@@ -79,11 +79,7 @@ def test_delete_not_exist_model(client: TestClient):
 def test_update_model(client: TestClient):
 
     response = client.patch(
-        "/models/test_model",
-        json={
-            "stateless": False,
-            "batch_size": 128
-        }
+        "/models/test_model", json={"stateless": False, "batch_size": 128}
     )
     assert response.status_code == 200
     assert response.json() == {
@@ -91,18 +87,14 @@ def test_update_model(client: TestClient):
         "address": "test_address",
         "stateless": False,
         "batch_size": 128,
-        "run_on_gpu": False
+        "run_on_gpu": False,
     }
 
 
 def test_update_get_model(client: TestClient):
     response = client.patch(
         "/models/test_model",
-        json={
-            "stateless": False,
-            "batch_size": 128,
-            "run_on_gpu": True
-        }
+        json={"stateless": False, "batch_size": 128, "run_on_gpu": True},
     )
     model_update = response.json()
     assert response.status_code == 200

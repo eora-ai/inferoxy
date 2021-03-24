@@ -9,7 +9,7 @@ import os
 import time
 
 from fastapi import FastAPI, Depends, HTTPException
-from uvicorn.config import logger
+from uvicorn.config import logger  # type: ignore
 
 import src.data_models as dm  # type: ignore
 import src.exceptions as exc  # type: ignore

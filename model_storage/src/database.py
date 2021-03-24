@@ -59,6 +59,7 @@ class Redis(Database):
         self.redis = redis.Redis(
             host=self.config.host,
             port=self.config.port,
+            db=self.config.db_num,
         )
 
     def set(self, key: str, value: str):

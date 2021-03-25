@@ -62,9 +62,13 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
+    # with open(args.config) as config_file:
+    #     config_dict = yaml.full_load(config_file)
+    #     config = dm.Config(**config_dict)
+
+    print(args.config)
+    config = dm.Config.parse_file("config.yaml", content_type="yaml")
+    print(config)
 
     Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))

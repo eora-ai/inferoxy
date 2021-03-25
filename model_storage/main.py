@@ -47,8 +47,6 @@ async def pipeline(config_db: dm.DatabaseConfig):
 
     database = Redis(config_db)
     connector = Connector(database)
-    connector.load_models()
-    logger.info("Models loaded")
 
     logger.info("Start listening")
     while True:

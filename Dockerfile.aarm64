@@ -6,9 +6,9 @@ RUN apt-get install -y libsnappy-dev libleveldb-dev
 RUN mkdir -p /var/log/supervisor
 
 WORKDIR app
-COPY requirements.txt .
+COPY requirements-aarm64.txt .
 COPY requirements-dev.txt .
-RUN pip install -r requirements.txt
+RUN pip install -r requirements-aarm64.txt
 RUN pip install -r requirements-dev.txt
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf 

@@ -23,9 +23,16 @@ from src.data_models import MinimalBatchObject, ModelObject
 from shared_modules.utils import uuid4_string_generator
 
 
-stub_model = model = ModelObject(
+stub_model = ModelObject(
     name="stub",
     address="registry.visionhub.ru/models/stub:v4",
+    stateless=True,
+    batch_size=256,
+)
+
+stub_repeat_model = model = ModelObject(
+    name="stub-repeat",
+    address="stub-repeat",
     stateless=True,
     batch_size=256,
 )
@@ -199,7 +206,8 @@ def batch_pictures():
     sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.PULL)
-    sock_receiver.bind(config.zmq_output_address)
+    print(f"Receiver: {config.zmq_output_address}")
+    sock_receiver.connect(config.zmq_output_address)
 
     #  load the image
     image = Image.open("test.jpg")
@@ -217,6 +225,43 @@ def batch_pictures():
         model=stub_model,
     )
     sock_sender.send_pyobj(batch)
+
+    logger.info("Start listening")
+    while True:
+        result = sock_receiver.recv_pyobj()
+        logger.info(f"Result batch {result}")
+
+
+def image_to_video():
+    cur_path = pathlib.Path(__file__)
+    config_path = cur_path.parent.parent / "config.yaml"
+
+    with open(config_path) as config_file:
+        config_dict = yaml.full_load(config_file)
+        config = dm.Config.from_dict(config_dict)
+
+    ctx = zmq.Context()
+    sock_sender = ctx.socket(zmq.PUSH)
+    sock_sender.connect(config.zmq_input_address)
+    sock_receiver = ctx.socket(zmq.PULL)
+    sock_receiver.bind(config.zmq_output_address)
+
+    #  load the image
+    image = Image.open("test.jpg")
+
+    # convert image to numpy array
+    data = np.asarray(image)
+
+    request_info = dm.RequestInfo(
+        input=data,
+        parameters={},
+    )
+    batch = MinimalBatchObject(
+        uid="test",
+        requests_info=[request_info],
+        model=stub_repeat_model,
+    )
+    sock_sender.send_pyobj(batch)
     logger.info("Start listening")
 
     while True:
@@ -225,4 +270,5 @@ def batch_pictures():
 
 
 if __name__ == "__main__":
+    pathlib.Path("/tmp/task_manager/").mkdir(parents=True, exist_ok=True)
     batch_pictures()

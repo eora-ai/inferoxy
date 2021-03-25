@@ -55,5 +55,6 @@ class ZMQPythonAdapter(BaseAdapter):
 
     def to_response(self, response: dm.ResponseObject) -> Response:
         resp = response.to_dict()
+        logger.debug(f"Response source id {resp['source_id']}")
         resp["source_id"] = response.source_id.split(":")[1]
         return resp

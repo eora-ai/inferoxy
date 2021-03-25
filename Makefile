@@ -4,7 +4,7 @@ create-network:
 	docker network create inferoxy
 
 build:
-	docker build . -t registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
+	docker build . -t registry.visionhub.ru/inferoxy:${INFEROXY_VERSION} -f Dockerfile$(ARCH)
 run-in:
 	docker run --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  -p 7787:7787 -p 7788:7788 \

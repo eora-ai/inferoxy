@@ -237,7 +237,7 @@ class OutputBatchQueue(Queue):
         if item.error is not None:
             item.status = dm.Status.FAILED
 
-        if item.responses_info is not None:
+        if item.mini_batches is not None:
             item.status = dm.Status.PROCESSED
             if item.processed_at is None:
                 item.processed_at = datetime.datetime.now()

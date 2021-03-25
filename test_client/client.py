@@ -4,6 +4,9 @@ Test clients for listener
 
 import uuid
 
+import requests
+import yaml
+
 from loguru import logger
 import zmq
 import numpy as np
@@ -11,6 +14,31 @@ from PIL import Image
 
 
 def main():
+    with open("/etc/inferoxy/models.yaml", "w") as file_:
+        yaml.dump(
+            {
+                "test": {
+                    "address": "public.registry.visionhub.ru/models/test:v4",
+                    "stateless": True,
+                    "batch_size": 128,
+                    "run_on_gpu": False,
+                }
+            },
+            file_,
+        )
+        req = requests.put(
+            "http://localhost:8000/models",
+            json=[
+                {
+                    "name": "stub",
+                    "address": "registry.visionhub.ru/models/stub:v4",
+                    "stateless": True,
+                    "batch_size": 128,
+                    "run_on_gpu": False,
+                }
+            ],
+        )
+    logger.info(f"Models loadded {req.json()}")
     context = zmq.Context()
 
     input_socket = context.socket(zmq.PUSH)
@@ -36,7 +64,7 @@ def main():
                 "source_id": uid,
                 "input": image_array,
                 "parameters": {"stateless": stateless, "index": i},
-                "model": "stub",
+                "model": "test",
             }
         )
         logger.info(f"Sent {i}")

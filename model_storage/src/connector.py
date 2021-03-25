@@ -23,13 +23,18 @@ class Connector:
         self.database = database
 
     def load_models(self):
-        with open("/etc/inferoxy/models.yaml") as config_file:
-            models_dict = yaml.full_load(config_file)
+        try:
+            with open("/etc/inferoxy/models.yaml") as config_file:
+                models_dict = yaml.full_load(config_file)
+        except FileNotFoundError:
+            return []
+            
         models = []
         for key, value in models_dict.items():
-            self.save_to_db(key, json.dumps(value))
             data = {"name": key, **value}
             models.append(self.build_model_object(data))
+            self.save_to_db(key, json.dumps(value))
+
         return models
 
     def save_models(self, models: Iterable[Model]):

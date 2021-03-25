@@ -5,6 +5,7 @@ Connector to remote vision-hub database
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 import json
+from typing import Iterable
 
 import yaml
 
@@ -27,11 +28,13 @@ class Connector:
                 models_dict = yaml.full_load(config_file)
         except FileNotFoundError:
             return []
+            
         models = []
         for key, value in models_dict.items():
             data = {"name": key, **value}
             models.append(self.build_model_object(data))
             self.save_to_db(key, json.dumps(value))
+
         return models
 
     def save_models(self, models: Iterable[Model]):

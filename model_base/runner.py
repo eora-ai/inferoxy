@@ -103,8 +103,10 @@ class Runner:
 
         # List of dictionaries prediciton and image
         results = self.predict_batch(samples, draw=True)
+        logger.info(results)
 
         response_batch = self.build_response_batch(minimal_batch, results)
+        logger.info(response_batch)
 
         return response_batch
 
@@ -133,7 +135,7 @@ class Runner:
                 parameters=parameters,
             )
             mini_batch.append(response_info)
-            if not ("finished" in prediction) or prediction["finished"]:
+            if prediction.get("finished", False):
                 mini_batches += [mini_batch]
                 mini_batch = dm.MiniResponseBatch([])
                 requests_info_index += 1

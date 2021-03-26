@@ -5,14 +5,15 @@ import sys
 import pathlib
 from dataclasses import dataclass
 
+from pydantic_yaml import YamlModel
+
 from shared_modules.data_objects import (
     BaseConfig,
     ModelObject,
 )
 
 
-@dataclass
-class DatabaseConfig(BaseConfig):
+class DatabaseConfig(YamlModel):
     """
     Config for remote database
     """
@@ -20,3 +21,7 @@ class DatabaseConfig(BaseConfig):
     host: str
     port: int
     db_num: int
+
+
+class Config(YamlModel):
+    address: str

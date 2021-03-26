@@ -42,9 +42,7 @@ def batches_different_sources():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+   config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)

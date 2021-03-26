@@ -8,7 +8,6 @@ __email__ = "m.gafarova@eora.ru"
 import sys
 
 import zmq  # type: ignore
-import yaml  # type: ignore
 from loguru import logger
 
 sys.path.append("..")
@@ -19,10 +18,13 @@ import src.data_models as dm    # type: ignore
 def main():
     ctx = zmq.Context()
     sock = ctx.socket(zmq.REQ)
-    with open("../config.yaml") as config_file:
-        config_dict = yaml.full_load(config_file)
 
-    sock.connect(config_dict["address"])
+    # with open("../config.yaml") as config_file:
+    #     config_dict = yaml.full_load(config_file)
+
+    config = dm.Config.parse_file("../config", content_type="yaml")
+
+    sock.connect(config.address)
 
     model_slug = "stub"
 

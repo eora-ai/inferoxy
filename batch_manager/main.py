@@ -12,7 +12,6 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-import yaml
 from loguru import logger
 
 import src.sender as snd
@@ -62,13 +61,7 @@ def main():
     )
     args = parser.parse_args()
 
-    # with open(args.config) as config_file:
-    #     config_dict = yaml.full_load(config_file)
-    #     config = dm.Config(**config_dict)
-
-    print(args.config)
-    config = dm.Config.parse_file("config.yaml", content_type="yaml")
-    print(config)
+    config = dm.Config.parse_file(args.config, content_type="yaml")
 
     Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))

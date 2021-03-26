@@ -1,8 +1,6 @@
 import sys
-import itertools
 import importlib
 
-import zmq  # type: ignore
 from loguru import logger
 
 import data_models as dm  # type: ignore

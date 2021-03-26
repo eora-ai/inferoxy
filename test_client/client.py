@@ -17,8 +17,8 @@ def main():
     req = requests.post(
         "http://localhost:8000/models",
         json={
-            "name": "test",
-            "address": "public.registry.visionhub.ru/models/test:v4",
+            "name": "stub",
+            "address": "registry.visionhub.ru/models/stub:v5",
             "stateless": True,
             "batch_size": 128,
             "run_on_gpu": False,
@@ -50,7 +50,7 @@ def main():
                 "source_id": uid,
                 "input": image_array,
                 "parameters": {"stateless": stateless, "index": i},
-                "model": "test",
+                "model": "stub",
             }
         )
         logger.info(f"Sent {i}")

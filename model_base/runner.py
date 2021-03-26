@@ -135,7 +135,7 @@ class Runner:
                 parameters=parameters,
             )
             mini_batch.append(response_info)
-            if prediction.get("finished", False):
+            if prediction.get("finished", True):
                 mini_batches += [mini_batch]
                 mini_batch = dm.MiniResponseBatch([])
                 requests_info_index += 1

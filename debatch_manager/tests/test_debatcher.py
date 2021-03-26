@@ -39,7 +39,10 @@ response_batch = dm.ResponseBatch(
     model=stub_model,
     requests_info=[request_info1, request_info2],
     status=dm.Status.CREATED,
-    responses_info=[response_info1, response_info2],
+    mini_batches=[
+        dm.MiniResponseBatch([response_info1]),
+        dm.MiniResponseBatch([response_info2]),
+    ],
 )
 
 batch_mapping = dm.BatchMapping(
@@ -76,7 +79,7 @@ response_batch_one = dm.ResponseBatch(
     model=stub_model,
     requests_info=[request_info3],
     status=dm.Status.CREATED,
-    responses_info=[response_info3],
+    mini_batches=[dm.MiniResponseBatch([response_info3])],
 )
 
 batch_mapping_one = dm.BatchMapping(
@@ -106,7 +109,7 @@ response_batch_empty = dm.ResponseBatch(
     model=stub_model,
     requests_info=[request_info4],
     status=dm.Status.CREATED,
-    responses_info=[response_info4],
+    mini_batches=[dm.MiniResponseBatch([response_info4])],
 )
 
 batch_mapping_empty = dm.BatchMapping(

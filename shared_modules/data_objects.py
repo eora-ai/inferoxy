@@ -9,7 +9,7 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, asdict
-from typing import List, Tuple, Optional, Type, NewType, Union, Any
+from typing import List, Tuple, Optional, Type, NewType, Union, Any, Iterator
 
 import numpy as np  # type: ignore
 
@@ -84,6 +84,17 @@ class ResponseInfo:
         else:
             output_string = str(self.output)
         return f"ResponseInfo(output={output_string}, parameters={parameters_string}, picture={self.picture if self.picture is None else self.picture.shape})"
+
+
+@dataclass
+class MiniResponseBatch:
+    responses_info: List[ResponseInfo]
+
+    def append(self, item: ResponseInfo):
+        self.responses_info.append(item)
+
+    def __iter__(self):
+        return iter(self.responses_info)
 
 
 @dataclass
@@ -247,6 +258,9 @@ class BatchMapping:
             source_ids=source_ids,
         )
 
+    def __iter__(self) -> Iterator[Tuple[str, str]]:
+        return zip(self.request_object_uids, self.source_ids)
+
 
 @dataclass
 class ResponseBatch(MinimalBatchObject):
@@ -254,7 +268,7 @@ class ResponseBatch(MinimalBatchObject):
     Response batch object, add output and pictures
     """
 
-    responses_info: Optional[List[ResponseInfo]] = None
+    mini_batches: Optional[List[MiniResponseBatch]] = None
     error: Optional[str] = None
 
     @classmethod
@@ -262,7 +276,7 @@ class ResponseBatch(MinimalBatchObject):
         cls,
         batch: MinimalBatchObject,
         error: Optional[str] = None,
-        responses_info: Optional[List[ResponseInfo]] = None,
+        mini_batches: Optional[List[MiniResponseBatch]] = None,
     ):
         """
         Make Response Batch object from RequestBactch
@@ -277,7 +291,7 @@ class ResponseBatch(MinimalBatchObject):
             done_at=batch.done_at,
             queued_at=batch.queued_at,
             sent_at=batch.queued_at,
-            responses_info=responses_info,
+            mini_batches=mini_batches,
             error=error,
         )
 

@@ -147,6 +147,7 @@ class DockerCloudClient(BaseCloudClient):
         environment = {
             "dataset_addr": f"tcp://*:{s_open_port}",
             "result_addr": f"tcp://*:{r_open_port}",
+            "BATCH_SIZE": 1,
         }
         if on_gpu:
             runtime = "nvidia"

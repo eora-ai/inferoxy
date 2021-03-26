@@ -5,7 +5,7 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 import os
-import asyncio  # type: ignore
+import asyncio
 import argparse
 
 import yaml
@@ -14,6 +14,7 @@ import zmq.asyncio  # type: ignore
 from loguru import logger
 
 from src.connector import Connector  # type: ignore
+from src.database import Redis  # type: ignore
 import src.data_models as dm  # type: ignore
 
 
@@ -44,7 +45,8 @@ async def pipeline(config_db: dm.DatabaseConfig):
     socket = context.socket(zmq.REP)
     socket.bind(config_dict["address"])
 
-    connector = Connector(config_db)
+    database = Redis(config_db)
+    connector = Connector(database)
 
     logger.info("Start listening")
     while True:
@@ -63,6 +65,7 @@ def main():
     config_db = dm.DatabaseConfig(
         host=os.environ.get("DB_HOST"),
         port=os.environ.get("DB_PORT", 6379),
+        db_num=os.environ.get("DB_NUMBER", 0),
     )
 
     asyncio.run(pipeline(config_db))

@@ -20,6 +20,7 @@ class ModelInstancesStorage:
     """
 
     def __init__(self, receiver_streams_combiner: ReceiverStreamsCombiner):
+        self.errors: Dict[dm.ModelObject, int] = defaultdict(int)
         self.model_instances: Dict[
             dm.ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
@@ -31,6 +32,7 @@ class ModelInstancesStorage:
         self.receiver_streams_combiner.add_listener(model_instance.receiver)
 
     async def remove_model_instance(self, model_instance: dm.ModelInstance):
+        logger.debug(f"Try to remove model_instance {model_instance}")
         try:
             self.model_instances[model_instance.model].remove(model_instance)
         except ValueError as exc:
@@ -133,3 +135,21 @@ class ModelInstancesStorage:
         if model_instance.lock:
             return None
         return model_instance
+
+    def get_number_of_errors(self, model: dm.ModelObject) -> int:
+        """
+        Return number of fatal errors
+        """
+        return self.errors[model]
+
+    def get_models_with_errors(self, min_error: int = 0) -> List[dm.ModelObject]:
+        """
+        Return models with number of errors greater than `min_error`
+
+        Parameters
+        ----------
+        min_error
+            Number of minimum number of errors in output
+        """
+
+        return [model for model in self.errors if self.errors[model] >= min_error]

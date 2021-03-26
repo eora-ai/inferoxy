@@ -10,6 +10,7 @@ from shared_modules.data_objects import (
     RequestObject,
     MinimalBatchObject,
     BatchMapping,
+    MiniResponseBatch,
     ResponseObject,
     ResponseBatch,
     RequestInfo,

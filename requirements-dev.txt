@@ -7,3 +7,4 @@ mypy
 Pillow
 opencv-python
 aiomonitor
+moviepy

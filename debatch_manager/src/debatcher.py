@@ -5,16 +5,19 @@ This module needed to recieve response objects from batch
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-from typing import List
+from typing import List, Iterator, Optional, Iterable
+from itertools import repeat
 
 import plyvel  # type: ignore
 from loguru import logger
 
+from shared_modules.utils import uuid4_string_generator
 import src.data_models as dm
 
 
 def debatch(
-    batch: dm.ResponseBatch, batch_mapping: dm.BatchMapping
+    batch: dm.ResponseBatch,
+    batch_mapping: dm.BatchMapping,
 ) -> List[dm.ResponseObject]:
     """
     Dissociate batch_object and update batch mapping
@@ -27,35 +30,25 @@ def debatch(
     batch_mapping:
         Mapping between request objects and batches
     """
-    request_object_uids = batch_mapping.request_object_uids
+
     response_objects = []
-    for i, request_object_uid in enumerate(request_object_uids):
-
-        if not batch.error is None:
-            logger.warning(
-                f"Request {request_object_uid} was failed with {batch.error=}"
-            )
+    error = batch.error
+    mini_batches: Iterator[Iterable[Optional[dm.ResponseInfo]]] = (
+        repeat([None])
+        if error or batch.mini_batches is None
+        else iter(batch.mini_batches)
+    )
+    for (request_object_uid, source_id) in iter(batch_mapping):
+        mini_batch = next(mini_batches)
+        for response_info in mini_batch:
             new_response_object = dm.ResponseObject(
                 uid=request_object_uid,
                 model=batch.model,
-                source_id=batch_mapping.source_ids[i],
-                response_info=None,
-                error=batch.error,
-            )
-        else:
-            if batch.responses_info is None:
-                raise ValueError("Batch.responses_info cannot be None, f{batch}")
-            response_info = batch.responses_info[i]
-
-            # Create response object
-            new_response_object = dm.ResponseObject(
-                uid=request_object_uid,
-                model=batch.model,
-                source_id=batch_mapping.source_ids[i],
+                source_id=source_id,
                 response_info=response_info,
-                error=None,
+                error=error,
             )
-        response_objects.append(new_response_object)
+            response_objects.append(new_response_object)
 
     return response_objects
 

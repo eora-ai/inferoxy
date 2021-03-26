@@ -16,6 +16,7 @@ from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.exceptions import TagDoesNotExists
 from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
+from src.health_checker.errors import ContainerExited
 
 
 async def send_to_model(
@@ -30,18 +31,33 @@ async def send_to_model(
     ----------
     input_batch_queue:
         Input batch queue, taged queue with batches
+    output_batch_queue:
+        Where send results
     """
     while True:
+        # get models with number of errors > 3
+        models_with_errors = model_instances_storage.get_models_with_errors(3)
+        for model in models_with_errors:
+            source_ids = input_batch_queue.get_source_ids(model)
+            for source_id in source_ids:
+                try:
+                    batch = input_batch_queue.get_nowait(
+                        model=model, source_id=source_id
+                    )
+                except (QueueEmpty, TagDoesNotExists):
+                    logger.debug(f"Queue empty for {model=} {source_id=}")
+                    logger.debug(input_batch_queue)
+                    continue
+                response_batch = dm.ResponseBatch.from_minimal_batch_object(
+                    batch,
+                    error=str(ContainerExited(f"Cannot start model {model.name}")),
+                )
+                await output_batch_queue.put(response_batch)
+
         models_by_sources_ids: List[
             Tuple[Optional[str], dm.ModelObject]
         ] = model_instances_storage.get_running_models_with_source_ids()
         tasks = []
-        if models_by_sources_ids:
-            logger.info(f"Models with source ids: {models_by_sources_ids}")
-        else:
-            logger.info(
-                f"Model instances: {model_instances_storage.get_all_model_instances()}"
-            )
         for (source_id, model) in models_by_sources_ids:
             try:
                 if not model.stateless:
@@ -50,9 +66,7 @@ async def send_to_model(
                     )
                 else:
                     batch = input_batch_queue.get_nowait(model=model)
-            except (QueueEmpty, TagDoesNotExists) as exc:
-                logger.warning(f"Queue is empty {exc}")
-                logger.info(f"input_batch_queue = {input_batch_queue.queues}")
+            except (QueueEmpty, TagDoesNotExists):
                 continue
             model_instance = model_instances_storage.get_next_running_instance(
                 model, source_id

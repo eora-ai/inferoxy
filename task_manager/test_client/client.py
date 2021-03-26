@@ -10,7 +10,6 @@ import sys
 import pathlib
 
 import zmq  # type: ignore
-import yaml  # type: ignore
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from loguru import logger
@@ -42,7 +41,7 @@ def batches_different_sources():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-   config = dm.Config.parse_file(config_path, content_type="yaml")
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -114,9 +113,7 @@ def batches_video_with_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -160,9 +157,7 @@ def batches_video_without_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -196,9 +191,7 @@ def batch_pictures():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -234,9 +227,7 @@ def image_to_video():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)

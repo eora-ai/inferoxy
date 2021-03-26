@@ -5,7 +5,6 @@ Test clients for listener
 import uuid
 
 import requests
-import yaml
 
 from loguru import logger
 import zmq

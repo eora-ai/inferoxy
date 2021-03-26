@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar
 
-from pydantic_yaml import YamlModel
+from pydantic_yaml import YamlModel     # type: ignore
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver

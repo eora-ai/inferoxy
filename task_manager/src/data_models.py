@@ -13,6 +13,7 @@ from src.utils.data_transfers.receiver import BaseReceiver
 from shared_modules.data_objects import (
     ModelObject,
     MinimalBatchObject,
+    MiniResponseBatch,
     Status,
     ResponseBatch,
     RequestInfo,

@@ -1,0 +1,11 @@
+# Any image that can run python scripts
+FROM python:3.7-slim-buster
+
+# Environment params for runner
+ENV dataset_addr=tcp://*:5556
+ENV result_addr=tcp://*:5555
+
+
+COPY . /model_base
+RUN mv /model_base/requirements-aarm64.txt /model_base/requirements.txt
+ENV TEST_MODE=0

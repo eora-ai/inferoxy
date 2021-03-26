@@ -1,4 +1,5 @@
 import sys
+import itertools
 import importlib
 
 import zmq  # type: ignore
@@ -112,23 +113,32 @@ class Runner:
         """
         Build Response Batch object from Minimal Batch Object
         """
-        responses_info = []
+        mini_batches = []
+        requests_info = minimal_batch.requests_info
+        requests_info_index = 0
 
-        for i, item in enumerate(results):
-            prediction = item["prediction"]
-            image = item["image"]
-            parameters = minimal_batch.requests_info[i].parameters
+        mini_batch = dm.MiniResponseBatch([])
+        for result in results:
+            prediction = result["prediction"]
+            image = result["image"]
 
-            if "sound" in results[i]:
-                parameters["sound"] = results[i]["sound"]
+            request_info = requests_info[requests_info_index]
+            parameters = request_info.parameters
+
+            if "sound" in result:
+                parameters["sound"] = result["sound"]
             response_info = dm.ResponseInfo(
                 output=prediction,
                 picture=image,
                 parameters=parameters,
             )
-            responses_info.append(response_info)
+            mini_batch.append(response_info)
+            if not ("finished" in prediction) or prediction["finished"]:
+                mini_batches += [mini_batch]
+                mini_batch = dm.MiniResponseBatch([])
+                requests_info_index += 1
 
         response_batch = dm.ResponseBatch.from_minimal_batch_object(
-            batch=minimal_batch, responses_info=responses_info
+            batch=minimal_batch, mini_batches=mini_batches
         )
         return response_batch

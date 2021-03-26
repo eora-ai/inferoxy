@@ -1,4 +1,4 @@
-numpy==1.19.4
+numpy==1.20.1
 aiostream==0.4.1
 pyzmq==19.0.2
 pyyaml==5.3.1

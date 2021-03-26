@@ -4,6 +4,9 @@ Test clients for listener
 
 import uuid
 
+import requests
+import yaml
+
 from loguru import logger
 import zmq
 import numpy as np
@@ -11,6 +14,17 @@ from PIL import Image
 
 
 def main():
+    req = requests.post(
+        "http://localhost:8000/models",
+        json={
+            "name": "test",
+            "address": "public.registry.visionhub.ru/models/test:v4",
+            "stateless": True,
+            "batch_size": 128,
+            "run_on_gpu": False,
+        },
+    )
+    logger.info(f"Models loadded {req.json()}")
     context = zmq.Context()
 
     input_socket = context.socket(zmq.PUSH)
@@ -36,16 +50,19 @@ def main():
                 "source_id": uid,
                 "input": image_array,
                 "parameters": {"stateless": stateless, "index": i},
-                "model": "stub",
+                "model": "test",
             }
         )
         logger.info(f"Sent {i}")
 
-    for i in range(number_of_request):
+    i = 1
+    while True:
         result = output_socket.recv_pyobj()
+        print(result)
         logger.info(
             f"{i} -> {result['uid']} -> {result['response_info']['parameters']['index']}"
         )
+        i += 1
 
 
 if __name__ == "__main__":

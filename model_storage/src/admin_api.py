@@ -6,12 +6,15 @@ __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
 import os
+import time
+from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException
+from uvicorn.config import logger  # type: ignore
 
 import src.data_models as dm  # type: ignore
-import src.exceptions as exc    # type: ignore
-from src.schemas import Model   # type: ignore
+import src.exceptions as exc  # type: ignore
+from src.schemas import Model  # type: ignore
 from src.database import Redis  # type: ignore
 from src.connector import Connector  # type: ignore
 
@@ -22,64 +25,79 @@ def get_connection():
     config_db = dm.DatabaseConfig(
         host=os.environ.get("DB_HOST"),
         port=os.environ.get("DB_PORT", 6379),
+        db_num=os.environ.get("DB_NUMBER", 0),
     )
     database = Redis(config_db)
     connector = Connector(database)
     yield connector
 
 
-@app.get("/models/{model_slug}", response_model=Model)
+@app.get("/models/{model_slug}")
 def get_model(model_slug: str, connector: Connector = Depends(get_connection)):
     """
     Get model object via model slug
     """
     try:
-        model_dict = connector.fetch_model(model_slug)
+        model = connector.fetch_model_obj(model_slug)
 
     except exc.SlugDoesNotExist as ex:
         raise HTTPException(status_code=404, detail=ex.message)
 
     except exc.CannotConnectToDatabase as ex:
-        raise HTTPException(
-            status_code=500,
-            detail=ex.message
-        )
-    return model_dict
+        raise HTTPException(status_code=500, detail=ex.message)
+    return model
 
 
-@app.post("/models/", response_model=Model)
-def create_models(
-    model: Model,
-    connector: Connector = Depends(get_connection)
+@app.put("/models")
+def update_all_models(
+    models: Optional[List[Model]] = None, connector: Connector = Depends(get_connection)
 ):
     """
-    Create model
+    Replace all models using `load_models` + `models`
     """
     try:
-        connector.save_model(model)
+        if models is None:
+            models = []
+
+        connector.save_models(models)
+        models += connector.load_models()
     except exc.CannotSaveModel:
         raise HTTPException(status_code=500, detail="Cannot save model")
 
     except exc.CannotConnectToDatabase as ex:
-        raise HTTPException(
-            status_code=500,
-            detail=ex.message
-        )
+        raise HTTPException(status_code=500, detail=ex.message)
+    except exc.ValidationError as ex:
+        raise HTTPException(status_code=400, detail=ex.message)
+
+    logger.info(f"Inserted models {models}")
+    return models
+
+
+@app.post("/models", response_model=Model)
+def create_models(model: Model, connector: Connector = Depends(get_connection)):
+    """
+    Create model
+    """
+    try:
+        start_time = time.time()
+        connector.save_model(model)
+        end_time = time.time()
+        logger.info(f"save model completed in {end_time - start_time}")
+    except exc.CannotSaveModel:
+        raise HTTPException(status_code=500, detail="Cannot save model")
+
+    except exc.CannotConnectToDatabase as ex:
+        raise HTTPException(status_code=500, detail=ex.message)
 
     except exc.ValidationError as ex:
-        raise HTTPException(
-            status_code=400,
-            detail=ex.message
-        )
+        raise HTTPException(status_code=400, detail=ex.message)
 
     return model
 
 
 @app.patch("/models/{model_slug}", response_model=Model)
 def update_models(
-    model_slug: str,
-    model_params: dict,
-    connector: Connector = Depends(get_connection)
+    model_slug: str, model_params: dict, connector: Connector = Depends(get_connection)
 ):
     """
     Update model fields
@@ -94,18 +112,12 @@ def update_models(
         raise HTTPException(status_code=500, detail=ex.message)
 
     except exc.CannotConnectToDatabase as ex:
-        raise HTTPException(
-            status_code=500,
-            detail=ex.message
-        )
+        raise HTTPException(status_code=500, detail=ex.message)
     return updated_model
 
 
 @app.delete("/models/{model_slug}")
-def delete_model(
-    model_slug: str,
-    connector: Connector = Depends(get_connection)
-):
+def delete_model(model_slug: str, connector: Connector = Depends(get_connection)):
     """
     Delete model via model_slug
     """
@@ -116,8 +128,5 @@ def delete_model(
         raise HTTPException(status_code=404, detail=ex.message)
 
     except exc.CannotConnectToDatabase as ex:
-        raise HTTPException(
-            status_code=500,
-            detail=ex.message
-        )
+        raise HTTPException(status_code=500, detail=ex.message)
     return {"model": model_slug}

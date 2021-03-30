@@ -3,7 +3,7 @@ Load tests
 """
 
 import uuid
-
+import argparse
 import requests
 from functools import partial
 from multiprocessing.pool import ThreadPool
@@ -24,15 +24,40 @@ def receive_response(out_sock):
 
 
 def main():
-    mode = int(input("Choose mode: 1 - request = batch_size;\
-                     2 - request = batch_size * 2;\
-                     3 -request = batch_size * 10 \n"))
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        help="batch size of models object",
+        default=10,
+    )
+    parser.add_argument(
+        "--address",
+        type=str,
+        help="registry address of model",
+        default="registry.visionhub.ru/models/stub:v5",
+    )
+    parser.add_argument(
+        "--stateless",
+        type=bool,
+        help="stateless of model",
+        default=True,
+    )
+    parser.add_argument(
+        "--mode",
+        type=int,
+        help="Choose mode: 1 - request = batch_size;\
+        2 - request = batch_size * 2;\
+        3 -request = batch_size * 10 \n",
+        default=1,
+    )
 
     # Model params
-
-    batch_size = int(input("Batch size of model: "))
-
-    stateless = True
+    args = parser.parse_args()
+    address = args.address
+    batch_size = int(args.batch_size)
+    stateless = bool(args.stateless)
+    mode = int(args.mode)
 
     if mode == 1:
         number_of_request = batch_size
@@ -41,9 +66,7 @@ def main():
     elif mode == 3:
         number_of_request = batch_size * 10
     else:
-        raise Exception("")
-
-    address = "registry.visionhub.ru/models/stub:v5"
+        raise Exception("No such mode")
 
     req = requests.post(
         "http://localhost:8000/models",

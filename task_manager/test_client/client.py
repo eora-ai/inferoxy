@@ -206,8 +206,7 @@ def batch_pictures():
     sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.PULL)
-    print(f"Receiver: {config.zmq_output_address}")
-    sock_receiver.connect(config.zmq_output_address)
+    sock_receiver.bind(config.zmq_output_address)
 
     #  load the image
     image = Image.open("test.jpg")

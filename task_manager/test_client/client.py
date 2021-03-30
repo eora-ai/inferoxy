@@ -25,7 +25,7 @@ from shared_modules.utils import uuid4_string_generator
 
 stub_model = ModelObject(
     name="stub",
-    address="registry.visionhub.ru/models/stub:v4",
+    address="registry.visionhub.ru/models/stub:v5",
     stateless=True,
     batch_size=256,
 )

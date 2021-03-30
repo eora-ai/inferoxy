@@ -19,9 +19,6 @@ def main():
     ctx = zmq.Context()
     sock = ctx.socket(zmq.REQ)
 
-    # with open("../config.yaml") as config_file:
-    #     config_dict = yaml.full_load(config_file)
-
     config = dm.Config.parse_file("../config", content_type="yaml")
 
     sock.connect(config.address)

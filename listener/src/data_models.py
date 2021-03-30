@@ -34,10 +34,3 @@ class Config(YamlModel):
     model_storage_address: str
 
     zmq_python: ZMQPythonAdapterConfig
-
-    # def from_dict(cls, config_dict):
-    #     """
-    #     Make Configobject from the
-    #     """
-    #     zmq_python_config = ZMQPythonAdapterConfig(**config_dict.pop("zmq_python"))
-    #     return cls(zmq_python=zmq_python_config, **config_dict)

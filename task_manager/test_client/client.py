@@ -37,11 +37,13 @@ stub_repeat_model = model = ModelObject(
 )
 
 
-def batches_different_sources():
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent / "config.yaml"
+cur_path = pathlib.Path(__file__)
+config_path = cur_path.parent.parent / "config.yaml"
 
-    config = dm.Config.parse_file(config_path, content_type="yaml")
+config = dm.Config.parse_file(config_path, content_type="yaml")
+
+
+def batches_different_sources():
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)

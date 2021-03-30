@@ -115,35 +115,6 @@ class Config(YamlModel):
     docker: Optional[DockerConfig] = None
     kube: Optional[KubeConfig] = None
 
-    # @classmethod
-    # def from_dict(cls, config_dict: dict) -> "Config":
-    #     """
-    #     Convert dict into Config object
-    #     """
-    #     load_analyzer_dict = config_dict.pop("load_analyzer")
-    #     running_mean_dict = load_analyzer_dict.pop("running_mean")
-    #     stateful_checker_dict = load_analyzer_dict.pop("stateful_checker")
-    #     trigger_pipeline_dict = load_analyzer_dict.pop("trigger_pipeline")
-    #     health_check_dict = config_dict.pop("health_check")
-    #     running_mean = RunningMeanConfig(**running_mean_dict)
-    #     trigger_pipeline = TriggerPipelineConfig(**trigger_pipeline_dict)
-    #     stateful_checker = StatefulChecker(**stateful_checker_dict)
-    #     load_analyzer = LoadAnalyzerConfig(
-    #         running_mean=running_mean,
-    #         trigger_pipeline=trigger_pipeline,
-    #         stateful_checker=stateful_checker,
-    #         **load_analyzer_dict
-    #     )
-    #     models_dict = config_dict.pop("models")
-    #     models_config = ModelsRunnerConfig.from_dict(models_dict)
-    #     health_check_config = HealthCheckerConfig(**health_check_dict)
-    #     return cls(
-    #         load_analyzer=load_analyzer,
-    #         models=models_config,
-    #         health_check=health_check_config,
-    #         **config_dict
-    #     )
-
 
 @dataclass
 class ModelInstance:

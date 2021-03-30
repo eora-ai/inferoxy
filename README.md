@@ -5,7 +5,7 @@ It is a service for quickly deploying and using machine learning models.
 
 ## Environment variables
 
-* `CLOUD_CLIENT=docker`
+* `CLOUD_CLIENT`
 * `DOCKER_REGISTRY`
 * `DOCKER_LOGIN`
 * `DOCKER_PASSWORD`
@@ -45,7 +45,11 @@ make
 ## Production setup
 
 ### Inferoxy config
-```yaml=
+<p>
+<details>
+<summary>Click this to view code.</summary>
+
+<pre><code>
 apiVersion: v1
   kind: ConfigMap
 metadata:
@@ -59,10 +63,18 @@ data:
   DB_PORT: "6379"
   DB_NUMBER: "6"
   LOGGING_LEVEL: WARNING
-```
+</code></pre>
+
+</details>
+</p>
+
 
 ### Inferoxy deployment
-```yaml=
+<p>
+<details>
+<summary>Click this to view code.</summary>
+
+<pre><code>
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -111,10 +123,17 @@ spec:
       - name: inferoxy-config-volume
         configMap:
           name: inferoxy-persistent-config
-```
+</code></pre>
+
+</details>
+</p>
 
 ### Inferoxy persistent config
-```yaml=
+<p>
+<details>
+<summary>Click this to view code.</summary>
+
+<pre><code>
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -174,8 +193,11 @@ data:
       send_address: "tcp://*:7788"
   model_storage.yaml: |
     address: "ipc:///tmp/model_storage"
+</code></pre>
 
-```
+</details>
+</p>
+
 
 ## How to run tests
 1. Batch manager

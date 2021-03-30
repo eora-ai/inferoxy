@@ -40,6 +40,7 @@ def debatch(
     )
     for (request_object_uid, source_id) in iter(batch_mapping):
         mini_batch = next(mini_batches)
+        print(mini_batch)
         for response_info in mini_batch:
             new_response_object = dm.ResponseObject(
                 uid=request_object_uid,

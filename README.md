@@ -220,7 +220,7 @@ pytest model_storage
 pytest task_manager
 ```
 
-### How to config
+## How to config
 
 1. Batch manager
 
@@ -311,7 +311,7 @@ Create file `model_storage/config.yaml` with this parameters:
 address: "ipc:///tmp/model_storage"
 ```
 
-### How to start managers
+## How to start managers
 
 1. Batch manager
 ```bash=

@@ -7,6 +7,7 @@ __email__ = "a.chertkov@eora.ru"
 
 from typing import Optional, TYPE_CHECKING
 from abc import ABC, abstractmethod
+from datetime import datetime
 
 import src.data_models as dm
 from src.model_instances_storage import ModelInstancesStorage
@@ -58,7 +59,7 @@ class FatalError(HealthCheckError):
     ):
         model_instance.running = False
         await model_instance_storage.remove_model_instance(model_instance)
-        model_instance_storage.errors[model_instance.model] += 1
+        model_instance_storage.errors[model_instance.model] = datetime.now()
         await alert_manager.send(model_instance, self)
 
 

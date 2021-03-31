@@ -5,12 +5,13 @@ This module is storing model instances
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from loguru import logger
+from datetime import datetime, timedelta
 from collections import defaultdict
 from typing import Dict, List, Tuple, Optional
 
+from loguru import logger
+
 import src.data_models as dm
-from src.utils.data_transfers import Receiver
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
 
@@ -20,7 +21,7 @@ class ModelInstancesStorage:
     """
 
     def __init__(self, receiver_streams_combiner: ReceiverStreamsCombiner):
-        self.errors: Dict[dm.ModelObject, int] = defaultdict(int)
+        self.errors: Dict[dm.ModelObject, datetime] = {}
         self.model_instances: Dict[
             dm.ModelObject, List[dm.ModelInstance]
         ] = defaultdict(list)
@@ -136,20 +137,26 @@ class ModelInstancesStorage:
             return None
         return model_instance
 
-    def get_number_of_errors(self, model: dm.ModelObject) -> int:
+    def get_errors_time(self, model: dm.ModelObject) -> datetime:
         """
         Return number of fatal errors
         """
         return self.errors[model]
 
-    def get_models_with_errors(self, min_error: int = 0) -> List[dm.ModelObject]:
+    def get_models_with_errors(
+        self, new_chance_delta: timedelta
+    ) -> List[dm.ModelObject]:
         """
-        Return models with number of errors greater than `min_error`
+        Return models that have error in `new_chance_delta` seconds
 
         Parameters
         ----------
-        min_error
-            Number of minimum number of errors in output
+        new_chance_delta
+            Time until new chance
         """
 
-        return [model for model in self.errors if self.errors[model] >= min_error]
+        return [
+            model
+            for model in self.errors
+            if datetime.now() - self.errors[model] <= new_chance_delta
+        ]

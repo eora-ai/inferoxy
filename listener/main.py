@@ -6,7 +6,6 @@ import os
 import sys
 import argparse
 
-import yaml
 from loguru import logger
 
 from src.adapters.python_zeromq_adapter import ZMQPythonAdapter
@@ -28,9 +27,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(args.config, content_type="yaml")
 
     adapter = ZMQPythonAdapter(config)
     logger.info("Listener started")

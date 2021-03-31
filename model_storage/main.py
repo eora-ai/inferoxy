@@ -8,7 +8,6 @@ import os
 import asyncio
 import argparse
 
-import yaml
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
 from loguru import logger
@@ -38,12 +37,11 @@ async def pipeline(config_db: dm.DatabaseConfig):
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
+    config = dm.Config.parse_file(args.config, content_type="yaml")
 
     context = zmq.asyncio.Context()
     socket = context.socket(zmq.REP)
-    socket.bind(config_dict["address"])
+    socket.bind(config.address)
 
     database = Redis(config_db)
     connector = Connector(database)

@@ -11,7 +11,6 @@ import asyncio
 import argparse
 from pathlib import Path
 
-import yaml
 from loguru import logger
 
 import src.sender as snd
@@ -40,9 +39,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
+    config = dm.Config.parse_file(args.config, content_type="yaml")
 
     Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
         exist_ok=True, parents=True

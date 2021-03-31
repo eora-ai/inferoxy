@@ -114,7 +114,7 @@ def main():
 
     config = dm.Config.parse_file(args.config, content_type="yaml")
     logger.debug(f" CONFIG {config}")
-
+    logger.debug(os.environ.get("CLOUD_CLIENT"))
     if os.environ.get("CLOUD_CLIENT") == "docker":
         config.docker = dm.DockerConfig(
             registry=os.environ.get("DOCKER_REGISTRY"),
@@ -123,14 +123,11 @@ def main():
             network=os.environ.get("DOCKER_NETWORK"),
         )
     elif os.environ.get("CLOUD_CLIENT") == "kube":
-        config.kube = dm.KubeConfig(
-            address=os.environ.get("KUBERNETES_CLUSTER_ADDRESS"),
-            token=os.environ.get("KUBERNETES_API_TOKEN"),
-            namespace=os.environ.get("KUBERNETES_NAMESPACE"),
-            create_timeout=os.environ.get("KUBERNETES_TIMEOUT"),
-        )
+        config.kube.address = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
+        config.kube.token = os.environ.get("KUBERNETES_API_TOKEN")
+        config.kube.namespace = os.environ.get("KUBERNETES_NAMESPACE")
+        config.kube.create_timeout = config.kube.create_timeout
 
-    logger.debug(f" CONFIG {config}")
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 
     logging.getLogger("asyncio").setLevel(logging.DEBUG)

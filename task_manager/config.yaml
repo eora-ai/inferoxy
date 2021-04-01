@@ -29,3 +29,9 @@ models:
 
 kube:
   create_timeout: 300
+
+docker:
+  registry:
+  login:
+  password:
+  network:

@@ -8,7 +8,6 @@ __email__ = "a.chertkov@eora.ru"
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar
 
-from pydantic import BaseSettings
 from pydantic_yaml import YamlModel     # type: ignore
 
 from src.utils.data_transfers.sender import BaseSender
@@ -64,8 +63,7 @@ class LoadAnalyzerConfig(BaseConfig):
     stateful_checker: StatefulChecker
 
 
-@dataclass
-class DockerConfig(BaseConfig):
+class DockerConfig(YamlModel):
     registry: Optional[str] = None
     login: Optional[str] = None
     password: Optional[str] = None

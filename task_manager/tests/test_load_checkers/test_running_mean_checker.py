@@ -39,7 +39,12 @@ stub_config = dm.Config(
         running_mean=dm.RunningMeanConfig(0, 10, 10),
         stateful_checker=dm.StatefulChecker(10),
     ),
-    docker=dm.DockerConfig("", "", "", ""),
+    docker=dm.DockerConfig(
+        registry="",
+        login="",
+        password="",
+        network=""
+    ),
     health_check=dm.HealthCheckerConfig(10),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(

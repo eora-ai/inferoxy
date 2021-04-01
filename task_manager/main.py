@@ -10,6 +10,7 @@ import sys
 import asyncio
 import logging
 import argparse
+import urllib3
 from pathlib import Path
 
 import yaml
@@ -26,6 +27,8 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
+
+urllib3.disable_warnings()
 
 
 async def pipeline(

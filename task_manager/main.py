@@ -25,7 +25,7 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-from shared_modules.parse_config import replace_env
+from shared_modules.parse_config import build_config
 
 
 async def pipeline(
@@ -113,22 +113,8 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
-    logger.debug(f" CONFIG {config}")
     logger.debug(os.environ.get("CLOUD_CLIENT"))
-    replace_env(config, "task_manager")
-    # if os.environ.get("CLOUD_CLIENT") == "docker":
-    #     config.docker = dm.DockerConfig(
-    #         registry=os.environ.get("DOCKER_REGISTRY"),
-    #         login=os.environ.get("DOCKER_LOGIN"),
-    #         password=os.environ.get("DOCKER_PASSWORD"),
-    #         network=os.environ.get("DOCKER_NETWORK"),
-    #     )
-    # elif os.environ.get("CLOUD_CLIENT") == "kube":
-    #     config.kube.address = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
-    #     config.kube.token = os.environ.get("KUBERNETES_API_TOKEN")
-    #     config.kube.namespace = os.environ.get("KUBERNETES_NAMESPACE")
-    #     config.kube.create_timeout = config.kube.create_timeout
+    config = build_config(args.config, "task_manager")
 
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 

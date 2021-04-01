@@ -15,9 +15,10 @@ from loguru import logger
 from src.connector import Connector  # type: ignore
 from src.database import Redis  # type: ignore
 import src.data_models as dm  # type: ignore
+from shared_modules.parse_config import build_config
 
 
-async def pipeline(config_db: dm.DatabaseConfig):
+async def pipeline(config: dm.Config):
     """
     Main pipeline of model storage
 
@@ -28,22 +29,14 @@ async def pipeline(config_db: dm.DatabaseConfig):
     config_db
         Config of remote database
     """
-    parser = argparse.ArgumentParser(description="Model storage process")
-    parser.add_argument(
-        "--config",
-        type=str,
-        help="Config path",
-        default="/etc/inferoxy/model_storage.yaml",
-    )
-    args = parser.parse_args()
-
-    config = dm.Config.parse_file(args.config, content_type="yaml")
 
     context = zmq.asyncio.Context()
     socket = context.socket(zmq.REP)
     socket.bind(config.address)
+    logger.debug(f"CONFIG DB {config.database}")
+    logger.debug(type(config.database))
 
-    database = Redis(config_db)
+    database = Redis(config.database)
     connector = Connector(database)
 
     logger.info("Start listening")
@@ -60,13 +53,17 @@ def main():
     run asyncio pipeline
     """
 
-    config_db = dm.DatabaseConfig(
-        host=os.environ.get("DB_HOST"),
-        port=os.environ.get("DB_PORT", 6379),
-        db_num=os.environ.get("DB_NUMBER", 0),
+    parser = argparse.ArgumentParser(description="Model storage process")
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Config path",
+        default="/etc/inferoxy/model_storage.yaml",
     )
+    args = parser.parse_args()
+    config = build_config(args.config, "model_storage")
 
-    asyncio.run(pipeline(config_db))
+    asyncio.run(pipeline(config))
 
 
 if __name__ == "__main__":

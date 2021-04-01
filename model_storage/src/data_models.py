@@ -18,8 +18,9 @@ class DatabaseConfig(YamlModel):
 
     host: Optional[str] = None
     port: Optional[int] = None
-    db_num: Optional[int] = None
+    number: Optional[int] = None
 
 
 class Config(YamlModel):
     address: Optional[str] = None
+    database: Optional[DatabaseConfig] = None

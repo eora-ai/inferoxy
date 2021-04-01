@@ -17,6 +17,7 @@ import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
 from src.debatcher import debatch, pull_batch_mapping
+from shared_modules.parse_config import build_config
 
 
 def main():
@@ -39,7 +40,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
+    config = build_config(args.config, "debatch_manager")
 
     Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
         exist_ok=True, parents=True

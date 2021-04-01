@@ -40,7 +40,6 @@ class ModelInstancesStorage:
             logger.error(exc)
         if not self.model_instances[model_instance.model]:
             del self.model_instances[model_instance.model]
-        model_instance.receiver.close()
         model_instance.sender.close()
         await self.receiver_streams_combiner.remove_listener(model_instance.receiver)
 

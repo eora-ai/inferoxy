@@ -84,8 +84,7 @@ class ReceiverStreamsCombiner:
             for task in done:
                 result = task.result()
 
-                receiver = result[0]
-                batch = result[1]
+                receiver, batch = result
                 if batch is not None:
                     await self.output_batch_queue.put(batch)
                     model_instance = receiver.get_model_instance()
@@ -93,7 +92,9 @@ class ReceiverStreamsCombiner:
                     model_instance.current_processing_batch = None
 
                 if receiver in self.receivers_to_delete:
+                    logger.debug("Remove listener")
                     self.tasks.pop(receiver)
+                    receiver.close()
 
                 if receiver in self.tasks:
                     self.tasks[receiver] = asyncio.create_task(

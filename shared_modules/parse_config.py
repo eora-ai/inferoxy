@@ -4,7 +4,7 @@ from dataclasses import fields, is_dataclass
 from loguru import logger
 from pydantic import BaseModel
 
-import src.data_models as dm
+import src.data_models as dm    # type: ignore
 
 
 def build_config(path: str, manager: str):

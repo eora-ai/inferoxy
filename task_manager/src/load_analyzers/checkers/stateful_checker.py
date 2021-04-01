@@ -7,6 +7,7 @@ __email__ = "a.chertkov@eora.ru"
 
 import time
 from typing import List
+from datetime import timedelta
 
 from loguru import logger
 
@@ -36,12 +37,13 @@ class StatefulChecker(Checker):
             )
         )
 
+        marked_models = self.model_instances_storage.get_models_with_errors(
+            new_chance_delta=timedelta(seconds=30)
+        )
         triggers: List[Trigger] = []
 
         logger.debug(f"Request models with sources ids {requested_models_with_sources}")
         logger.debug(f"Running models with sources {running_models_with_sources}")
-        if not running_models_with_sources:
-            logger.debug(f"{self.model_instances_storage.model_instances}")
 
         for source_id, model in requested_models_with_sources:
             logger.debug(
@@ -56,6 +58,8 @@ class StatefulChecker(Checker):
                 logger.debug(f"Try to set {source_id=} for {model=}")
                 if not source_id is None:
                     self.model_instances_storage.set_source_id(model, source_id)
+                continue
+            if model in marked_models:
                 continue
 
             triggers += [self.make_increase_trigger(model)]

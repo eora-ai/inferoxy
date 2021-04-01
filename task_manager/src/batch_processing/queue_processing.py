@@ -8,6 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 from asyncio import QueueEmpty
 from typing import List, Tuple, Optional
+from datetime import timedelta
 
 from loguru import logger
 
@@ -36,7 +37,9 @@ async def send_to_model(
     """
     while True:
         # get models with number of errors > 3
-        models_with_errors = model_instances_storage.get_models_with_errors(3)
+        models_with_errors = model_instances_storage.get_models_with_errors(
+            new_chance_delta=timedelta(seconds=30)
+        )
         for model in models_with_errors:
             source_ids = input_batch_queue.get_source_ids(model)
             for source_id in source_ids:

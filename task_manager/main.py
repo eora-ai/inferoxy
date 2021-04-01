@@ -10,7 +10,7 @@ import sys
 import asyncio
 import logging
 import argparse
-import urllib3
+import urllib3  # type: ignore
 from pathlib import Path
 
 import yaml

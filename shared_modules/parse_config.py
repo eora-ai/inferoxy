@@ -2,7 +2,6 @@ import os
 from dataclasses import fields, is_dataclass
 
 from loguru import logger
-from pydantic_yaml import YamlModel
 from pydantic import BaseModel
 
 import src.data_models as dm

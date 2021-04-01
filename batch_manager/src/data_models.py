@@ -40,8 +40,8 @@ class Config(YamlModel):
     zmq_input_address: Optional[str] = None
     zmq_output_address: Optional[str] = None
     db_file: Optional[str] = None
-    create_db_file: Optional[bool] = None
-    send_batch_timeout: Optional[float] = None
+    create_db_file: bool
+    send_batch_timeout: float
 
 
 @dataclass(eq=False)

@@ -128,6 +128,7 @@ def main():
                 times += 1
 
         logger.info(f"Containers number: {times}")
+        break
 
     result.wait()
 

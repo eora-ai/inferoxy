@@ -48,7 +48,10 @@ async def pipeline(config_db: dm.DatabaseConfig):
     database = Redis(config_db)
     connector = Connector(database)
 
-    connector.load_models()
+    try:
+         connector.load_models()
+    except FileNotFound:
+         pass
     logger.info("Load models from /etc/inferoxy/models.yaml")
 
     logger.info("Start listening")

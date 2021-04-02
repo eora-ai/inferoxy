@@ -14,6 +14,9 @@ It is a service for quickly deploying and using machine learning models.
 * `DB_PORT`
 * `DB_NUMBER`
 * `LOGGING_LEVEL`
+* `KUBERNETES_CLUSTER_ADDRESS`
+* `KUBERNETES_API_TOKEN`
+* `NAMESPACE`
 
 
 ## Development setup

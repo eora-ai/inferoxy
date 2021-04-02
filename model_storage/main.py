@@ -49,9 +49,9 @@ async def pipeline(config_db: dm.DatabaseConfig):
     connector = Connector(database)
 
     try:
-         connector.load_models()
-    except FileNotFound:
-         pass
+        connector.load_models()
+    except FileNotFoundError:
+        pass
     logger.info("Load models from /etc/inferoxy/models.yaml")
 
     logger.info("Start listening")

@@ -29,18 +29,30 @@ def dfs(key, item, env_var):
             dfs(child_key, child_value, child_env_var)
 
     elif is_dataclass(item):
+        annotations = item.__anotations__
         print("Enter dataclass")
         for field in fields(item):
             value = getattr(item, field.name)
             child_env_var = env_var + "_" + str(field.name).upper()
 
             if value is None:
-                new_value = os.environ.get(child_env_var)
+                type_value = annotations.get(field.name)
+
+                env_val = os.environ.get(child_env_var)
+                if env_val is None:
+                    # oshibka
+                    pass
+
+                try:
+                    converted_value = type_value(env_val)
+                except ValueError:
+                    # Failed to convert
+                    pass
 
                 logger.debug(f"Change env variable {child_env_var}\
                              to {new_value}")
 
-                setattr(item, field.name, new_value)
+                setattr(item, field.name, converted_value)
 
             dfs(field.name, value, child_env_var)
 

@@ -122,11 +122,13 @@ def main():
             password=os.environ.get("DOCKER_PASSWORD"),
             network=os.environ.get("DOCKER_NETWORK"),
         )
+        config.kube = None
     elif os.environ.get("CLOUD_CLIENT") == "kube":
         config.kube.address = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
         config.kube.token = os.environ.get("KUBERNETES_API_TOKEN")
         config.kube.namespace = os.environ.get("KUBERNETES_NAMESPACE")
         config.kube.create_timeout = config.kube.create_timeout
+        config.docker = None
 
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 

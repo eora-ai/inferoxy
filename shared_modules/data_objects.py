@@ -12,6 +12,7 @@ from dataclasses import dataclass, asdict
 from typing import List, Tuple, Optional, Type, NewType, Union, Any, Iterator
 
 import numpy as np  # type: ignore
+from pydantic import BaseModel
 
 
 @dataclass
@@ -299,29 +300,27 @@ class ResponseBatch(MinimalBatchObject):
         return hash(self.uid)
 
 
-class BaseConfig:
+class BaseConfig(BaseModel):
     """
     Generic type of config
     """
 
 
-@dataclass
 class ZMQConfig(BaseConfig):
     """
     Config for ZMQ senders receivers
     """
 
-    sndhwm: int
-    rcvhwm: int
-    sndtimeo: int
-    rcvtimeo: int
+    sndhwm: Union[int, str]
+    rcvhwm: Union[int, str]
+    sndtimeo: Union[int, str]
+    rcvtimeo: Union[int, str]
 
 
-@dataclass
 class PortConfig(BaseConfig):
     """
     Config for sender/receiver ports
     """
 
-    sender_open_addr: int
-    receiver_open_addr: int
+    sender_open_addr: Union[int, str]
+    receiver_open_addr: Union[int, str]

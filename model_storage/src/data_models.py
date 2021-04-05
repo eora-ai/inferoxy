@@ -1,7 +1,7 @@
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic_yaml import YamlModel     # type: ignore
 
@@ -16,11 +16,11 @@ class DatabaseConfig(YamlModel):
     Config for remote database
     """
 
-    host: Optional[str] = None
-    port: Optional[int] = None
-    number: Optional[int] = None
+    host: str
+    port: Union[int, str]
+    number: Union[int, str]
 
 
 class Config(YamlModel):
-    address: Optional[str] = None
+    address: str
     database: Optional[DatabaseConfig] = None

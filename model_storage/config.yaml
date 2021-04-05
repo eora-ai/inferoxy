@@ -1,5 +1,5 @@
 address: "ipc:///tmp/model_storage"
 database:
-  host:
-  port:
-  number:
+  host: $
+  port: $
+  number: $

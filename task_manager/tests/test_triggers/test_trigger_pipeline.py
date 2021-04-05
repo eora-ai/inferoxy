@@ -42,12 +42,22 @@ stub_config = dm.Config(
     zmq_input_address="",
     gpu_all=[],
     load_analyzer=dm.LoadAnalyzerConfig(
-        0.5,
-        trigger_pipeline=dm.TriggerPipelineConfig(70),
-        running_mean=dm.RunningMeanConfig(0.1, 1, 3),
-        stateful_checker=dm.StatefulChecker(10),
+        sleep_time=0.5,
+        trigger_pipeline=dm.TriggerPipelineConfig(
+            max_model_percent=70
+        ),
+        running_mean=dm.RunningMeanConfig(
+            min_threshold=0.1,
+            max_threshold=1,
+            window_size=3
+        ),
+        stateful_checker=dm.StatefulChecker(
+            keep_model=10
+        ),
     ),
-    health_check=dm.HealthCheckerConfig(10),
+    health_check=dm.HealthCheckerConfig(
+        connection_idle_timeout=10
+    ),
     docker=dm.DockerConfig(
         registry="",
         login="",
@@ -56,7 +66,16 @@ stub_config = dm.Config(
     ),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(
-        ports=dm.PortConfig(0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
+        ports=dm.PortConfig(
+            sender_open_addr=0,
+            receiver_open_addr=0,
+        ),
+        zmq_config=dm.ZMQConfig(
+            sndhwm=0,
+            rcvhwm=0,
+            sndtimeo=0,
+            rcvtimeo=0
+        )
     ),
 )
 

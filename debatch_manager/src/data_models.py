@@ -2,7 +2,7 @@
 Data object definitions
 """
 
-from typing import Optional
+from typing import Union
 
 from pydantic_yaml import YamlModel     # type: ignore
 
@@ -34,8 +34,8 @@ class Config(YamlModel):
         File path to leveldb
     """
 
-    zmq_input_address: Optional[str] = None
-    zmq_output_address: Optional[str] = None
-    db_file: Optional[str] = None
-    create_db_file: bool
-    send_batch_mapping_timeout: float
+    zmq_input_address: str
+    zmq_output_address: str
+    db_file: str
+    create_db_file: Union[bool, str]
+    send_batch_mapping_timeout: Union[float, str]

@@ -34,10 +34,18 @@ stub_config = dm.Config(
     zmq_input_address="",
     gpu_all=[],
     load_analyzer=dm.LoadAnalyzerConfig(
-        0,
-        trigger_pipeline=dm.TriggerPipelineConfig(60),
-        running_mean=dm.RunningMeanConfig(0, 10, 10),
-        stateful_checker=dm.StatefulChecker(10),
+        sleep_time=0,
+        trigger_pipeline=dm.TriggerPipelineConfig(
+            max_model_percent=60
+        ),
+        running_mean=dm.RunningMeanConfig(
+            min_threshold=0,
+            max_threshold=10,
+            window_size=10
+        ),
+        stateful_checker=dm.StatefulChecker(
+            keep_model=10
+        ),
     ),
     docker=dm.DockerConfig(
         registry="",
@@ -45,10 +53,16 @@ stub_config = dm.Config(
         password="",
         network=""
     ),
-    health_check=dm.HealthCheckerConfig(10),
+    health_check=dm.HealthCheckerConfig(
+        connection_idle_timeout=10
+    ),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(
-        ports=dm.PortConfig(0, 0), zmq_config=dm.ZMQConfig(0, 0, 0, 0)
+        ports=dm.PortConfig(
+            sender_open_addr=0,
+            receiver_open_addr=0,
+        ),
+        zmq_config=dm.ZMQConfig(sndhwm=0, rcvhwm=0, sndtimeo=0, rcvtimeo=0),
     ),
 )
 
@@ -61,9 +75,16 @@ async def test_requested_zero_models():
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
-    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(0.1, 1, 3)
+    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
+        min_threshold=0.1,
+        max_threshold=1,
+        window_size=3
+    )
     checker = RunningMeanStatelessChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue, stub_config
+        model_instances_storage=model_instances_storage,
+        input_batch_queue=input_batch_queue,
+        output_batch_queue=output_batch_queue,
+        config=stub_config,
     )
     triggers = checker.make_triggers()
     assert triggers == []
@@ -77,7 +98,11 @@ async def test_low_load():
     output_batch_queue = OutputBatchQueue()
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
-    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(5, 10, 10)
+    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
+        min_threshold=5,
+        max_threshold=10,
+        window_size=10
+    )
     checker = RunningMeanStatelessChecker(
         model_instances_storage, input_batch_queue, output_batch_queue, stub_config
     )
@@ -213,9 +238,16 @@ async def test_high_load():
             hostname="test",
         )
     )
-    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(0.1, 3, 3)
+    stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
+        min_threshold=0.1,
+        max_threshold=3,
+        window_size=3
+    )
     checker = RunningMeanStatelessChecker(
-        model_instances_storage, input_batch_queue, output_batch_queue, stub_config
+        model_instances_storage,
+        input_batch_queue,
+        output_batch_queue,
+        stub_config
     )
 
     request_info1 = dm.RequestInfo(

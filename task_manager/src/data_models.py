@@ -6,7 +6,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 from dataclasses import dataclass
-from typing import List, Optional, Generic, TypeVar
+from typing import List, Optional, Generic, TypeVar, Union
 
 from pydantic_yaml import YamlModel     # type: ignore
 
@@ -26,76 +26,64 @@ from shared_modules.data_objects import (
 )
 
 
-@dataclass
 class RunningMeanConfig(BaseConfig):
     """
     Config for `RunningMeanStatelessChecker`
     """
 
-    min_threshold: float
-    max_threshold: float
-    window_size: int
+    min_threshold: Union[float, str]
+    max_threshold: Union[float, str]
+    window_size: Union[int, str]
 
 
-@dataclass
 class TriggerPipelineConfig(BaseConfig):
     """
     Config for `src.load_analyzer.triggers.TriggerPipeline`
     """
 
-    max_model_percent: float
+    max_model_percent: Union[float, str]
 
 
-@dataclass
 class StatefulChecker(BaseConfig):
-    keep_model: int
+    keep_model: Union[int, str]
 
 
-@dataclass
 class LoadAnalyzerConfig(BaseConfig):
     """
     Configuration for load analyzer
     """
 
-    sleep_time: float
+    sleep_time: Union[float, str]
     trigger_pipeline: TriggerPipelineConfig
     running_mean: RunningMeanConfig
     stateful_checker: StatefulChecker
 
 
 class DockerConfig(YamlModel):
-    registry: Optional[str] = None
-    login: Optional[str] = None
-    password: Optional[str] = None
-    network: Optional[str] = None
+    registry: str
+    login: str
+    password: str
+    network: str
 
 
 class KubeConfig(YamlModel):
-    address: Optional[str] = None
-    token: Optional[str] = None
-    namespace: Optional[str] = None
-    create_timeout: Optional[int] = None
+    address: str
+    token: str
+    namespace: str
+    create_timeout: Union[int, str]
 
 
-@dataclass
 class ModelsRunnerConfig(BaseConfig):
     ports: PortConfig
     zmq_config: ZMQConfig
 
-    @classmethod
-    def from_dict(cls, config_dict: dict) -> "ModelsRunnerConfig":
-        ports_config = config_dict["ports"]
-        zmq_config = config_dict["zmq_config"]
-        return cls(ports=PortConfig(**ports_config), zmq_config=ZMQConfig(**zmq_config))
 
-
-@dataclass
 class HealthCheckerConfig(BaseConfig):
     """
     Config for health checker
     """
 
-    connection_idle_timeout: int = 10
+    connection_idle_timeout: Union[int, str] = 10
 
 
 class Config(YamlModel):
@@ -105,11 +93,11 @@ class Config(YamlModel):
 
     zmq_output_address: str
     zmq_input_address: str
-    gpu_all: List[int]
+    gpu_all: Union[List[int], str]
     health_check: HealthCheckerConfig
     load_analyzer: LoadAnalyzerConfig
     models: ModelsRunnerConfig
-    max_running_instances: int = 10
+    max_running_instances: Union[int, str] = 10
     docker: Optional[DockerConfig] = None
     kube: Optional[KubeConfig] = None
 

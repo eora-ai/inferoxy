@@ -23,7 +23,7 @@ def main():
             "run_on_gpu": False,
         },
     )
-    logger.info(f"Models loadded {req.json()}")
+    # logger.info(f"Models loadded {req.json()}")
     context = zmq.Context()
 
     input_socket = context.socket(zmq.PUSH)

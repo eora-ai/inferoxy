@@ -12,7 +12,7 @@ from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException
 from uvicorn.config import logger  # type: ignore
 
-import src.data_models as dm  # type: ignore
+import src.data_models as dm    # type: ignore
 import src.exceptions as exc  # type: ignore
 from src.schemas import Model  # type: ignore
 from src.database import Redis  # type: ignore
@@ -23,9 +23,9 @@ app = FastAPI()
 
 def get_connection():
     config_db = dm.DatabaseConfig(
-        host=os.environ.get("DB_HOST"),
-        port=os.environ.get("DB_PORT", 6379),
-        db_num=os.environ.get("DB_NUMBER", 0),
+        host=os.environ.get("MODEL_STORAGE_DATABASE_HOST"),
+        port=os.environ.get("MODEL_STORAGE_DATABASE_PORT", 6379),
+        number=os.environ.get("MODEL_STORAGE_DATABASE_NUMBER", 0),
     )
     database = Redis(config_db)
     connector = Connector(database)

@@ -13,6 +13,7 @@ import argparse
 from pathlib import Path
 
 from loguru import logger
+from envyaml import EnvYAML     # type: ignore
 
 import src.receiver as rc
 import src.sender as snd
@@ -25,7 +26,7 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-from shared_modules.parse_config import build_config
+from shared_modules.parse_config import build_config_file
 
 
 async def pipeline(
@@ -87,6 +88,34 @@ async def pipeline(
     )
 
 
+def update_config(config, config_path):
+    env = EnvYAML(config_path, strict=False)
+    if "$" in env['kube']['address']:
+        config.kube = None
+        config.docker = dm.DockerConfig.parse_obj(env['docker'])
+    else:
+        config.docker = None
+        config.kube = dm.KubeConfig.parse_obj(env['kube'])
+    config.gpu_all = env['gpu_all']
+
+    health_check = dm.HealthCheckerConfig.parse_obj(env['health_check'])
+    config.health_check = health_check
+
+    load_analyzer = dm.LoadAnalyzerConfig.parse_obj(env['load_analyzer'])
+    config.load_analyzer = load_analyzer
+
+    config.max_running_instances = env['max_running_instances']
+
+    models = dm.ModelsRunnerConfig.parse_obj(env['models'])
+    config.models = models
+
+    config.zmq_input_address = env['zmq_input_address']
+
+    config.zmq_output_address = env['zmq_output_address']
+
+    return config
+
+
 def main():
     """
     Entry point
@@ -112,9 +141,13 @@ def main():
         default="/etc/inferoxy/task_manager.yaml",
     )
     args = parser.parse_args()
+    print(args.config)
 
-    logger.debug(os.environ.get("CLOUD_CLIENT"))
-    config = build_config(args.config, "task_manager")
+    config = dm.Config.parse_file(args.config, content_type="yaml")
+
+    env_config_path = build_config_file(config, args.config, "task_manager")
+
+    config = update_config(config, env_config_path)
 
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 

@@ -4,7 +4,7 @@ Data object definitions
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from dataclasses import dataclass, field
 
 from pydantic_yaml import YamlModel     # type: ignore
@@ -37,11 +37,11 @@ class Config(YamlModel):
         How much time builder will be sleep before sending
     """
 
-    zmq_input_address: Optional[str] = None
-    zmq_output_address: Optional[str] = None
-    db_file: Optional[str] = None
-    create_db_file: bool
-    send_batch_timeout: float
+    zmq_input_address: str
+    zmq_output_address: str
+    db_file: str
+    create_db_file: Union[bool, str]
+    send_batch_timeout: Union[float, str]
 
 
 @dataclass(eq=False)

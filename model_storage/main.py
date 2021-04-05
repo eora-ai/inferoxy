@@ -4,18 +4,18 @@ Entry point of model storage
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-import os
 import asyncio
 import argparse
 
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
 from loguru import logger
+from envyaml import EnvYAML     # type: ignore
 
 from src.connector import Connector  # type: ignore
 from src.database import Redis  # type: ignore
 import src.data_models as dm  # type: ignore
-from shared_modules.parse_config import build_config
+from shared_modules.parse_config import build_config_file
 
 
 async def pipeline(config: dm.Config):
@@ -47,6 +47,16 @@ async def pipeline(config: dm.Config):
         await socket.send_pyobj(model)
 
 
+def update_config(config, config_path):
+    env = EnvYAML(config_path, strict=False)
+    config.address = env["address"]
+
+    database = dm.DatabaseConfig.parse_obj(env["database"])
+    config.database = database
+
+    return config
+
+
 def main():
     """
     Entry point of model storage
@@ -61,7 +71,13 @@ def main():
         default="/etc/inferoxy/model_storage.yaml",
     )
     args = parser.parse_args()
-    config = build_config(args.config, "model_storage")
+
+    config = dm.Config.parse_file(args.config, content_type="yaml")
+
+    config_path_env = build_config_file(config, args.config, "model_storage")
+
+    config = update_config(config, config_path_env)
+    print(config)
 
     asyncio.run(pipeline(config))
 

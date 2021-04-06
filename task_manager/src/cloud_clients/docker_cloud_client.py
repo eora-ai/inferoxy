@@ -57,7 +57,10 @@ class DockerCloudClient(BaseCloudClient):
             )
         except:
             logger.critical("Cannot login to Docker registry")
-        self.gpu_all = set(config.gpu_all)
+
+        if isinstance(config.gpu_all, str):
+            raise ValueError("Config all gpu is string type")
+        self.gpu_all: Set[int] = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
@@ -75,6 +78,7 @@ class DockerCloudClient(BaseCloudClient):
         """
         on_gpu = model.run_on_gpu
         num_gpu = None
+        gpu_available = set()
         if on_gpu:
             # Geneerate gpu available
             gpu_available = self.gpu_all.difference(self.gpu_busy)

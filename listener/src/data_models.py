@@ -8,6 +8,8 @@ __email__ = "a.chertkov@eora.ru"
 
 from dataclasses import dataclass
 
+from pydantic_yaml import YamlModel     # type: ignore
+
 from shared_modules.data_objects import (
     RequestObject,
     RequestInfo,
@@ -17,14 +19,12 @@ from shared_modules.data_objects import (
 )
 
 
-@dataclass
-class ZMQPythonAdapterConfig(BaseConfig):
+class ZMQPythonAdapterConfig(YamlModel):
     listen_address: str
     send_address: str
 
 
-@dataclass
-class Config(BaseConfig):
+class Config(YamlModel):
     """
     Config object
     """
@@ -34,11 +34,3 @@ class Config(BaseConfig):
     model_storage_address: str
 
     zmq_python: ZMQPythonAdapterConfig
-
-    @classmethod
-    def from_dict(cls, config_dict):
-        """
-        Make Configobject from the
-        """
-        zmq_python_config = ZMQPythonAdapterConfig(**config_dict.pop("zmq_python"))
-        return cls(zmq_python=zmq_python_config, **config_dict)

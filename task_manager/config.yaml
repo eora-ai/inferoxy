@@ -28,4 +28,4 @@ models:
     rcvtimeo: 3 # ms
 
 kube:
-  create_timeout: 300 # seconds
+  create_timeout: 300

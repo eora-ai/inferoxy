@@ -13,7 +13,6 @@ import argparse
 import urllib3  # type: ignore
 from pathlib import Path
 
-import yaml
 from loguru import logger
 
 import src.receiver as rc
@@ -116,21 +115,23 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        kube_config_dict = config_dict.pop("kube")
-        config = dm.Config.from_dict(config_dict)
-        if os.environ.get("CLOUD_CLIENT") == "docker":
-            docker_config_dict = dict(network=os.environ.get("DOCKER_NETWORK"))
-            docker_config_dict["registry"] = os.environ.get("DOCKER_REGISTRY")
-            docker_config_dict["login"] = os.environ.get("DOCKER_LOGIN")
-            docker_config_dict["password"] = os.environ.get("DOCKER_PASSWORD")
-            config.docker = dm.DockerConfig(**docker_config_dict)
-        elif os.environ.get("CLOUD_CLIENT") == "kube":
-            kube_config_dict["address"] = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
-            kube_config_dict["token"] = os.environ.get("KUBERNETES_API_TOKEN")
-            kube_config_dict["namespace"] = os.environ.get("NAMESPACE")
-            config.kube = dm.KubeConfig(**kube_config_dict)
+    config = dm.Config.parse_file(args.config, content_type="yaml")
+    logger.debug(f" CONFIG {config}")
+    logger.debug(os.environ.get("CLOUD_CLIENT"))
+    if os.environ.get("CLOUD_CLIENT") == "docker":
+        config.docker = dm.DockerConfig(
+            registry=os.environ.get("DOCKER_REGISTRY"),
+            login=os.environ.get("DOCKER_LOGIN"),
+            password=os.environ.get("DOCKER_PASSWORD"),
+            network=os.environ.get("DOCKER_NETWORK"),
+        )
+        config.kube = None
+    elif os.environ.get("CLOUD_CLIENT") == "kube":
+        config.kube.address = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
+        config.kube.token = os.environ.get("KUBERNETES_API_TOKEN")
+        config.kube.namespace = os.environ.get("KUBERNETES_NAMESPACE")
+        config.kube.create_timeout = config.kube.create_timeout
+        config.docker = None
 
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 

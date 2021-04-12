@@ -2,8 +2,6 @@ import sys
 import argparse
 from pathlib import Path
 
-import yaml
-
 import data_models as dm  # type: ignore
 from runner import Runner  # type: ignore
 from tester import Tester  # type: ignore
@@ -34,9 +32,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    with open("/model_base/config.yaml") as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.ZMQConfig(**config_dict)
+    config = dm.ZMQConfig.parse_file(
+        "/model_base/config.yaml",
+        content_type="yaml"
+    )
 
     if args.test_mode != "1":
         runner = Runner(

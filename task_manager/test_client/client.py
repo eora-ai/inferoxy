@@ -25,7 +25,7 @@ from shared_modules.utils import uuid4_string_generator
 
 stub_model = ModelObject(
     name="stub",
-    address="registry.visionhub.ru/models/stub:v4",
+    address="registry.visionhub.ru/models/stub:v5",
     stateless=True,
     batch_size=256,
 )
@@ -206,8 +206,7 @@ def batch_pictures():
     sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.PULL)
-    print(f"Receiver: {config.zmq_output_address}")
-    sock_receiver.connect(config.zmq_output_address)
+    sock_receiver.bind(config.zmq_output_address)
 
     #  load the image
     image = Image.open("test.jpg")

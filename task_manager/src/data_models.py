@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar, Union
 
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel, Field
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
@@ -31,9 +31,9 @@ class RunningMeanConfig(BaseConfig):
     Config for `RunningMeanStatelessChecker`
     """
 
-    min_threshold: Union[float, str]
-    max_threshold: Union[float, str]
-    window_size: Union[int, str]
+    min_threshold: float
+    max_threshold: float
+    window_size: int
 
 
 class TriggerPipelineConfig(BaseConfig):
@@ -41,11 +41,11 @@ class TriggerPipelineConfig(BaseConfig):
     Config for `src.load_analyzer.triggers.TriggerPipeline`
     """
 
-    max_model_percent: Union[float, str]
+    max_model_percent: float
 
 
 class StatefulChecker(BaseConfig):
-    keep_model: Union[int, str]
+    keep_model: int
 
 
 class LoadAnalyzerConfig(BaseConfig):
@@ -53,24 +53,24 @@ class LoadAnalyzerConfig(BaseConfig):
     Configuration for load analyzer
     """
 
-    sleep_time: Union[float, str]
+    sleep_time: float
     trigger_pipeline: TriggerPipelineConfig
     running_mean: RunningMeanConfig
     stateful_checker: StatefulChecker
 
 
-class DockerConfig(YamlModel):
+class DockerConfig(BaseModel):
     registry: str
     login: str
     password: str
     network: str
 
 
-class KubeConfig(YamlModel):
+class KubeConfig(BaseModel):
     address: str
     token: str
     namespace: str
-    create_timeout: Union[int, str]
+    create_timeout: int
 
 
 class ModelsRunnerConfig(BaseConfig):
@@ -83,23 +83,24 @@ class HealthCheckerConfig(BaseConfig):
     Config for health checker
     """
 
-    connection_idle_timeout: Union[int, str] = 10
+    connection_idle_timeout: int = 10
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     """
     Config of task manager
     """
 
     zmq_output_address: str
     zmq_input_address: str
-    gpu_all: Union[List[int], str]
+    gpu_all: List[int]
     health_check: HealthCheckerConfig
     load_analyzer: LoadAnalyzerConfig
     models: ModelsRunnerConfig
-    max_running_instances: Union[int, str] = 10
-    docker: Optional[DockerConfig] = None
-    kube: Optional[KubeConfig] = None
+    max_running_instances: int = 10
+    cloud_client: Union[DockerConfig, KubeConfig] = Field(
+        choose_function=lambda x: x["branch_name"] == "DockerConfig"
+    )
 
 
 @dataclass

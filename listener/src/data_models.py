@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 
 from dataclasses import dataclass
 
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     RequestObject,
@@ -19,12 +19,12 @@ from shared_modules.data_objects import (
 )
 
 
-class ZMQPythonAdapterConfig(YamlModel):
+class ZMQPythonAdapterConfig(BaseModel):
     listen_address: str
     send_address: str
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     """
     Config object
     """

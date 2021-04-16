@@ -28,14 +28,6 @@ models:
     rcvtimeo: 3 # ms
 
 kube:
-  address: $
-  token: $
-  namespace: $
   create_timeout: 300
 
-docker:
-  registry: $
-  login: $
-  password: $
-  network: $
 

@@ -13,14 +13,13 @@ from pathlib import Path
 from datetime import datetime
 
 from loguru import logger
-from envyaml import EnvYAML     # type: ignore
 
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
 from src.builder import builder
 from src.saver import save_mapping
-from shared_modules.parse_config import build_config_file
+from shared_modules.parse_config import read_config_with_env
 
 
 async def pipeline(config: dm.Config):
@@ -32,9 +31,6 @@ async def pipeline(config: dm.Config):
     config
         Config object
     """
-    logger.debug(config)
-    logger.debug(f"Input {config.zmq_input_address}")
-    logger.debug(f"Output {config.zmq_output_address}")
     input_socket = rc.create_socket(config=config)
     output_socket = snd.create_socket(config=config)
     request_object_iterable = rc.receive(input_socket)
@@ -46,16 +42,6 @@ async def pipeline(config: dm.Config):
         logger.debug(f"Batch completed {batch=}, {mapping=}")
         await snd.send(output_socket, batch)
         save_mapping(config=config, mapping=mapping)
-
-
-def update_config(config, config_path):
-    env = EnvYAML(config_path, strict=False)
-    config.zmq_input_address = env["zmq_input_address"]
-    config.zmq_output_address = env["zmq_output_address"]
-    config.db_file = env["db_file"]
-    config.create_db_file = env["create_db_file"]
-    config.send_batch_timeout = env["send_batch_timeout"]
-    return config
 
 
 def main():
@@ -76,12 +62,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
-
-    env_config_path = build_config_file(config, args.config, "batch_manager")
-
-    config = update_config(config, env_config_path)
-
+    config = read_config_with_env(dm.Config, args.config, "batch_manager")
     Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))
 

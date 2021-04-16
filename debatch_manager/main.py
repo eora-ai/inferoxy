@@ -12,23 +12,12 @@ import argparse
 from pathlib import Path
 
 from loguru import logger
-from envyaml import EnvYAML     # type: ignore
 
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
 from src.debatcher import debatch, pull_batch_mapping
-from shared_modules.parse_config import build_config_file
-
-
-def update_config(config, config_path):
-    env = EnvYAML(config_path, strict=False)
-    config.zmq_input_address = env["zmq_input_address"]
-    config.zmq_output_address = env["zmq_output_address"]
-    config.db_file = env["db_file"]
-    config.create_db_file = env["create_db_file"]
-    config.send_batch_mapping_timeout = env["send_batch_mapping_timeout"]
-    return config
+from shared_modules.parse_config import read_config_with_env
 
 
 def main():
@@ -51,11 +40,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
-
-    config_path_env = build_config_file(config, args.config, "debatch_manager")
-
-    config = update_config(config, config_path_env)
+    config = read_config_with_env(dm.Config, args.config, "debatch_manager")
 
     Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
         exist_ok=True, parents=True

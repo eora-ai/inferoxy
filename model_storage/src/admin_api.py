@@ -12,21 +12,22 @@ from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException
 from uvicorn.config import logger  # type: ignore
 
-import src.data_models as dm    # type: ignore
-import src.exceptions as exc  # type: ignore
-from src.schemas import Model  # type: ignore
-from src.database import Redis  # type: ignore
-from src.connector import Connector  # type: ignore
+from shared_modules.parse_config import read_config_with_env
+
+import src.data_models as dm
+import src.exceptions as exc
+from src.schemas import Model
+from src.database import Redis
+from src.connector import Connector
 
 app = FastAPI()
 
 
 def get_connection():
-    config_db = dm.DatabaseConfig(
-        host=os.environ.get("MODEL_STORAGE_DATABASE_HOST"),
-        port=os.environ.get("MODEL_STORAGE_DATABASE_PORT", 6379),
-        number=os.environ.get("MODEL_STORAGE_DATABASE_NUMBER", 0),
+    config: dm.Config = read_config_with_env(
+        dm.Config, "/etc/inferoxy/model_storage.yaml", "model_storage"
     )
+    config_db = config.database
     database = Redis(config_db)
     connector = Connector(database)
     yield connector

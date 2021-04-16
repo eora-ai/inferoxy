@@ -8,14 +8,15 @@ __email__ = "a.chertkov@eora.ru"
 import os
 import re
 from pathlib import Path
-from typing import Type, List, Any, Optional
+import typing
+from typing import Type, List, Any, Optional, Union
 
 import yaml
 from loguru import logger
 from pydantic import BaseModel
 
 
-def populate_config_with_env_values(
+def read_config_with_env(
     config_type: Type[BaseModel],
     config_path: Path,
     env_prefix: str,
@@ -36,10 +37,12 @@ def populate_config_with_env_values(
     logger.info(f"Read config for {env_prefix} from {config_path}")
     with open(config_path, "r") as file_:
         config_dict = yaml.full_load(file_)
+    logger.debug(f"Setted with environment: {config_dict}")
     new_config_dict = recursive_update_all_values(
         config_type, config_dict, [env_prefix]
     )
-    return config_type(new_config_dict)
+    logger.debug(f"Setted with environment: {new_config_dict}")
+    return config_type(**new_config_dict)
 
 
 def recursive_update_all_values(
@@ -51,8 +54,7 @@ def recursive_update_all_values(
 ) -> dict:
     """
     Recursive iterate over nested pydantic model structure
-    and set values to "$PREFIX_FIELD_NAME|value" format.
-    This is needed for envyaml on unmarshal read values from environment
+    and set values with values from env if exists.
 
     Parameters
     ----------
@@ -78,13 +80,47 @@ def recursive_update_all_values(
     if value_storage is None:
         value_storage = os.environ
 
-    result_dict = {}
+    result_dict: dict = {}
     for name, model_field in config_type.__fields__.items():
-        if not issubclass(model_field.type_, BaseModel):
+        is_nesting = False
+        is_branching = False
+        branches = []
+        try:
+            is_nesting = issubclass(model_field.type_, BaseModel)
+        except TypeError:
+            if isinstance(model_field.type_, typing._UnionGenericAlias):
+                is_branching = True
+                branches = model_field.type_.__args__
+        if not is_nesting and not is_branching:
             value = get_nested_key(config_values, index_prefixes + [name], None)
             env_name = make_env_name(name_prefixes, name)
             new_value = value_storage.get(env_name, value)
             set_nested_key(result_dict, index_prefixes, name, new_value)
+        elif is_branching:
+            branch_dicts = []
+            for branch in branches:
+                snake_name = camel_to_snake_case(branch.__name__)
+                cur = recursive_update_all_values(
+                    branch,
+                    config_values,
+                    name_prefixes + [snake_name],
+                    index_prefixes=index_prefixes + [camel_to_snake_case(name)],
+                    value_storage=value_storage,
+                )
+                cur["branch_name"] = branch.__name__
+                branch_dicts += [cur]
+            logger.info(branch_dicts)
+            try:
+                choose_function = model_field.field_info.extra["choose_function"]
+            except KeyError as exc:
+                raise ValueError(
+                    f"""You should provide choose_function to your field. 
+For example:  {name}: {model_field.type_} = Field(choose_function=lambda x: True)"""
+                ) from exc
+
+            result_branch_dict = next(filter(choose_function, branch_dicts))
+            del result_branch_dict["branch_name"]
+            set_nested_key(result_dict, index_prefixes, name, result_branch_dict[name])
         else:
             snake_name = camel_to_snake_case(name)
             result_dict.update(

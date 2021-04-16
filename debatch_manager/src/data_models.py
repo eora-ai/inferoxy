@@ -2,9 +2,7 @@
 Data object definitions
 """
 
-from typing import Union
-
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     Status,
@@ -20,7 +18,7 @@ from shared_modules.data_objects import (
 )
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     """
     Configuration of batch_manager
 
@@ -37,5 +35,5 @@ class Config(YamlModel):
     zmq_input_address: str
     zmq_output_address: str
     db_file: str
-    create_db_file: Union[bool, str]
-    send_batch_mapping_timeout: Union[float, str]
+    create_db_file: bool
+    send_batch_mapping_timeout: float

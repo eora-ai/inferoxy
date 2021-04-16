@@ -3,7 +3,7 @@ __email__ = "m.gafarova@eora.ru"
 
 from typing import Optional, Union
 
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     BaseConfig,
@@ -11,16 +11,16 @@ from shared_modules.data_objects import (
 )
 
 
-class DatabaseConfig(YamlModel):
+class DatabaseConfig(BaseModel):
     """
     Config for remote database
     """
 
     host: str
-    port: Union[int, str]
-    number: Union[int, str]
+    port: int
+    number: int
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     address: str
-    database: Optional[DatabaseConfig] = None
+    database: DatabaseConfig

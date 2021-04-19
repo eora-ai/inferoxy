@@ -25,7 +25,7 @@ class BaseCloudClient(ABC):
 
     def __init__(
         self,
-        config: Optional[dm.Config],
+        config: dm.Config,
     ):
         self.config = config
         self.context = zmq.asyncio.Context()

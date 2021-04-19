@@ -88,7 +88,7 @@ def recursive_update_all_values(
         try:
             is_nesting = issubclass(model_field.type_, BaseModel)
         except TypeError:
-            if isinstance(model_field.type_, typing._UnionGenericAlias):
+            if isinstance(model_field.type_, typing._UnionGenericAlias):  # type: ignore
                 is_branching = True
                 branches = model_field.type_.__args__
         if not is_nesting and not is_branching:
@@ -109,7 +109,6 @@ def recursive_update_all_values(
                 )
                 cur["branch_name"] = branch.__name__
                 branch_dicts += [cur]
-            logger.info(branch_dicts)
             try:
                 choose_function = model_field.field_info.extra["choose_function"]
             except KeyError as exc:
@@ -123,15 +122,14 @@ For example:  {name}: {model_field.type_} = Field(choose_function=lambda x: True
             set_nested_key(result_dict, index_prefixes, name, result_branch_dict[name])
         else:
             snake_name = camel_to_snake_case(name)
-            result_dict.update(
-                recursive_update_all_values(
-                    model_field.type_,
-                    config_values,
-                    name_prefixes + [snake_name],
-                    index_prefixes=index_prefixes + [snake_name.lower()],
-                    value_storage=value_storage,
-                )
+            nested_config = recursive_update_all_values(
+                model_field.type_,
+                config_values,
+                name_prefixes + [snake_name],
+                index_prefixes=index_prefixes + [snake_name.lower()],
+                value_storage=value_storage,
             )
+            merge_leafs_dicts(result_dict, nested_config)
 
     return result_dict
 
@@ -212,3 +210,14 @@ def camel_to_snake_case(inp: str) -> str:
     """
     name = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", inp)
     return re.sub("([a-z0-9])([A-Z])", r"\1_\2", name).lower()
+
+
+def merge_leafs_dicts(base_dict, append_dict):
+    """
+    Note: In place
+    """
+    for key in append_dict:
+        if key in base_dict:
+            merge_leafs_dicts(base_dict[key], append_dict[key])
+        else:
+            base_dict[key] = append_dict[key]

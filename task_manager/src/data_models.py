@@ -5,6 +5,7 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
 from dataclasses import dataclass
 from typing import List, Optional, Generic, TypeVar, Union
 
@@ -99,7 +100,14 @@ class Config(BaseModel):
     models: ModelsRunnerConfig
     max_running_instances: int = 10
     cloud_client: Union[DockerConfig, KubeConfig] = Field(
-        choose_function=lambda x: x["branch_name"] == "DockerConfig"
+        choose_function=lambda x: (
+            x["branch_name"] == "DockerConfig"
+            and os.environ.get("CLOUD_CLIENT", "docker") == "docker"
+        )
+        or (
+            x["branch_name"] == "KubeConfig"
+            and os.environ.get("CLOUD_CLIENT", "docker") == "kube"
+        )
     )
 
 

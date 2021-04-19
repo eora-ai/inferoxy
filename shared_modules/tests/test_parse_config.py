@@ -32,23 +32,25 @@ def test_recursive_update_all_values():
 
 
 def test_recursive_update_all_values_nested_structure():
-    class NestedConfig(BaseModel):
-        max_retries: int
-
     class AnotherNestedConfig(BaseModel):
         address: str
         foo: float
 
+    class NestedConfig(BaseModel):
+        max_retries: int
+        another_nested_config: AnotherNestedConfig
+
     class SampleConfigModel(BaseModel):
         test: str
         nested_config: NestedConfig
-        another_nested_config: AnotherNestedConfig
         timeout: float
 
     values = {
         "test": "hello",
-        "nested_config": {"max_retries": 12},
-        "another_nested_config": {"address": "google.com", "foo": 123},
+        "nested_config": {
+            "max_retries": 12,
+            "another_nested_config": {"address": "google.com", "foo": 123},
+        },
     }
     result = recursive_update_all_values(
         SampleConfigModel,
@@ -59,8 +61,10 @@ def test_recursive_update_all_values_nested_structure():
     assert result == {
         "test": "hello",
         "timeout": 3,
-        "nested_config": {"max_retries": 44},
-        "another_nested_config": {"address": "google.com", "foo": 123},
+        "nested_config": {
+            "max_retries": 44,
+            "another_nested_config": {"address": "google.com", "foo": 123},
+        },
     }
 
 

@@ -38,16 +38,10 @@ class DockerCloudClient(BaseCloudClient):
         self.uid_generator = uuid4_string_generator()
         self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
-        if self.config is None:
-            raise exc.CloudClientErrors(
-                "Docker config does not provided"
-            )  # Make config not optional
-        self.config: dm.Config = self.config
-
-        self.docker_config_optional: Optional[dm.DockerConfig] = self.config.docker
-        if self.docker_config_optional is None:
-            raise exc.CloudClientErrors("Docker config does not provided")
-        self.docker_config: dm.DockerConfig = self.docker_config_optional
+        if isinstance(self.config.cloud_client, dm.DockerConfig):
+            self.docker_config: dm.DockerConfig = self.config.cloud_client
+        else:
+            raise ValueError("Config cloud_client must be of type DockerConfig")
 
         try:
             self.client.login(

@@ -39,9 +39,9 @@ async def pipeline(
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
 
-    if not config.docker is None:
+    if isinstance(config.cloud_client, dm.DockerConfig):
         cloud_client: BaseCloudClient = DockerCloudClient(config)
-    elif not config.kube is None:
+    elif isinstance(config.cloud_client, dm.KubeConfig):
         cloud_client = KubeCloudClient(config)
     else:
         raise ValueError("Cloud client must be selected")

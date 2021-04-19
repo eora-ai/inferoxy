@@ -50,7 +50,7 @@ stub_config = dm.Config(
         stateful_checker=dm.StatefulChecker(keep_model=10),
     ),
     health_check=dm.HealthCheckerConfig(connection_idle_timeout=10),
-    clout_client=dm.DockerConfig(registry="", login="", password="", network=""),
+    cloud_client=dm.DockerConfig(registry="", login="", password="", network=""),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(

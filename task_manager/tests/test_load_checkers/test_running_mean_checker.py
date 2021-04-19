@@ -35,27 +35,14 @@ stub_config = dm.Config(
     gpu_all=[],
     load_analyzer=dm.LoadAnalyzerConfig(
         sleep_time=0,
-        trigger_pipeline=dm.TriggerPipelineConfig(
-            max_model_percent=60
-        ),
+        trigger_pipeline=dm.TriggerPipelineConfig(max_model_percent=60),
         running_mean=dm.RunningMeanConfig(
-            min_threshold=0,
-            max_threshold=10,
-            window_size=10
+            min_threshold=0, max_threshold=10, window_size=10
         ),
-        stateful_checker=dm.StatefulChecker(
-            keep_model=10
-        ),
+        stateful_checker=dm.StatefulChecker(keep_model=10),
     ),
-    docker=dm.DockerConfig(
-        registry="",
-        login="",
-        password="",
-        network=""
-    ),
-    health_check=dm.HealthCheckerConfig(
-        connection_idle_timeout=10
-    ),
+    cloud_client=dm.DockerConfig(registry="", login="", password="", network=""),
+    health_check=dm.HealthCheckerConfig(connection_idle_timeout=10),
     max_running_instances=10,
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(
@@ -76,9 +63,7 @@ async def test_requested_zero_models():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
-        min_threshold=0.1,
-        max_threshold=1,
-        window_size=3
+        min_threshold=0.1, max_threshold=1, window_size=3
     )
     checker = RunningMeanStatelessChecker(
         model_instances_storage=model_instances_storage,
@@ -99,9 +84,7 @@ async def test_low_load():
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
     stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
-        min_threshold=5,
-        max_threshold=10,
-        window_size=10
+        min_threshold=5, max_threshold=10, window_size=10
     )
     checker = RunningMeanStatelessChecker(
         model_instances_storage, input_batch_queue, output_batch_queue, stub_config
@@ -239,15 +222,10 @@ async def test_high_load():
         )
     )
     stub_config.load_analyzer.running_mean = dm.RunningMeanConfig(
-        min_threshold=0.1,
-        max_threshold=3,
-        window_size=3
+        min_threshold=0.1, max_threshold=3, window_size=3
     )
     checker = RunningMeanStatelessChecker(
-        model_instances_storage,
-        input_batch_queue,
-        output_batch_queue,
-        stub_config
+        model_instances_storage, input_batch_queue, output_batch_queue, stub_config
     )
 
     request_info1 = dm.RequestInfo(

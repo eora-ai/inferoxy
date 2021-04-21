@@ -34,7 +34,7 @@ def main():
     output_socket.setsockopt(zmq.IDENTITY, uid.encode("utf-8"))
     output_socket.connect("tcp://localhost:7788")
 
-    stateless = input("y/n: ") == "y"
+    stateless = input("stateless y/n: ") == "y"
     number_of_request = int(input("Number of request: "))
 
     image = Image.open("test.jpg")
@@ -47,20 +47,26 @@ def main():
         input_socket.send_pyobj(
             {
                 "source_id": uid,
-                "input": image_array,
-                "parameters": {"stateless": stateless, "index": i},
-                "model": "stub",
+                "model": "test",
+                "inputs": [
+                    {
+                        "data": image_array,
+                        "parameters": {"stateless": stateless, "index": i},
+                    }
+                ],
             }
         )
         logger.info(f"Sent {i}")
 
-    i = 1
-    while True:
+    i = 0
+    while i != number_of_request:
         result = output_socket.recv_pyobj()
-        print(result)
-        logger.info(
-            f"{i} -> {result['uid']} -> {result['response_info']['parameters']['index']}"
-        )
+        if result.get("error", None) is None:
+            logger.info(
+                f"{i} -> {result['source_id']} -> {result['outputs'][0]['parameters']['index']}"
+            )
+        else:
+            logger.info(f"{i} -> ❌ -> {result.get('error')}")
         i += 1
 
 

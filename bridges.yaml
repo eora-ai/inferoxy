@@ -1,0 +1,6 @@
+supervisord_config_path: /etc/supervisor/conf.d/supervisord.conf 
+bridges:
+  - name: zmq_bridge
+    directory: /app/zmq_bridge
+    command: python3 main.py
+    active: True

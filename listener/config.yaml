@@ -1,7 +1,0 @@
-batch_manager_input_address: ipc:///tmp/batch_manager/input
-debatch_manager_output_address: ipc:///tmp/debatch_manager/result
-model_storage_address: ipc:///tmp/model_storage
-
-zmq_python:
-  listen_address: "tcp://*:7787"
-  send_address: "tcp://*:7788"

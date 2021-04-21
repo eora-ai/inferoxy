@@ -96,12 +96,12 @@ def test_debatch_one():
 
 
 request_info4 = dm.RequestInfo(
-    input=[],
+    input=np.zeros((1,)),
     parameters={},
 )
 response_info4 = dm.ResponseInfo(
     output={},
-    picture=[],
+    picture=np.zeros((1,)),
     parameters={},
 )
 response_batch_empty = dm.ResponseBatch(

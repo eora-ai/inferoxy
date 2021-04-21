@@ -19,6 +19,7 @@ import src.receiver as rc
 import src.data_models as dm
 from src.builder import builder
 from src.saver import save_mapping
+from shared_modules.parse_config import read_config_with_env
 
 
 async def pipeline(config: dm.Config):
@@ -61,8 +62,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
-
+    config = read_config_with_env(dm.Config, args.config, "batch_manager")
     Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))
 

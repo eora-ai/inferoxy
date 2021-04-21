@@ -32,7 +32,7 @@ class TriggerPipeline:
         self.__cloud_client = cloud_client
         self.__model_instances_storage = model_instances_storage
         self.__max_model_percent = (
-            config.load_analyzer.trigger_pipeline.max_model_percent
+            float(config.load_analyzer.trigger_pipeline.max_model_percent)
         )
 
     def append(self, trigger: Trigger):

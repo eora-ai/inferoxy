@@ -18,6 +18,7 @@ import src.data_models as dm
 from src.cloud_clients import DockerCloudClient
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
+from shared_modules.parse_config import read_config_with_env
 
 
 model_object_fail = dm.ModelObject(
@@ -54,16 +55,7 @@ model_instance_fail = dm.ModelInstance(
 
 cur_path = pathlib.Path(__file__)
 config_path = cur_path.parent.parent.parent / "config.yaml"
-
-with open(config_path) as config_file:
-    config_dict = yaml.full_load(config_file)
-    config = dm.Config.from_dict(config_dict)
-    config.docker = dm.DockerConfig(
-        registry=os.environ.get("DOCKER_REGISTRY", ""),
-        login=os.environ.get("DOCKER_LOGIN", ""),
-        password=os.environ.get("DOCKER_PASSWORD", ""),
-        network=os.environ.get("DOCKER_NETWORK", ""),
-    )
+config = read_config_with_env(dm.Config, config_path, "task_manager")
 
 
 def test_image_doesnt_exist():

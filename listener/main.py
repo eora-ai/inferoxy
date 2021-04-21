@@ -8,6 +8,7 @@ import argparse
 
 from loguru import logger
 
+from shared_modules.parse_config import read_config_with_env
 from src.adapters.python_zeromq_adapter import ZMQPythonAdapter
 import src.data_models as dm
 
@@ -27,7 +28,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
+    config = read_config_with_env(dm.Config, args.config, "listener")
 
     adapter = ZMQPythonAdapter(config)
     logger.info("Listener started")

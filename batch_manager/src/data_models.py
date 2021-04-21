@@ -7,7 +7,7 @@ __email__ = "a.chertkov@eora.ru"
 from typing import List
 from dataclasses import dataclass, field
 
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     Status,
@@ -19,7 +19,7 @@ from shared_modules.data_objects import (
 )
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     """
     Configuration of batch_manager
 

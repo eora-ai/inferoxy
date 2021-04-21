@@ -17,6 +17,7 @@ import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
 from src.debatcher import debatch, pull_batch_mapping
+from shared_modules.parse_config import read_config_with_env
 
 
 def main():
@@ -39,7 +40,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
+    config = read_config_with_env(dm.Config, args.config, "debatch_manager")
 
     Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
         exist_ok=True, parents=True
@@ -86,7 +87,7 @@ async def pipeline(config: dm.Config):
                 break
             except IOError as exc:
                 logger.debug(f"Database locked try in {sleep_time}")
-                await asyncio.sleep(sleep_time)
+                await asyncio.sleep(float(sleep_time))
             except TypeError as exc:
                 logger.exception(f"Mapping doesnot exists for {response_batch=}")
                 break

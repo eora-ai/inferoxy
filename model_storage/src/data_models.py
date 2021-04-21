@@ -1,11 +1,9 @@
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
-import sys
-import pathlib
-from dataclasses import dataclass
+from typing import Optional, Union
 
-from pydantic_yaml import YamlModel     # type: ignore
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     BaseConfig,
@@ -13,15 +11,16 @@ from shared_modules.data_objects import (
 )
 
 
-class DatabaseConfig(YamlModel):
+class DatabaseConfig(BaseModel):
     """
     Config for remote database
     """
 
     host: str
     port: int
-    db_num: int
+    number: int
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     address: str
+    database: DatabaseConfig

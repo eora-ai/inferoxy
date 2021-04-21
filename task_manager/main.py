@@ -26,6 +26,7 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
+from shared_modules.parse_config import read_config_with_env
 
 urllib3.disable_warnings()
 
@@ -41,9 +42,9 @@ async def pipeline(
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
 
-    if not config.docker is None:
+    if isinstance(config.cloud_client, dm.DockerConfig):
         cloud_client: BaseCloudClient = DockerCloudClient(config)
-    elif not config.kube is None:
+    elif isinstance(config.cloud_client, dm.KubeConfig):
         cloud_client = KubeCloudClient(config)
     else:
         raise ValueError("Cloud client must be selected")
@@ -115,24 +116,7 @@ def main():
     )
     args = parser.parse_args()
 
-    config = dm.Config.parse_file(args.config, content_type="yaml")
-    logger.debug(f" CONFIG {config}")
-    logger.debug(os.environ.get("CLOUD_CLIENT"))
-    if os.environ.get("CLOUD_CLIENT") == "docker":
-        config.docker = dm.DockerConfig(
-            registry=os.environ.get("DOCKER_REGISTRY"),
-            login=os.environ.get("DOCKER_LOGIN"),
-            password=os.environ.get("DOCKER_PASSWORD"),
-            network=os.environ.get("DOCKER_NETWORK"),
-        )
-        config.kube = None
-    elif os.environ.get("CLOUD_CLIENT") == "kube":
-        config.kube.address = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
-        config.kube.token = os.environ.get("KUBERNETES_API_TOKEN")
-        config.kube.namespace = os.environ.get("KUBERNETES_NAMESPACE")
-        config.kube.create_timeout = config.kube.create_timeout
-        config.docker = None
-
+    config: dm.Config = read_config_with_env(dm.Config, args.config, "task_manager")
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 
     logging.getLogger("asyncio").setLevel(logging.DEBUG)

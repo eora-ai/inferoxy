@@ -10,11 +10,11 @@ from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, asdict
 from typing import List, Tuple, Optional, NewType, Union, Any, Iterator
-
 import numpy as np  # type: ignore
 from pydantic import BaseModel
 
 import numpy as np  # type: ignore
+from pydantic import BaseModel
 
 
 @dataclass
@@ -302,13 +302,12 @@ class ResponseBatch(MinimalBatchObject):
         return hash(self.uid)
 
 
-class BaseConfig:
+class BaseConfig(BaseModel):
     """
     Generic type of config
     """
 
 
-@dataclass
 class ZMQConfig(BaseConfig):
     """
     Config for ZMQ senders receivers
@@ -320,7 +319,6 @@ class ZMQConfig(BaseConfig):
     rcvtimeo: int
 
 
-@dataclass
 class PortConfig(BaseConfig):
     """
     Config for sender/receiver ports

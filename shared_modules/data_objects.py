@@ -361,8 +361,9 @@ class OutputModel(BaseModel):
     shape: Optional[List[int]]
     datatype: Optional[DataTypes]
     data: Any
-    output: dict
-    parameters: dict
+    output: Optional[dict]
+    parameters: Optional[dict]
+    error: Optional[str]
 
     class Config:
         arbitrary_types_allowed = True
@@ -372,5 +373,4 @@ class OutputModel(BaseModel):
 class ResponseModel(BaseModel):
     model: str
     outputs: Optional[List[OutputModel]]
-    error: Optional[str]
     source_id: str

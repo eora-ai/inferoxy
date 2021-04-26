@@ -16,7 +16,7 @@ run-in:
 		  $(COMMAND)
 run-dev:
 	docker run --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
-	  -p 7787:7787 -p 7788:7788 -p 8000:8000\
+	  -p 7787:7787 -p 7788:7788 -p 8000:8000 -p 8698:8698\
 	  --name inferoxy --rm \
 	  --network inferoxy \
 	  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \

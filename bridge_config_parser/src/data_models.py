@@ -9,7 +9,6 @@ from typing import List
 from pathlib import Path
 
 from pydantic import BaseModel
-from pydantic_yaml import YamlModel  # type: ignore
 
 
 class BridgeDescription(BaseModel):
@@ -34,7 +33,7 @@ class BridgeDescription(BaseModel):
     active: bool
 
 
-class Config(YamlModel):
+class Config(BaseModel):
     """
     Config of the bridge
     """

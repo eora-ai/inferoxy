@@ -16,7 +16,7 @@ from loguru import logger
 import pydantic
 
 import src.data_models as dm
-from shared_modules import bridge_utils
+from shared_modules import bridge_utils, parse_config
 
 
 async def receive_input(
@@ -52,8 +52,8 @@ async def receive_output(input_socket: zmq.Socket, output_socket: zmq.Socket):
         result_object: dm.ResponseObject = await input_socket.recv_pyobj()
         logger.info(f"Processed object with {result_object.source_id=}")
         try:
-            output_model: dm.ResponseModel = bridge_utils.response_object_to_output(
-                result_object, keep_numpy=True
+            output_model: dm.ResponseModel = bridge_utils.response_objects_to_output(
+                [result_object], keep_numpy=True
             )
         except pydantic.ValidationError as exc:
             logger.exception(exc)
@@ -107,7 +107,9 @@ def main():
         default="/etc/inferoxy/zmq_bridge.yaml",
     )
     args = parser.parse_args()
-    config = dm.Config.parse_file(args.config, content_type="yaml")
+    config = parse_config.read_config_with_env(
+        dm.Config, args.config, env_prefix="zmq_bridge"
+    )
     asyncio.run(pipeline(config))
 
 

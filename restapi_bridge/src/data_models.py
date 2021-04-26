@@ -1,5 +1,5 @@
-__author__ = "Madina Gafarova"
-__email__ = "m.gafarova@eora.ru"
+__author__ = "Andrey Chertkov"
+__email__ = "a.chertkov@eora.ru"
 
 from typing import List, Any, Optional
 
@@ -15,9 +15,6 @@ from shared_modules.data_objects import (
     RequestModel,
     OutputModel,
     ResponseModel,
-    # For test
-    ModelObject,
-    BatchMapping,
 )
 
 
@@ -29,5 +26,3 @@ class Config(BaseModel):
     batch_manager_address: str
     debatch_manager_address: str
     model_storage_address: str
-    listen_address: str
-    send_address: str

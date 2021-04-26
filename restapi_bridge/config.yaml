@@ -1,0 +1,3 @@
+batch_manager_address: ipc:///tmp/batch_manager/input
+debatch_manager_address: ipc:///tmp/debatch_manager/result
+model_storage_address: ipc:///tmp/model_storage

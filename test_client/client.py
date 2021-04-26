@@ -17,7 +17,7 @@ def main():
         "http://localhost:8000/models",
         json={
             "name": "stub",
-            "address": "registry.visionhub.ru/models/stub:v5",
+            "address": "public.registry.visionhub.ru/models/test:v5",
             "stateless": True,
             "batch_size": 128,
             "run_on_gpu": False,

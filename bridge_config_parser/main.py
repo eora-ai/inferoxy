@@ -9,6 +9,7 @@ import os
 import sys
 import argparse
 
+import yaml
 from loguru import logger
 
 import src.data_models as dm
@@ -32,7 +33,9 @@ def main():
         default="/etc/inferoxy/bridges.yaml",
     )
     args = parser.parse_args()
-    config: dm.Config = dm.Config.parse_file(args.config, content_type="yaml")
+    with open(args.config, "r") as file_:
+        config_dict = yaml.full_load(file_)
+    config = dm.Config(**config_dict)
     supervisord_config = bridges_to_supervisord(config.bridges)
 
     with open(config.supervisord_config_path, "a") as supervisord_config_file:

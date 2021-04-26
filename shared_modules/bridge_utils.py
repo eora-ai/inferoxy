@@ -86,51 +86,56 @@ def convert_input_model(input_model: dm.InputModel) -> dm.RequestInfo:
     else:
         array = np.array(input_model.data)
     if input_model.datatype:
-        array.astype(input_model.datatype.value)
+        array = array.astype(input_model.datatype)
     if input_model.shape:
-        array.astype(input_model.shape)
+        array = array.reshape(input_model.shape)
 
     return dm.RequestInfo(input=array, parameters=input_model.parameters)
 
 
-def response_object_to_output(
-    response_object: dm.ResponseObject, keep_numpy: bool = False
+def response_objects_to_output(
+    response_objects: List[dm.ResponseObject], keep_numpy: bool = False
 ) -> dm.ResponseModel:
     """
     Convert response object intou output model
     """
 
-    output_models = None
-    if not response_object.error and response_object.response_info:
-
+    output_models = []
+    model = None
+    for response_object in response_objects:
+        model = response_object.model.name
+        source_id = response_object.source_id
         response_info = response_object.response_info
         shape = None
         datatype = None
         data = None
-        if response_info.picture:
+        parameters = {}
+        output = None
+        if response_info is not None and response_info.picture is not None:
             shape = response_info.picture.shape
             datatype = str(response_info.picture.dtype)
             if not keep_numpy:
-                data = response_info.picture.reshape((-1,))
+                data = response_info.picture.reshape((-1,)).tolist()
             else:
                 data = response_info.picture
-        output_models = [
+            parameters = response_info.parameters
+            output = response_info.output
+        output_models += [
             dm.OutputModel(
                 shape=shape,
                 datatype=datatype,
                 data=data,
-                parameters=response_info.parameters,
-                output=response_info.output,
+                parameters=parameters,
+                output=output,
+                error=response_object.error,
             )
         ]
 
     response_model = dm.ResponseModel(
-        model=response_object.model.name,
+        model=model,
         outputs=output_models,
-        error=response_object.error,
-        source_id=response_object.source_id,
+        source_id=source_id,
     )
-
     return response_model
 
 

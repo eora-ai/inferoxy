@@ -51,6 +51,8 @@ tests:
 
 coverage:
   stage: code-cov
+  needs: 
+    - tests
   before_script:
     - pip install virtualenv
     - virtualenv venv

@@ -24,6 +24,7 @@ cache:
 
 stages:
   - test
+  - code-cov
   - build
 
 
@@ -47,6 +48,21 @@ tests:
     - mypy model_storage
     - pytest task_manager
     - mypy task_manager
+
+coverage:
+  stage: code-cov
+  before_script:
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install -r requirements.txt
+    - pip install -r requirements-dev.txt
+  script:
+    - ./entrypoint COVERAGE | tee public/coverage.txt
+  artifacts:
+    paths:
+        - public/coverage.txt
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
 
 build_release_image:
   image: docker:latest

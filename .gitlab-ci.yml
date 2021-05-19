@@ -60,7 +60,7 @@ coverage:
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
   script:
-    - ./entrypoint COVERAGE | tee public/coverage.txt
+    - ./entrypoint COVERAGE > public/coverage.txt
   artifacts:
     paths:
         - public/coverage.txt

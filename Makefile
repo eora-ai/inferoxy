@@ -8,12 +8,12 @@ build:
 run-in:
 	docker run --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  -p 7787:7787 -p 7788:7788 \
-	  --name inferoxy --rm \
+	  --name inferoxy --rm  \
 	  --network inferoxy \
 	  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \
 	  -it \
 	  registry.visionhub.ru/inferoxy:${INFEROXY_VERSION} \
-		  $(COMMAND)
+	  $(COMMAND)
 run-dev:
 	docker run --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  -p 7787:7787 -p 7788:7788 -p 8000:8000 -p 8698:8698\
@@ -27,3 +27,10 @@ clean:
 
 push:
 	docker push registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
+
+test:
+	make build
+	make run-in COMMAND="./entrypoint.sh TEST"
+coverage:
+	make build
+	make run-in COMMAND="./entrypoint.sh COVERAGE"

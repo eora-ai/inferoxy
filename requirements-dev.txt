@@ -8,3 +8,4 @@ Pillow
 opencv-python
 aiomonitor
 moviepy
+coverage

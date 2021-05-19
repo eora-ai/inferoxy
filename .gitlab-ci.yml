@@ -59,6 +59,7 @@ coverage:
     - source venv/bin/activate
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
+    - mkdir -p public
   script:
     - ./entrypoint.sh COVERAGE | tee public/coverage.txt
   artifacts:

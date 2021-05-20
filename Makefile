@@ -12,8 +12,10 @@ run-in:
 	  --network inferoxy \
 	  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \
 	  -it \
+	  --entrypoint="$(ENTRYPOINT)" \
 	  registry.visionhub.ru/inferoxy:${INFEROXY_VERSION} \
-		  $(COMMAND)
+	  $(COMMAND)
+
 run-dev:
 	docker run --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  -p 7787:7787 -p 7788:7788 -p 8000:8000 -p 8698:8698\
@@ -27,3 +29,15 @@ clean:
 
 push:
 	docker push registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
+
+generate-grpc-protos:
+	make build
+	rm -rf grpc_bridge/protos/
+	docker run -d --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
+		  --name inferoxy-generator --rm \
+		  --network inferoxy \
+		  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \
+		  registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
+	sleep 3
+	docker cp inferoxy-generator:/app/grpc_bridge/protos ./grpc_bridge/protos
+	docker stop inferoxy-generator

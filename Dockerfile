@@ -18,6 +18,7 @@ COPY batch_manager/config.yaml /etc/inferoxy/batch_manager.yaml
 COPY debatch_manager/config.yaml /etc/inferoxy/debatch_manager.yaml
 COPY zmq_bridge/config.yaml /etc/inferoxy/zmq_bridge.yaml
 COPY restapi_bridge/config.yaml /etc/inferoxy/restapi_bridge.yaml
+COPY grpc_bridge/config.yaml /etc/inferoxy/grpc_bridge.yaml
 COPY model_storage/config.yaml /etc/inferoxy/model_storage.yaml
 COPY bridges.yaml /etc/inferoxy/bridges.yaml
 
@@ -27,4 +28,4 @@ EXPOSE 7787
 EXPOSE 7788
 EXPOSE 8000
 
-CMD ["/app/entrypoint.sh"]
+ENTRYPOINT /app/entrypoint.sh

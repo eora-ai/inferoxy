@@ -1,0 +1,1 @@
+from .infer_service import get_inference_service

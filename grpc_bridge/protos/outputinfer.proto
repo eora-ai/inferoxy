@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "protos/inferdata.proto";
+import "protos/parametermessage.proto";
+
+
+message OutputInfer {
+    repeated int32 shape = 1;
+    string datatype = 2;
+    string output = 3;
+    string error = 4;
+    InferData data = 5;
+    map<string, ParameterMessage> parameters = 6;
+}

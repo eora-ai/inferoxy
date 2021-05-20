@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "protos/outputinfer.proto";
+
+
+message InferResult {
+    string model = 1;
+    string source_id = 2;
+    repeated OutputInfer outputs = 3;
+}

@@ -8,3 +8,7 @@ bridges:
     directory: /app/restapi_bridge
     command: uvicorn main:app --host 0.0.0.0 --port 8698
     active: True
+  - name: grpc_bridge
+    directory: /app/grpc_bridge
+    command: python3 main.py
+    active: True

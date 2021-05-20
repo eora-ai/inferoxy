@@ -6,9 +6,11 @@ __pycache__
 .DS_Store
 .env.dev
 .env
+.envrc
 *.jpg
 *.wav
 *.png
 *.mp4
 *.mp3
 config_env.yaml
+models.yaml

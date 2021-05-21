@@ -26,8 +26,6 @@ class ReceiverStreamsCombiner:
         Queue where will be placed result, dm.ResponseBatch objects.
     """
 
-    BREAK = "BREAK"
-
     def __init__(self, output_batch_queue: OutputBatchQueue):
         self.output_batch_queue = output_batch_queue
         self.tasks: Dict[
@@ -60,7 +58,7 @@ class ReceiverStreamsCombiner:
         """
         logger.debug("Try to remove listener")
         self.receivers_to_delete.append(receiver)
-        logger.info("Listener is removed")
+        logger.debug("Listener is removed")
 
     def stop(self):
         """

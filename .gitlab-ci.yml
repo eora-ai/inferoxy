@@ -52,6 +52,8 @@ unit-tests:
 end-to-end-tests:
   image: docker: latest
   stage: end-to-end-test
+  tags:
+    - ml-main
   needs:
     - unit-test
   before_script:

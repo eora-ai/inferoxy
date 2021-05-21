@@ -44,6 +44,9 @@ generate-grpc-protos:
 
 end-to-end-testing:
 	make build
+	make generate-stub-env
+	docker create network inferoxy
+	docker run --network inferoxy -d --name redis-${REDIS_CONTAINER_SUFFIX} --rm redis:latest
 	docker run -d --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 		  --name inferoxy-${INFEROXY_CONTAINER_SUFFIX} --rm \
 		  --network inferoxy \
@@ -51,7 +54,9 @@ end-to-end-testing:
 		  registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
 	sleep 3
 	make run-testing-container
+	# clean up
 	docker stop inferoxy-${INFEROXY_CONTAINER_SUFFIX}
+	docker stop redis-${REDIS_CONTAINER_SUFFIX}
 
 run-testing-container:
 	docker build testing_container testing_container:${TESTING_CONTAINER_VERSION}
@@ -60,6 +65,13 @@ run-testing-container:
 	  --networ inferoxy \
 	  testing_container:${TESTING_CONTAINER_VERSION} | tee public/inferoxy-end-to-end-report.txt
 
-
-	  
-	
+generate-stub-env:
+	echo "CLOUD_CLIENT=docker" > .env.dev
+	echo "TASK_MANAGER_DOCKER_CONFIG_REGISTRY=registry.visionhub.ru" >> .env.dev
+	echo "TASK_MANAGER_DOCKER_CONFIG_LOGIN=${DOCKER_REGISTRY_PASSWORD}" >> .env.dev
+	echo "TASK_MANAGER_DOCKER_CONFIG_PASSWORD=${DOCKER_REGISTRY_PASSWORD}" >> .env.dev
+	echo "TASK_MANAGER_DOCKER_CONFIG_NETWORK=inferoxy" >> .env.dev
+	echo "MODEL_STORAGE_DATABASE_HOST=redis-${REDIS_CONTAINER_SUFFIX}" >> .env.dev
+	echo "MODEL_STORAGE_DATABASE_PORT=6379" >> .env.dev
+	echo "MODEL_STORAGE_DATABASE_NUMBER=0" >> .env.dev
+	echo "LOGGING_LEVEL=DEBUG" >> .env.dev

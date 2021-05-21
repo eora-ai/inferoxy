@@ -23,12 +23,13 @@ cache:
     - venv/
 
 stages:
-  - test
+  - unit-test
+  - end-to-end-test
   - build
 
 
-tests:
-  stage: test
+unit-tests:
+  stage: unit-test
   before_script:
     - pip install virtualenv
     - virtualenv venv
@@ -47,6 +48,23 @@ tests:
     - mypy model_storage
     - pytest task_manager
     - mypy task_manager
+
+end-to-end-tests:
+  image: docker: latest
+  stage: end-to-end-test
+  needs:
+    - unit-test
+  before_script:
+    - mkdir -p public/inferoxy-end-to-end-report.txt
+  script:
+    - echo "Integration testing"
+    - export INFEROXY_VERSION=$CI_COMMIT_SHORT_SHA
+    - export INFEROXY_CONTAINER_SUFFIX=$CI_COMMIT_SHORT_SHA
+    - export TESTING_CONTAINER_VERSION=$CI_COMMIT_SHORT_SHA
+    - make end-to-end-testing
+  artifacts:
+    paths:
+      - public/inferoxy-end-to-end-testing.txt
 
 build_release_image:
   image: docker:latest

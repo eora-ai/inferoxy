@@ -21,7 +21,7 @@ from src.schemas import Model
 from src.database import Redis
 from src.connector import Connector
 
-log_level = os.getenv("LOGGING_LEVEL")
+log_level = os.getenv("LOGGING_LEVEL", "INFO")
 recreate_logger(log_level, "MODEL_STORAGE_API")
 
 app = FastAPI()

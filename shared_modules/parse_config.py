@@ -94,8 +94,17 @@ def recursive_update_all_values(
         if not is_nesting and not is_branching:
             value = get_nested_key(config_values, index_prefixes + [name], None)
             env_name = make_env_name(name_prefixes, name)
+
             new_value = value_storage.get(env_name, value)
+
+            # If value is separate by coma, than split and put into config
+            if isinstance(new_value, str):
+                new_value = new_value.split(",")
+                if len(new_value) == 1:
+                    new_value = new_value[0]
+
             set_nested_key(result_dict, index_prefixes, name, new_value)
+
         elif is_branching:
             branch_dicts = []
             for branch in branches:

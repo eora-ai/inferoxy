@@ -3,7 +3,7 @@ Entry point of debatch manager
 """
 
 __author__ = "Madina Gafarova"
-__email__ = "m.gafarova@eora.ru"
+__EMAIL__ = "M.gafarova@eora.ru"
 
 import os
 import sys
@@ -18,6 +18,7 @@ import src.receiver as rc
 import src.data_models as dm
 from src.debatcher import debatch, pull_batch_mapping
 from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 
 def main():
@@ -26,8 +27,7 @@ def main():
     """
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "DEBATCH_MANAGER")
 
     logger.info("Read config file")
 

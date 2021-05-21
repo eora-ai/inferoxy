@@ -14,7 +14,9 @@ from loguru import logger
 
 from grpcalchemy.config import DefaultConfig
 
+from shared_modules.utils import recreate_logger
 from shared_modules.parse_config import read_config_with_env
+
 from src.services import get_inference_service
 import src.data_models as dm
 
@@ -22,9 +24,7 @@ import src.data_models as dm
 if __name__ == "__main__":
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "GRPC_BRIDGE")
 
     parser = argparse.ArgumentParser(description="Task manager process")
     parser.add_argument(

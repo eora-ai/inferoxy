@@ -15,6 +15,9 @@ from pathlib import Path
 
 from loguru import logger
 
+from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
+
 import src.receiver as rc
 import src.sender as snd
 import src.data_models as dm
@@ -26,7 +29,6 @@ from src.model_instances_storage import ModelInstancesStorage
 from src.batch_processing.queue_processing import send_to_model
 from src.receiver_streams_combiner import ReceiverStreamsCombiner
 from src.health_checker.health_checker_pipeline import HealthCheckerPipeline
-from shared_modules.parse_config import read_config_with_env
 
 urllib3.disable_warnings()
 
@@ -103,9 +105,7 @@ def main():
 
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "TASK_MANAGER")
 
     parser = argparse.ArgumentParser(description="Task manager process")
     parser.add_argument(

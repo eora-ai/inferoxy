@@ -4,6 +4,7 @@ Entry point of model storage
 __author__ = "Madina Gafarova"
 __email__ = "m.gafarova@eora.ru"
 
+import os
 import asyncio
 import argparse
 
@@ -15,6 +16,7 @@ from src.connector import Connector
 from src.database import Redis
 import src.data_models as dm
 from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 
 async def pipeline(config: dm.Config):
@@ -57,6 +59,9 @@ def main():
     Entry point of model storage
     run asyncio pipeline
     """
+
+    log_level = os.getenv("LOGGING_LEVEL")
+    recreate_logger(log_level, "MODEL_STORAGE")
 
     parser = argparse.ArgumentParser(description="Model storage process")
     parser.add_argument(

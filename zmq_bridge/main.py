@@ -15,8 +15,10 @@ import zmq.asyncio  # type: ignore
 from loguru import logger
 import pydantic
 
-import src.data_models as dm
 from shared_modules import bridge_utils, parse_config
+from shared_modules.utils import recreate_logger
+
+import src.data_models as dm
 
 
 async def receive_input(
@@ -95,8 +97,7 @@ async def pipeline(config: dm.Config):
 
 def main():
     log_level = os.getenv("LOGGING_LEVEL")
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "ZMQ_BRIDGE")
 
     logger.info("Read config file")
     parser = argparse.ArgumentParser(description="Listener process")

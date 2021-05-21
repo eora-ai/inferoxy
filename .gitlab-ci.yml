@@ -50,7 +50,7 @@ unit-tests:
     - mypy task_manager
 
 end-to-end-tests:
-  image: docker: latest
+  image: docker:latest
   stage: end-to-end-test
   tags:
     - ml-main

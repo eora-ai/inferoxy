@@ -57,6 +57,7 @@ end-to-end-tests:
   needs:
     - unit-tests
   before_script:
+    - apk add --no-cache make
     - mkdir -p public/inferoxy-end-to-end-report.txt
   script:
     - echo "Integration testing"

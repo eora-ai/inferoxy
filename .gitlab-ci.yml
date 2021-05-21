@@ -55,7 +55,7 @@ end-to-end-tests:
   tags:
     - ml-main
   needs:
-    - unit-test
+    - unit-tests
   before_script:
     - mkdir -p public/inferoxy-end-to-end-report.txt
   script:

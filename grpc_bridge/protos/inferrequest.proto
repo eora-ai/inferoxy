@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "protos/inputinferrequest.proto";
+
+
+message InferRequest {
+    string source_id = 1;
+    string model = 2;
+    repeated InputInferRequest inputs = 3;
+}

@@ -59,7 +59,7 @@ end-to-end-testing:
 	docker stop redis-${REDIS_CONTAINER_SUFFIX}
 
 run-testing-container:
-	docker build testing_container testing_container:${TESTING_CONTAINER_VERSION}
+	docker build -t testing_container:${TESTING_CONTAINER_VERSION} testing_container 
 	docker run -d --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  --name inferoxy-testing-${INFEROXY_CONTAINER_SUFFIX} --rm \
 	  --networ inferoxy \

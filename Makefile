@@ -47,7 +47,7 @@ end-to-end-testing:
 	make generate-stub-env
 	docker network create inferoxy
 	docker run --network inferoxy -d --name redis-${REDIS_CONTAINER_SUFFIX} --rm redis:latest
-	docker run -d --env-file .env.dev --gpus all -v /var/run/docker.sock:/var/run/docker.sock \
+	docker run -d --env-file .env.dev --gpus '"device=2,3"' -v /var/run/docker.sock:/var/run/docker.sock \
 		  --name inferoxy-${INFEROXY_CONTAINER_SUFFIX} --rm \
 		  --network inferoxy \
 		  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \

@@ -76,3 +76,10 @@ generate-stub-env:
 	echo "MODEL_STORAGE_DATABASE_PORT=6379" >> .env.dev
 	echo "MODEL_STORAGE_DATABASE_NUMBER=0" >> .env.dev
 	echo "LOGGING_LEVEL=DEBUG" >> .env.dev
+
+generate-stub-model-yaml:
+	echo "stub:" > models.yaml
+	echo "  address: public.registry.visionhub.ru/models/test:v4" >> models.yaml
+	echo "  batch_size: 256" >> models.yaml
+	echo "  run_on_gpu: False" >> models.yaml
+	echo "  stateless: True" >> models.yaml

@@ -58,7 +58,7 @@ end-to-end-tests:
     - unit-tests
   before_script:
     - apk add --no-cache make
-    - mkdir -p public/inferoxy-end-to-end-report.txt
+    - mkdir -p public
   script:
     - echo "Integration testing"
     - export INFEROXY_VERSION=$CI_COMMIT_SHORT_SHA

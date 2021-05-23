@@ -61,7 +61,7 @@ end-to-end-tests:
     - mkdir -p public/inferoxy-end-to-end-report.txt
   script:
     - echo "Integration testing"
-    - docker run -rm -t --gpus all nvidia/cuda:11.3.0-cudnn8-runtime-centos8 nvidia-smi
+    - docker run --rm -t --gpus all nvidia/cuda:11.3.0-cudnn8-runtime-centos8 nvidia-smi
     - docker rmi nvidia/cuda:11.3.0-cudnn8-runtime-centos8
     - export INFEROXY_VERSION=$CI_COMMIT_SHORT_SHA
     - export INFEROXY_CONTAINER_SUFFIX=$CI_COMMIT_SHORT_SHA

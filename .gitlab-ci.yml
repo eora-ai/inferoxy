@@ -67,7 +67,7 @@ end-to-end-tests:
     - make end-to-end-testing
   artifacts:
     paths:
-      - public/inferoxy-end-to-end-testing.txt
+      - public/inferoxy-end-to-end-report.txt
 
 build_release_image:
   image: docker:latest

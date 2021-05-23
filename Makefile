@@ -47,7 +47,7 @@ end-to-end-testing:
 	make generate-stub-env
 	docker network create inferoxy
 	docker run --network inferoxy -d --name redis-${REDIS_CONTAINER_SUFFIX} --rm redis:latest
-	docker run -d --env-file .env.dev --gpus '"device=2,3"' -v /var/run/docker.sock:/var/run/docker.sock \
+	docker run -d --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 		  --name inferoxy-${INFEROXY_CONTAINER_SUFFIX} --rm \
 		  --network inferoxy \
 		  -v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \
@@ -71,7 +71,7 @@ generate-stub-env:
 	echo "TASK_MANAGER_DOCKER_CONFIG_LOGIN=${DOCKER_REGISTRY_PASSWORD}" >> .env.dev
 	echo "TASK_MANAGER_DOCKER_CONFIG_PASSWORD=${DOCKER_REGISTRY_PASSWORD}" >> .env.dev
 	echo "TASK_MANAGER_DOCKER_CONFIG_NETWORK=inferoxy" >> .env.dev
-	echo "TASK_MANAGER_DOCKER_GPU_ALL=0,1,2,3"
+	#echo "TASK_MANAGER_DOCKER_GPU_ALL=0,1,2,3"
 	echo "MODEL_STORAGE_DATABASE_HOST=redis-${REDIS_CONTAINER_SUFFIX}" >> .env.dev
 	echo "MODEL_STORAGE_DATABASE_PORT=6379" >> .env.dev
 	echo "MODEL_STORAGE_DATABASE_NUMBER=0" >> .env.dev

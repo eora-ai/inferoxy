@@ -3,6 +3,9 @@
 # https://hub.docker.com/r/library/python/tags/
 image: python:3.9
 
+services:
+  - docker:dind
+
 # Change pip's cache directory to be inside the project directory since we can
 # only cache local items.
 variables:
@@ -47,7 +50,7 @@ unit-tests:
     - mypy task_manager
 
 end-to-end-tests:
-  image: docker:dind
+  image: docker:latest
   stage: end-to-end-test
   tags:
     - ml-main
@@ -56,7 +59,6 @@ end-to-end-tests:
   before_script:
     - apk add --no-cache make
     - mkdir -p public/inferoxy-end-to-end-report.txt
-    - dockerd &
   script:
     - echo "Integration testing"
     - export INFEROXY_VERSION=$CI_COMMIT_SHORT_SHA
@@ -68,11 +70,10 @@ end-to-end-tests:
       - public/inferoxy-end-to-end-testing.txt
 
 build_release_image:
-  image: docker:dind
+  image: docker:latest
   stage: build
   before_script:
     - apk add --no-cache make
-    - dockerd &
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
   script:
     - export INFEROXY_VERSION=$CI_COMMIT_TAG

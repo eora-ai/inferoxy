@@ -61,7 +61,7 @@ end-to-end-tests:
     - mkdir -p public/inferoxy-end-to-end-report.txt
   script:
     - echo "Integration testing"
-    - docker run --runtime=nvidia --rm nvidia/cuda:9.0-base nvidia-smi
+    - docker run --gpu "all" --rm nvidia/cuda:9.0-base nvidia-smi
     - export INFEROXY_VERSION=$CI_COMMIT_SHORT_SHA
     - export INFEROXY_CONTAINER_SUFFIX=$CI_COMMIT_SHORT_SHA
     - export TESTING_CONTAINER_VERSION=$CI_COMMIT_SHORT_SHA

@@ -62,7 +62,7 @@ run-testing-container:
 	docker build -t testing_container:${TESTING_CONTAINER_VERSION} testing_container 
 	docker run -d --env-file .env.dev -v /var/run/docker.sock:/var/run/docker.sock \
 	  --name inferoxy-testing-${INFEROXY_CONTAINER_SUFFIX} --rm \
-	  --networ inferoxy \
+	  --network inferoxy \
 	  testing_container:${TESTING_CONTAINER_VERSION} | tee public/inferoxy-end-to-end-report.txt
 
 generate-stub-env:

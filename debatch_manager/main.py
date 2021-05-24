@@ -3,7 +3,7 @@ Entry point of debatch manager
 """
 
 __author__ = "Madina Gafarova"
-__EMAIL__ = "M.gafarova@eora.ru"
+__email__ = "m.gafarova@eora.ru"
 
 import os
 import sys

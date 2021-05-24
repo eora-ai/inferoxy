@@ -13,12 +13,16 @@ from fastapi import FastAPI, Depends, HTTPException
 from uvicorn.config import logger  # type: ignore
 
 from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 import src.data_models as dm
 import src.exceptions as exc
 from src.schemas import Model
 from src.database import Redis
 from src.connector import Connector
+
+log_level = os.getenv("LOGGING_LEVEL", "INFO")
+recreate_logger(log_level, "MODEL_STORAGE_API")
 
 app = FastAPI()
 

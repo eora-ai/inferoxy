@@ -1,3 +1,4 @@
+import os
 from uuid import uuid4
 
 from loguru import logger
@@ -11,7 +12,12 @@ from shared_modules.bridge_utils import (
     response_objects_to_output,
 )
 from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
+
 import src.data_models as dm
+
+log_level = os.getenv("LOGGING_LEVEL")
+recreate_logger(log_level, "RESTAPI_BRIDGE")
 
 
 app = FastAPI()

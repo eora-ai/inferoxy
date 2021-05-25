@@ -5,8 +5,11 @@
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
+import os
 from dataclasses import dataclass
-from typing import List, Optional, Generic, TypeVar
+from typing import List, Optional, Generic, TypeVar, Union
+
+from pydantic import BaseModel, Field
 
 from src.utils.data_transfers.sender import BaseSender
 from src.utils.data_transfers.receiver import BaseReceiver
@@ -24,7 +27,6 @@ from shared_modules.data_objects import (
 )
 
 
-@dataclass
 class RunningMeanConfig(BaseConfig):
     """
     Config for `RunningMeanStatelessChecker`
@@ -35,7 +37,6 @@ class RunningMeanConfig(BaseConfig):
     window_size: int
 
 
-@dataclass
 class TriggerPipelineConfig(BaseConfig):
     """
     Config for `src.load_analyzer.triggers.TriggerPipeline`
@@ -44,12 +45,10 @@ class TriggerPipelineConfig(BaseConfig):
     max_model_percent: float
 
 
-@dataclass
 class StatefulChecker(BaseConfig):
     keep_model: int
 
 
-@dataclass
 class LoadAnalyzerConfig(BaseConfig):
     """
     Configuration for load analyzer
@@ -61,35 +60,25 @@ class LoadAnalyzerConfig(BaseConfig):
     stateful_checker: StatefulChecker
 
 
-@dataclass
-class DockerConfig(BaseConfig):
+class DockerConfig(BaseModel):
     registry: str
     login: str
     password: str
     network: str
 
 
-@dataclass
-class KubeConfig(BaseConfig):
+class KubeConfig(BaseModel):
     address: str
     token: str
     namespace: str
     create_timeout: int
 
 
-@dataclass
 class ModelsRunnerConfig(BaseConfig):
     ports: PortConfig
     zmq_config: ZMQConfig
 
-    @classmethod
-    def from_dict(cls, config_dict: dict) -> "ModelsRunnerConfig":
-        ports_config = config_dict["ports"]
-        zmq_config = config_dict["zmq_config"]
-        return cls(ports=PortConfig(**ports_config), zmq_config=ZMQConfig(**zmq_config))
 
-
-@dataclass
 class HealthCheckerConfig(BaseConfig):
     """
     Config for health checker
@@ -98,8 +87,7 @@ class HealthCheckerConfig(BaseConfig):
     connection_idle_timeout: int = 10
 
 
-@dataclass
-class Config(BaseConfig):
+class Config(BaseModel):
     """
     Config of task manager
     """
@@ -111,37 +99,16 @@ class Config(BaseConfig):
     load_analyzer: LoadAnalyzerConfig
     models: ModelsRunnerConfig
     max_running_instances: int = 10
-    docker: Optional[DockerConfig] = None
-    kube: Optional[KubeConfig] = None
-
-    @classmethod
-    def from_dict(cls, config_dict: dict) -> "Config":
-        """
-        Convert dict into Config object
-        """
-        load_analyzer_dict = config_dict.pop("load_analyzer")
-        running_mean_dict = load_analyzer_dict.pop("running_mean")
-        stateful_checker_dict = load_analyzer_dict.pop("stateful_checker")
-        trigger_pipeline_dict = load_analyzer_dict.pop("trigger_pipeline")
-        health_check_dict = config_dict.pop("health_check")
-        running_mean = RunningMeanConfig(**running_mean_dict)
-        trigger_pipeline = TriggerPipelineConfig(**trigger_pipeline_dict)
-        stateful_checker = StatefulChecker(**stateful_checker_dict)
-        load_analyzer = LoadAnalyzerConfig(
-            running_mean=running_mean,
-            trigger_pipeline=trigger_pipeline,
-            stateful_checker=stateful_checker,
-            **load_analyzer_dict
+    cloud_client: Union[DockerConfig, KubeConfig] = Field(
+        choose_function=lambda x: (
+            x["branch_name"] == "DockerConfig"
+            and os.environ.get("CLOUD_CLIENT", "docker") == "docker"
         )
-        models_dict = config_dict.pop("models")
-        models_config = ModelsRunnerConfig.from_dict(models_dict)
-        health_check_config = HealthCheckerConfig(**health_check_dict)
-        return cls(
-            load_analyzer=load_analyzer,
-            models=models_config,
-            health_check=health_check_config,
-            **config_dict
+        or (
+            x["branch_name"] == "KubeConfig"
+            and os.environ.get("CLOUD_CLIENT", "docker") == "kube"
         )
+    )
 
 
 @dataclass

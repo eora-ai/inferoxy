@@ -19,14 +19,14 @@ from shared_modules.utils import uuid4_string_generator
 
 stub_model = dm.ModelObject(
     name="stub",
-    address="registry.visionhub.ru/models/stub:v3",
+    address="registry.visionhub.ru/models/stub:v5",
     stateless=True,
     batch_size=4,
 )
 
 stateful_model = dm.ModelObject(
     name="stateful_stub",
-    address="registry.visionhub.ru/models/stateful_stub:v3",
+    address="registry.visionhub.ru/models/stateful_stub:v5",
     stateless=False,
     batch_size=4,
 )
@@ -58,7 +58,7 @@ def main():
         )
         req = dm.RequestObject(
             uid=next(uid_generator),
-            requests_info=[request_info],
+            request_info=request_info,
             source_id="test_client_1",
             model=model,
         )

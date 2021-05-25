@@ -10,7 +10,6 @@ import sys
 import pathlib
 
 import zmq  # type: ignore
-import yaml  # type: ignore
 import numpy as np  # type: ignore
 from PIL import Image  # type: ignore
 from loguru import logger
@@ -25,7 +24,7 @@ from shared_modules.utils import uuid4_string_generator
 
 stub_model = ModelObject(
     name="stub",
-    address="registry.visionhub.ru/models/stub:v4",
+    address="registry.visionhub.ru/models/stub:v5",
     stateless=True,
     batch_size=256,
 )
@@ -38,13 +37,13 @@ stub_repeat_model = model = ModelObject(
 )
 
 
-def batches_different_sources():
-    cur_path = pathlib.Path(__file__)
-    config_path = cur_path.parent.parent / "config.yaml"
+cur_path = pathlib.Path(__file__)
+config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+config = dm.Config.parse_file(config_path, content_type="yaml")
+
+
+def batches_different_sources():
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -116,9 +115,7 @@ def batches_video_with_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -162,9 +159,7 @@ def batches_video_without_sound():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
@@ -198,16 +193,13 @@ def batch_pictures():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)
     sock_sender.connect(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.PULL)
-    print(f"Receiver: {config.zmq_output_address}")
-    sock_receiver.connect(config.zmq_output_address)
+    sock_receiver.bind(config.zmq_output_address)
 
     #  load the image
     image = Image.open("test.jpg")
@@ -236,9 +228,7 @@ def image_to_video():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     ctx = zmq.Context()
     sock_sender = ctx.socket(zmq.PUSH)

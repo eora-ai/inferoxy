@@ -24,11 +24,11 @@ cache:
 
 stages:
   - test
+  - code-cov
   - build
 
 
-
-batch_manager_tests:
+tests:
   stage: test
   before_script:
     - pip install virtualenv
@@ -37,55 +37,35 @@ batch_manager_tests:
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
   script:
+    - pytest bridge_config_parser
+    - mypy bridge_config_parser
+    - mypy zmq_bridge
     - pytest batch_manager
     - mypy batch_manager
-
-task_manager_tests:
-  stage: test
-  before_script:
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install -r requirements.txt
-    - pip install -r requirements-dev.txt
-  script:
+    - pytest debatch_manager
+    - mypy debatch_manager
+    - pytest model_storage
+    - mypy model_storage
     - pytest task_manager
     - mypy task_manager
 
-debatch_manager_tests:
-  stage: test
+coverage:
+  stage: code-cov
+  needs: 
+    - tests
   before_script:
     - pip install virtualenv
     - virtualenv venv
     - source venv/bin/activate
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
+    - mkdir -p public
   script:
-    - pytest debatch_manager
-    - mypy debatch_manager
-
-model_storage_tests:
-  stage: test
-  before_script:
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install -r requirements.txt
-    - pip install -r requirements-dev.txt
-  script:
-    - pytest model_storage
-    - mypy model_storage
-
-listener_tests:
-  stage: test
-  before_script:
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
-    - pip install -r requirements.txt
-    - pip install -r requirements-dev.txt
-  script:
-    - mypy listener
+    - ./entrypoint.sh COVERAGE | tee public/coverage.txt
+  artifacts:
+    paths:
+        - public/coverage.txt
+  coverage: '/TOTAL\s+\d+\s+\d+\s+(\d+%)/'
 
 build_release_image:
   image: docker:latest

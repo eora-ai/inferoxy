@@ -4,6 +4,8 @@ __email__ = "m.gafarova@eora.ru"
 
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 from shared_modules.data_objects import (
     ResponseBatch,
     ResponseInfo,
@@ -14,8 +16,7 @@ from shared_modules.data_objects import (
 )
 
 
-@dataclass
-class ZMQConfig:
+class ZMQConfig(BaseModel):
     """
     Config of base object (???)
     """

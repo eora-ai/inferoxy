@@ -2,7 +2,7 @@
 Data object definitions
 """
 
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 from shared_modules.data_objects import (
     Status,
@@ -18,8 +18,7 @@ from shared_modules.data_objects import (
 )
 
 
-@dataclass
-class Config:
+class Config(BaseModel):
     """
     Configuration of batch_manager
 

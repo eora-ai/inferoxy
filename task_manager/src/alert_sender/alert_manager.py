@@ -5,7 +5,6 @@ Concreter AlertManager
 __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
-import asyncio
 from datetime import datetime
 
 from loguru import logger

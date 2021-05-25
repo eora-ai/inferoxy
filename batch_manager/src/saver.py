@@ -30,7 +30,7 @@ def save_mapping(config: dm.Config, mapping: dm.BatchMapping):
             )
             break
         except plyvel._plyvel.IOError:
-            time.sleep(config.send_batch_timeout)
+            time.sleep(float(config.send_batch_timeout))
             continue
     database.put(*mapping.to_key_value())
 

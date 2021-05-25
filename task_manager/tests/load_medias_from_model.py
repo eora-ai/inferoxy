@@ -35,7 +35,7 @@ from src.receiver_streams_combiner import ReceiverStreamsCombiner
 
 stub_model = model = ModelObject(
     name="stub",
-    address="registry.visionhub.ru/models/stub:v4",
+    address="registry.visionhub.ru/models/stub:v5",
     stateless=True,
     batch_size=256,
 )
@@ -209,9 +209,7 @@ async def main():
     cur_path = pathlib.Path(__file__)
     config_path = cur_path.parent.parent / "config.yaml"
 
-    with open(config_path) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config.from_dict(config_dict)
+    config = dm.Config.parse_file(config_path, content_type="yaml")
 
     print("What you want to process? Press 1 - picture; 2 - video")
     choice = int(input())

@@ -38,16 +38,10 @@ class DockerCloudClient(BaseCloudClient):
         self.uid_generator = uuid4_string_generator()
         self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
-        if self.config is None:
-            raise exc.CloudClientErrors(
-                "Docker config does not provided"
-            )  # Make config not optional
-        self.config: dm.Config = self.config
-
-        self.docker_config_optional: Optional[dm.DockerConfig] = self.config.docker
-        if self.docker_config_optional is None:
-            raise exc.CloudClientErrors("Docker config does not provided")
-        self.docker_config: dm.DockerConfig = self.docker_config_optional
+        if isinstance(self.config.cloud_client, dm.DockerConfig):
+            self.docker_config: dm.DockerConfig = self.config.cloud_client
+        else:
+            raise ValueError("Config cloud_client must be of type DockerConfig")
 
         try:
             self.client.login(
@@ -57,7 +51,10 @@ class DockerCloudClient(BaseCloudClient):
             )
         except:
             logger.critical("Cannot login to Docker registry")
-        self.gpu_all = set(config.gpu_all)
+
+        if isinstance(config.gpu_all, str):
+            raise ValueError("Config all gpu is string type")
+        self.gpu_all: Set[int] = set(config.gpu_all)
         self.gpu_busy: Set[int] = set()
 
     def can_create_instance(self, model: dm.ModelObject) -> bool:
@@ -75,6 +72,7 @@ class DockerCloudClient(BaseCloudClient):
         """
         on_gpu = model.run_on_gpu
         num_gpu = None
+        gpu_available = set()
         if on_gpu:
             # Geneerate gpu available
             gpu_available = self.gpu_all.difference(self.gpu_busy)

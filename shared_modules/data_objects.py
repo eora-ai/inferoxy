@@ -9,9 +9,12 @@ import json
 from enum import Enum
 from datetime import datetime
 from dataclasses import dataclass, asdict
-from typing import List, Tuple, Optional, Type, NewType, Union, Any, Iterator
+from typing import List, Tuple, Optional, NewType, Union, Any, Iterator
+import numpy as np  # type: ignore
+from pydantic import BaseModel
 
 import numpy as np  # type: ignore
+from pydantic import BaseModel
 
 
 @dataclass
@@ -299,13 +302,12 @@ class ResponseBatch(MinimalBatchObject):
         return hash(self.uid)
 
 
-class BaseConfig:
+class BaseConfig(BaseModel):
     """
     Generic type of config
     """
 
 
-@dataclass
 class ZMQConfig(BaseConfig):
     """
     Config for ZMQ senders receivers
@@ -317,7 +319,6 @@ class ZMQConfig(BaseConfig):
     rcvtimeo: int
 
 
-@dataclass
 class PortConfig(BaseConfig):
     """
     Config for sender/receiver ports
@@ -325,3 +326,51 @@ class PortConfig(BaseConfig):
 
     sender_open_addr: int
     receiver_open_addr: int
+
+
+class DataTypes(str, Enum):
+    """
+    Supported datatypes for requests and response
+    """
+
+    FLOAT16 = "fp16"
+    FLOAT32 = "fp32"
+    UINT8 = "uint8"
+    INT8 = "int8"
+    BOOL = "bool"
+
+
+class InputModel(BaseModel):
+    shape: Optional[List[int]]
+    datatype: Optional[DataTypes]
+    data: Any
+    parameters: dict
+
+    class Config:
+        arbitrary_types_allowed = True
+        use_enum_values = True
+
+
+class RequestModel(BaseModel):
+    source_id: str
+    model: str
+    inputs: List[InputModel]
+
+
+class OutputModel(BaseModel):
+    shape: Optional[List[int]]
+    datatype: Optional[DataTypes]
+    data: Any
+    output: Optional[dict]
+    parameters: Optional[dict]
+    error: Optional[str]
+
+    class Config:
+        arbitrary_types_allowed = True
+        use_enum_values = True
+
+
+class ResponseModel(BaseModel):
+    model: str
+    outputs: Optional[List[OutputModel]]
+    source_id: str

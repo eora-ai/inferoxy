@@ -13,8 +13,10 @@ import argparse
 import urllib3  # type: ignore
 from pathlib import Path
 
-import yaml
 from loguru import logger
+
+from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 import src.receiver as rc
 import src.sender as snd
@@ -42,9 +44,9 @@ async def pipeline(
     receiver_streams_combiner = ReceiverStreamsCombiner(output_batch_queue)
     model_instances_storage = ModelInstancesStorage(receiver_streams_combiner)
 
-    if not config.docker is None:
+    if isinstance(config.cloud_client, dm.DockerConfig):
         cloud_client: BaseCloudClient = DockerCloudClient(config)
-    elif not config.kube is None:
+    elif isinstance(config.cloud_client, dm.KubeConfig):
         cloud_client = KubeCloudClient(config)
     else:
         raise ValueError("Cloud client must be selected")
@@ -103,9 +105,7 @@ def main():
 
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "TASK_MANAGER")
 
     parser = argparse.ArgumentParser(description="Task manager process")
     parser.add_argument(
@@ -116,22 +116,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        kube_config_dict = config_dict.pop("kube")
-        config = dm.Config.from_dict(config_dict)
-        if os.environ.get("CLOUD_CLIENT") == "docker":
-            docker_config_dict = dict(network=os.environ.get("DOCKER_NETWORK"))
-            docker_config_dict["registry"] = os.environ.get("DOCKER_REGISTRY")
-            docker_config_dict["login"] = os.environ.get("DOCKER_LOGIN")
-            docker_config_dict["password"] = os.environ.get("DOCKER_PASSWORD")
-            config.docker = dm.DockerConfig(**docker_config_dict)
-        elif os.environ.get("CLOUD_CLIENT") == "kube":
-            kube_config_dict["address"] = os.environ.get("KUBERNETES_CLUSTER_ADDRESS")
-            kube_config_dict["token"] = os.environ.get("KUBERNETES_API_TOKEN")
-            kube_config_dict["namespace"] = os.environ.get("NAMESPACE")
-            config.kube = dm.KubeConfig(**kube_config_dict)
-
+    config: dm.Config = read_config_with_env(dm.Config, args.config, "task_manager")
     Path(config.zmq_output_address).parent.mkdir(parents=True, exist_ok=True)
 
     logging.getLogger("asyncio").setLevel(logging.DEBUG)

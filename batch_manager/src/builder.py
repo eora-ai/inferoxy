@@ -8,7 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 
 import asyncio
 from functools import reduce
-from typing import List, Tuple, Generator, AsyncIterable
+from typing import List, Tuple, Generator, AsyncIterable, Union
 
 from aiostream import stream  # type: ignore
 
@@ -22,7 +22,7 @@ from shared_modules.data_objects import (
 
 
 async def yield_timeout_batches(
-    batches: dm.Batches, timeout: float = 0.01
+    batches: dm.Batches, timeout: Union[float, str] = 0.01
 ) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
     """
     Yield each @timeout@ seconds batches. Batches may be not complete.
@@ -35,7 +35,7 @@ async def yield_timeout_batches(
         Batches will be sent each second
     """
     while True:
-        await asyncio.sleep(timeout)
+        await asyncio.sleep(float(timeout))
         _batches, batches.batches = batches[:], []
         mappings = map(build_mapping_batch, _batches)
         batches_and_mappings = list(zip(_batches, mappings))

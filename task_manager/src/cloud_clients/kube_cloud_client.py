@@ -38,18 +38,14 @@ class KubeCloudClient(BaseCloudClient):
         """
         super().__init__(config)
 
-        if config is None:
-            raise exc.CloudClientErrors("Config does not provided")
-
-        self.config: dm.Config = config
         # Get env variables
-        self.kube_config = self.config.kube
-        if self.kube_config is None:
-            raise exc.CloudClientErrors("Config does not provided")
-
-        self.host = self.kube_config.address
-        self.token = self.kube_config.token
-        self.namespace = self.kube_config.namespace
+        if isinstance(self.config.cloud_client, dm.KubeConfig):
+            self.kube_config = self.config.cloud_client
+            self.host = self.kube_config.address
+            self.token = self.kube_config.token
+            self.namespace = self.kube_config.namespace
+        else:
+            raise ValueError("Config cloud_client is not KubeConfig")
 
         self.auth_config = client.Configuration()
         self.auth_config.host = self.host
@@ -140,10 +136,12 @@ class KubeCloudClient(BaseCloudClient):
         except Exception:
             return None
         return resp
-    
+
     def read_logs(self, pod_name, length=10):
         try:
-            resp = self.api_instance.read_namespaced_pod_log(name=pod_name, namespace=self.namespace, tail_lines=length)
+            resp = self.api_instance.read_namespaced_pod_log(
+                name=pod_name, namespace=self.namespace, tail_lines=length
+            )
         except Exception:
             return ""
         return resp

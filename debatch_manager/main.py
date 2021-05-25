@@ -11,13 +11,14 @@ import asyncio
 import argparse
 from pathlib import Path
 
-import yaml
 from loguru import logger
 
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
 from src.debatcher import debatch, pull_batch_mapping
+from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 
 def main():
@@ -26,8 +27,7 @@ def main():
     """
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "DEBATCH_MANAGER")
 
     logger.info("Read config file")
 
@@ -40,9 +40,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
+    config = read_config_with_env(dm.Config, args.config, "debatch_manager")
 
     Path(config.zmq_input_address.replace("ipc://", "")).parent.mkdir(
         exist_ok=True, parents=True
@@ -89,7 +87,7 @@ async def pipeline(config: dm.Config):
                 break
             except IOError as exc:
                 logger.debug(f"Database locked try in {sleep_time}")
-                await asyncio.sleep(sleep_time)
+                await asyncio.sleep(float(sleep_time))
             except TypeError as exc:
                 logger.exception(f"Mapping doesnot exists for {response_batch=}")
                 break

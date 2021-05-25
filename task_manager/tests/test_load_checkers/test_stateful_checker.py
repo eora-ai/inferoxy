@@ -33,7 +33,7 @@ stub_stateful = dm.ModelObject(
 config = dm.Config(
     zmq_input_address="",
     zmq_output_address="",
-    docker=dm.DockerConfig(
+    cloud_client=dm.DockerConfig(
         registry="registry.visionhub.ru",
         login=os.environ.get("DOCKER_LOGIN", ""),
         password=os.environ.get("DOCKER_PASSWORD", ""),
@@ -42,11 +42,13 @@ config = dm.Config(
     gpu_all=[1],
     load_analyzer=dm.LoadAnalyzerConfig(
         sleep_time=0.1,
-        trigger_pipeline=dm.TriggerPipelineConfig(60),
-        running_mean=dm.RunningMeanConfig(50, 100, 10),
-        stateful_checker=dm.StatefulChecker(10),
+        trigger_pipeline=dm.TriggerPipelineConfig(max_model_percent=60),
+        running_mean=dm.RunningMeanConfig(
+            min_threshold=50, max_threshold=100, window_size=10
+        ),
+        stateful_checker=dm.StatefulChecker(keep_model=10),
     ),
-    health_check=dm.HealthCheckerConfig(10),
+    health_check=dm.HealthCheckerConfig(connection_idle_timeout=10),
     models=dm.ModelsRunnerConfig(
         ports=dm.PortConfig(
             sender_open_addr=5566,

@@ -28,7 +28,7 @@ class Connector:
                 models_dict = yaml.full_load(config_file)
         except FileNotFoundError:
             return []
-            
+
         models = []
         for key, value in models_dict.items():
             data = {"name": key, **value}

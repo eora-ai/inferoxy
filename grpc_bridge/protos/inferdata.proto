@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+
+
+message InferData {
+    repeated int32 payload_int = 1;
+    repeated int64 payload_int64 = 2;
+    repeated uint8 payload_uint8 = 3;
+    repeated uint32 payload_uint = 4;
+    repeated uint64 payload_uint64 = 5;
+    repeated double payload_float = 6;
+}

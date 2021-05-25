@@ -1,0 +1,14 @@
+supervisord_config_path: /etc/supervisor/conf.d/supervisord.conf 
+bridges:
+  - name: zmq_bridge
+    directory: /app/zmq_bridge
+    command: python3 main.py
+    active: True
+  - name: restapi_bridge
+    directory: /app/restapi_bridge
+    command: uvicorn main:app --host 0.0.0.0 --port 8698
+    active: True
+  - name: grpc_bridge
+    directory: /app/grpc_bridge
+    command: python3 main.py
+    active: True

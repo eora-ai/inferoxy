@@ -8,21 +8,33 @@ __email__ = "m.gafarova@eora.ru"
 import sys
 
 import zmq  # type: ignore
-import yaml  # type: ignore
 from loguru import logger
+from envyaml import EnvYAML     # type: ignore
 
 sys.path.append("..")
 
 import src.data_models as dm    # type: ignore
 
 
+def update_config(config, config_path):
+    env = EnvYAML(config_path, strict=False)
+    config.address = env["address"]
+
+    database = dm.DatabaseConfig.parse_obj(env["database"])
+    config.database = database
+
+    return config
+
+
 def main():
     ctx = zmq.Context()
     sock = ctx.socket(zmq.REQ)
-    with open("../config.yaml") as config_file:
-        config_dict = yaml.full_load(config_file)
+    config_path_env = "../config_env.yaml"
+    config = dm.Config.parse_file("../config.yaml", content_type="yaml")
 
-    sock.connect(config_dict["address"])
+    config = update_config(config, config_path_env)
+
+    sock.connect(config.address)
 
     model_slug = "stub"
 

@@ -1,4 +1,4 @@
-numpy==1.19.4
+numpy==1.20.1
 aiostream==0.4.1
 pyzmq==19.0.2
 pyyaml==5.3.1
@@ -9,3 +9,5 @@ kubernetes==12.0.1
 redis==3.5.3
 fastapi==0.63.0
 uvicorn==0.13.4 
+pydantic==1.8.1
+grpcalchemy==0.7.3

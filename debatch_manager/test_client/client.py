@@ -20,6 +20,7 @@ from shared_modules.data_objects import (
     ResponseBatch,
     BatchMapping,
     Status,
+    MiniResponseBatch,
 )
 from shared_modules.utils import uuid4_string_generator
 
@@ -41,9 +42,9 @@ def main():
 
     # Create sockets
     sock_sender = ctx.socket(zmq.PUSH)
-    sock_sender.connect(config.zmq_input_address)
+    sock_sender.bind(config.zmq_input_address)
     sock_receiver = ctx.socket(zmq.PULL)
-    sock_receiver.bind(config.zmq_output_address)
+    sock_receiver.connect(config.zmq_output_address)
 
     try:
         db = plyvel.DB(config.db_file, create_if_missing=True)
@@ -84,13 +85,19 @@ def main():
             picture=np.array([5, 6, 7, 8]),
             parameters={},
         )
+        mini_batch1 = MiniResponseBatch(
+            responses_info=[response_info1],
+        )
+        mini_batch2 = MiniResponseBatch(
+            responses_info=[response_info2],
+        )
         responses += [
             ResponseBatch(
                 uid=uid,
                 requests_info=[request_info1, request_info2],
                 model=stateful_model,
                 status=Status.CREATED,
-                responses_info=[response_info1, response_info2],
+                mini_batches=[mini_batch1, mini_batch2],
             )
         ]
 
@@ -99,6 +106,7 @@ def main():
 
     # Close connection
     db.close()
+    print(responses)
 
     # Send response batches to debatch manager
     for response in responses:

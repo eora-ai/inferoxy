@@ -12,7 +12,6 @@ import argparse
 from pathlib import Path
 from datetime import datetime
 
-import yaml
 from loguru import logger
 
 import src.sender as snd
@@ -20,6 +19,8 @@ import src.receiver as rc
 import src.data_models as dm
 from src.builder import builder
 from src.saver import save_mapping
+from shared_modules.parse_config import read_config_with_env
+from shared_modules.utils import recreate_logger
 
 
 async def pipeline(config: dm.Config):
@@ -50,8 +51,7 @@ def main():
     """
     # Set up log level of logger
     log_level = os.getenv("LOGGING_LEVEL")
-    logger.remove()
-    logger.add(sys.stderr, level=log_level)
+    recreate_logger(log_level, "BATCH_MANAGER")
 
     parser = argparse.ArgumentParser(description="Batch manager process")
     parser.add_argument(
@@ -62,10 +62,7 @@ def main():
     )
     args = parser.parse_args()
 
-    with open(args.config) as config_file:
-        config_dict = yaml.full_load(config_file)
-        config = dm.Config(**config_dict)
-
+    config = read_config_with_env(dm.Config, args.config, "batch_manager")
     Path(config.db_file).mkdir(parents=True, exist_ok=True)
     asyncio.run(pipeline(config))
 

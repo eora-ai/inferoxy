@@ -33,7 +33,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    config = read_config_with_env(dm.Config, "/model_base/config.yaml", "")
+    config = read_config_with_env(dm.ZMQConfig, "/model_base/config.yaml", "")
 
     if args.test_mode != "1":
         runner = Runner(

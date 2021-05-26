@@ -66,6 +66,7 @@ async def input_to_requests_object(
     for input_model in inputs:
         request_info = convert_input_model(input_model)
         model_obj = await get_model(request_model.model, model_storage_address, ctx)
+        model_obj.stateless = request_info.parameters.get("stateless", False)
         request_object = dm.RequestObject(
             uid=next(generator),
             source_id=topic + ":" + request_model.source_id,

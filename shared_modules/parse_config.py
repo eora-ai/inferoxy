@@ -37,7 +37,7 @@ def read_config_with_env(
     logger.info(f"Read config for {env_prefix} from {config_path}")
     with open(config_path, "r") as file_:
         config_dict = yaml.full_load(file_)
-    logger.debug(f"Setted with environment: {config_dict}")
+    logger.debug(f"Without environment: {config_dict}")
     new_config_dict = recursive_update_all_values(
         config_type, config_dict, [env_prefix]
     )

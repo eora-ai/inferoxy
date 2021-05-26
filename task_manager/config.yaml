@@ -27,7 +27,5 @@ models:
     sndtimeo: 3600000 # ms
     rcvtimeo: 3 # ms
 
-kube:
+cloud_client:
   create_timeout: 300
-
-

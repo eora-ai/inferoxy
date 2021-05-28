@@ -14,16 +14,6 @@ You should use it if:
 - Automatic batching
 - Model versioning
 
-## Alternatives
-
-There are several alternatives:
-- triton
-- mlflow
-- airflow
-- kfserving
-
-The detailed comparison you can find [here](comparisons)
-
 ## Requirements
 You can run Inferoxy locally on a single machine or [k8s](https://kubernetes.io/) cluster. 
 For run Inferoxy, you should have a minimum **4GB RAM**. 
@@ -73,7 +63,7 @@ docker run --env-file .env.dev
 	public.registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
 ```
 
-## Next
-- [Detailed overiew](detailed_overview)
-- [Advanced configuration](configuration)
-- [Deploy on k8s](deploy_on_k8s)
+## Documentation
+
+Documentaion you can find [here](https://github.com/eora-ai/inferoxy/wiki)
+

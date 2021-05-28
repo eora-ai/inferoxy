@@ -1,6 +1,4 @@
-# Inferoxy documentation
-
-[[_TOC_]]
+# INFEROXY 🍊
 
 ## What is it?
 
@@ -21,7 +19,7 @@ For run Inferoxy, you should have a minimum **4GB RAM**.
 ## Basic commands
 
 ## Local run
-To run locally you should use Inferoxy docker image. Last version you can find [here](https://gitlab.com/eora/data-lab/visionhub/inferoxy/-/releases)
+To run locally you should use Inferoxy docker image. Last version you can find [here](https://github.com/eora-ai/inferoxy/releases)
 ```bash
 docker pull public.registry.visionhub.ru/inferoxy:v1.0.4
 ```
@@ -43,7 +41,7 @@ Now we should run Redis in this network. Redis is needed to store information ab
 ```bash
 docker run --network redis --name redis redis:latest 
 ```
-Create `models.yaml` file with simple set of models. You can read about `models.yaml` [here](models_yaml) 
+Create `models.yaml` file with simple set of models. You can read about `models.yaml` in [documentation](https://github.com/eora-ai/inferoxy/wiki)
 ```yaml
 stub:
   address: public.registry.visionhub.ru/models/stub:v5

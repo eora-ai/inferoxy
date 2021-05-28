@@ -35,4 +35,4 @@ jobs:
     - name: Check with mypy
       run: ./entrypoint.sh MYPY
     - name: Coverage
-      run: ./entrypoint COVERAGE
+      run: ./entrypoint.sh COVERAGE

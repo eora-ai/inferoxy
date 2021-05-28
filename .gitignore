@@ -14,3 +14,4 @@ __pycache__
 *.mp3
 config_env.yaml
 models.yaml
+.coverage

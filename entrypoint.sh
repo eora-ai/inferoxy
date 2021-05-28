@@ -14,7 +14,6 @@ elif [ $1 = "MYPY" ]; then
   mypy batch_manager
   mypy debatch_manager
   mypy zmq_bridge
-  mypy grpc_bridge
   mypy restapi_bridge
   mypy model_storage
   mypy bridge_config_parser

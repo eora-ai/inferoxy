@@ -8,9 +8,7 @@ __email__ = "a.chertkov@eora.ru"
 
 import asyncio
 from functools import reduce
-from typing import List, Tuple, Generator, AsyncIterable, Union
-
-from aiostream import stream  # type: ignore
+from typing import List, Tuple, Generator, AsyncIterator, Union
 
 import src.data_models as dm
 from shared_modules.utils import uuid4_string_generator
@@ -23,7 +21,7 @@ from shared_modules.data_objects import (
 
 async def yield_timeout_batches(
     batches: dm.Batches, timeout: Union[float, str] = 0.01
-) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
+) -> AsyncIterator[Tuple[dm.BatchObject, BatchMapping]]:
     """
     Yield each @timeout@ seconds batches. Batches may be not complete.
 
@@ -44,9 +42,9 @@ async def yield_timeout_batches(
 
 
 async def yield_completed_batches(
-    request_stream: AsyncIterable[RequestObject],
+    request_stream: AsyncIterator[RequestObject],
     batches: dm.Batches,
-) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
+) -> AsyncIterator[Tuple[dm.BatchObject, BatchMapping]]:
     """
     Make batches. Yield batch, if it completed.
 
@@ -66,8 +64,8 @@ async def yield_completed_batches(
 
 
 async def builder(
-    request_stream: AsyncIterable[RequestObject], config: dm.Config = None
-) -> AsyncIterable[Tuple[dm.BatchObject, BatchMapping]]:
+    request_stream: AsyncIterator[RequestObject], config: dm.Config = None
+) -> AsyncIterator[Tuple[dm.BatchObject, BatchMapping]]:
     """
     From async generator of request build two genrators:
     first one is an async generator of BatchObject,
@@ -84,13 +82,25 @@ async def builder(
 
     sleep_time = 0.01 if config is None else config.send_batch_timeout
 
-    combine = stream.merge(
-        yield_timeout_batches(batches, sleep_time),
-        yield_completed_batches(request_stream, batches),
-    )
-    async with combine.stream() as streamer:
-        async for (batch, mapping) in streamer:
-            yield (batch, mapping)
+    async def combiner() -> AsyncIterator[Tuple[dm.BatchObject, BatchMapping]]:
+        timeout_iterator = yield_timeout_batches(batches, sleep_time)
+        completed_iterator = yield_completed_batches(request_stream, batches)
+        task1 = asyncio.create_task(timeout_iterator.__anext__())
+        task2 = asyncio.create_task(completed_iterator.__anext__())
+
+        while True:
+            done, _ = await asyncio.wait(
+                {task1, task2}, return_when=asyncio.FIRST_COMPLETED
+            )
+            if task1 in done:
+                yield task1.result()
+                task1 = asyncio.create_task(timeout_iterator.__anext__())
+            if task2 in done:
+                yield task2.result()
+                task2 = asyncio.create_task(completed_iterator.__anext__())
+
+    async for (batch, mapping) in combiner():
+        yield (batch, mapping)
 
 
 def split_on_complete_and_uncomplete_batches(

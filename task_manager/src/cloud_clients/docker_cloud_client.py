@@ -81,7 +81,7 @@ class DockerCloudClient(BaseCloudClient):
             self.gpu_busy.add(num_gpu)
 
         try:
-            logger.debug("Run container for {model=}")
+            logger.debug(f"Run container for {model=}")
             name = f"{model.name}_{next(self.uid_generator)}"
             loop = asyncio.get_running_loop()
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:

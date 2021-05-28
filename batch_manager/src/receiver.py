@@ -4,7 +4,7 @@ __author__ = "Andrey Chertkov"
 __email__ = "a.chertkov@eora.ru"
 
 
-from typing import AsyncIterable
+from typing import AsyncIterator
 
 import zmq  # type: ignore
 import zmq.asyncio  # type: ignore
@@ -28,7 +28,7 @@ def create_socket(config: dm.Config) -> zmq.asyncio.Socket:
     return sock
 
 
-async def receive(sock: zmq.asyncio.Socket) -> AsyncIterable[dm.RequestObject]:
+async def receive(sock: zmq.asyncio.Socket) -> AsyncIterator[dm.RequestObject]:
     """
     Build an async iterable object. Infinite stream of RequestObject
 

@@ -16,7 +16,7 @@ import src.data_models as dm
 from src.batch_queue import InputBatchQueue, OutputBatchQueue
 from src.exceptions import TagDoesNotExists
 from src.model_instances_storage import ModelInstancesStorage
-from src.batch_processing.adapter_model_instance import AdapterV1ModelInstance
+from src.batch_processing.adapter_model_instance import adapter_send_to_model
 from src.health_checker.errors import ContainerExited
 
 
@@ -36,6 +36,8 @@ async def send_to_model(
         Where send results
     """
     while True:
+        logger.debug(f"Queue sizes {input_batch_queue.get_sizes()}")
+
         # get models with number of errors > 3
         models_with_errors = model_instances_storage.get_models_with_errors(
             new_chance_delta=timedelta(seconds=30)
@@ -82,12 +84,13 @@ async def send_to_model(
                 continue
             model_instance.lock = True
             logger.info(f"Selected {model_instance}")
-            adapter_model_instance = AdapterV1ModelInstance(
-                model_instance, input_batch_queue, output_batch_queue
+            tasks.append(
+                adapter_send_to_model(
+                    batch, model_instance, input_batch_queue, output_batch_queue
+                )
             )
-            logger.info(f"Add task for {batch}")
-            tasks.append(adapter_model_instance.send(batch))
         if tasks:
-            await asyncio.wait(tasks)
+            for i in range(0, len(tasks), 4):
+                await asyncio.wait(tasks[i : i + 4])
         else:
             await asyncio.sleep(5)

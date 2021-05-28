@@ -4,8 +4,6 @@
 name: Tests
 
 on:
-  push:
-    branches: "*"
   pull_request:
     branches: "*"
 
@@ -33,17 +31,8 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
-      run: |
-        pytest batch_manager
-        pytest bridge_config_parser
-        mypy bridge_config_parser
-        mypy zmq_bridge
-        pytest batch_manager
-        mypy batch_manager
-        pytest debatch_manager
-        mypy debatch_manager
-        pytest model_storage
-        mypy model_storage
-        pytest task_manager
-        mypy task_manager
-
+      run: ./entrypoint.sh TEST
+    - name: Check with mypy
+      run: ./entrypoint.sh MYPY
+    - name: Coverage
+      run: ./entrypoint COVERAGE

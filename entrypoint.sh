@@ -9,6 +9,15 @@ if [ $1 = "TEST" ]; then
   pytest restapi_bridge
   pytest model_storage
   pytest bridge_config_parser
+elif [ $1 = "MYPY" ]; then
+  mypy task_manager
+  mypy batch_manager
+  mypy debatch_manager
+  mypy zmq_bridge
+  mypy grpc_bridge
+  mypy restapi_bridge
+  mypy model_storage
+  mypy bridge_config_parser
 elif [ $1 = "COVERAGE" ]; then
   COVERAGE_FILE=.coverage.task_manager coverage run -m pytest task_manager 2>&1 1>/dev/null 
   COVERAGE_FILE=.coverage.batch_manager coverage run -m pytest batch_manager 2>&1 1>/dev/null 

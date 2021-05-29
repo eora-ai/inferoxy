@@ -8,7 +8,6 @@ __email__ = "a.chertkov@eora.ru"
 import asyncio
 from typing import Union, Dict, Optional, Tuple, List, Awaitable
 
-from aiostream.stream import merge  # type: ignore
 from loguru import logger
 
 import src.data_models as dm

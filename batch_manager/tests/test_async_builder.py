@@ -34,16 +34,22 @@ async def test_by_time_interrupt():
     """
 
     async def async_request_generator() -> AsyncIterable[dm.RequestObject]:
-        request_info = dm.RequestInfo(
-            input=np.array(range(10)),
-            parameters={},
-        )
-        yield dm.RequestObject(
-            uid=next(uuid4_string_generator()),
-            request_info=request_info,
-            source_id="internal_sportrecs_1",
-            model=stateless_model,
-        )
+        t = False
+        while True:
+            if t:
+                await asyncio.sleep(1)
+                continue
+            request_info = dm.RequestInfo(
+                input=np.array(range(10)),
+                parameters={},
+            )
+            yield dm.RequestObject(
+                uid=next(uuid4_string_generator()),
+                request_info=request_info,
+                source_id="internal_sportrecs_1",
+                model=stateless_model,
+            )
+            t = True
 
     before = time.time()
     async for (_, _) in builder(async_request_generator()):

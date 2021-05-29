@@ -211,6 +211,18 @@ class InputBatchQueue:
         sub_queues = self.queues["stateless" if model.stateless else "stateful"]
         return sub_queues[(source_id, model)][0]
 
+    def get_sizes(self) -> Dict[str, Dict[dm.ModelObject, int]]:
+        """
+        Return number of request in input batch queue
+        """
+        result: Dict[str, Dict[dm.ModelObject, int]] = {}
+        for sub_queue_name in self.queues:
+            sub_queue = self.queues[sub_queue_name]
+            result[sub_queue_name] = {}
+            for source_id, model in sub_queue:
+                result[sub_queue_name][model] = sub_queue[(source_id, model)][0]
+        return result
+
 
 class OutputBatchQueue(Queue):
     """

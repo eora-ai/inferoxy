@@ -1,0 +1,20 @@
+name: Build & Push
+
+on:
+ release:
+  types:
+    - created
+
+jobs:
+ build_and_push:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Set output
+    id: vars
+    run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+  - name: Build and push Docker images
+    uses: docker/build-push-action@v2.5.0
+    with:
+      tags: public.registry.visionhub.ru/inferoxy:${{ steps.vars.outputs.tag }}
+      push: true
+      

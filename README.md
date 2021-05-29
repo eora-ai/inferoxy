@@ -1,5 +1,7 @@
 # INFEROXY 🍊
 
+[![codecov](https://codecov.io/gh/eora-ai/inferoxy/branch/master/graph/badge.svg?token=HV6ZNPUFZE)](https://codecov.io/gh/eora-ai/inferoxy)
+
 ## What is it?
 
 Inferoxy is a service for quickly deploying and using machine learning models.

@@ -103,7 +103,7 @@ docker run --env-file .env
 	-p 7787:7787 -p 7788:7788 -p 8000:8000 -p 8698:8698\
 	--name inferoxy --rm \
 	--network inferoxy \
-	-v $(shell pwd)/models.yaml:/etc/inferoxy/models.yaml \
+	-v $(pwd)/models.yaml:/etc/inferoxy/models.yaml \
 	public.registry.visionhub.ru/inferoxy:${INFEROXY_VERSION}
 ```
 

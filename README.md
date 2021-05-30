@@ -50,50 +50,6 @@ which don't depend on user state are called "stateless"
 
 The cluster management consists of keeping track of the running copies of the models, load analysis, 
 health checking and alerting.
-#### Load Analyzer
-To increase or decrease number of copies of the models the traffic analysis tool is implemented. 
-Currently, it has the following set of triggers:
-
-**For stateless models:**
-- Up triggers (↑):
-  - `0` copies of the requested model is running
-  - `drop_rate > T_max`, where `drop_rate` - average time of processing one item of the batches times 
-    total number of items in the input queue, `T_max` - configured maximum time value
-- Down triggers (↓):
-  - `drop_rate > T_min`, where `T_min` - configured minimum time value
-  
-**For stateful models:**
-- Up triggers (↑):
-  - `# of sources > # running copies of the requested model`
-- Down triggers (↓):
-  - `time of last use for source_id > T_max` - in this case either model release or instance stopping happens depending 
-    on whether there are incoming requests to this model
-    
-#### Health Checker
-- Monitors the models running on instances through `Cloud Client`
-- In case of a fatal error (model's reason): sends a request to output queue through `Alert Manager` to inform the user 
-  about the error
-- In case of a non-fatal error (infrastructure reason): re-sends the batch back into the input queue through 
-  `Alert Manager`
-  
-#### Alert Manager
-- Defines which source to send an alert to
-- Can send alerts to channels such as Discord
-
-#### Model Manager
-- Stores information about models including links to Docker images in Redis, batch size values, etc.
-- Has REST API to add/delete/update models
-
-#### ModelInstanceStorage
-- Manages running models
-- Receives requests from `Health Checker` when a new model was started or old model was stopped
-
-#### Bridges
-- Collection of interfaces to communicate with the outer world. Current supported bridges are: REST API, gRPC, ZeroMQ
-- Implement part of 
-  [KF serving protocol](https://github.com/kubeflow/kfserving/blob/master/docs/predict-api/v2/required_api.md)
-- Easy to add new bridge
-- Multiple bridges can run simultaneously
 
 ## Requirements
 You can run Inferoxy locally on a single machine or [k8s](https://kubernetes.io/) cluster. 

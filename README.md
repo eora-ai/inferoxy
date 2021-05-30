@@ -6,27 +6,27 @@
 
 ## What is it?
 
-Inferoxy is a service for quickly deploying and using dockerized Computer Vision models. 
+Inferoxy is a service for quick deploying and using dockerized Computer Vision models. 
 It's a core of EORA's Computer Vision platform [Vision Hub](https://www.visionhub.ru/) that runs on top of AWS EKS.
 
 ## Why use it?
 
 You should use it if:
 - You want to simplify deploying Computer Vision models with an appropriate Data Science stack to production: 
-  everything you need is to build a Docker image 
+  all you need to do is to build a Docker image 
   with your model including any pre- and post-processing steps and push it into an accessible registry
-- You have only one machine or a cluster for inference (CPU/GPU)
-- Automatic batching for multi-GPU/multi-node setup
+- You have only one machine or cluster for inference (CPU/GPU)
+- You want automatic batching for multi-GPU/multi-node setup
 - Model versioning
 
 ## Architecture
 ![Overall architecture](docs/inferoxy-general.png)
 
-Inferoxy is built in the message broking fashion.
-- Roughly, it accepts user requests through different interfaces
+Inferoxy is built using message broker pattern.
+- Roughly speaking, it accepts user requests through different interfaces
 which we call "bridges". Multiple bridges can run simultaneously. Current supported bridges are REST API, gRPC and 
 ZeroMQ
-- The requests are carefully split into batches and processed on a single multi-GPU machine or on a multi-node cluster
+- The requests are carefully split into batches and processed on a single multi-GPU machine or a multi-node cluster
 - The models to be deployed are managed through Model Manager that 
 communicates with Redis to store/retrieve models information such as Docker image URL, maximum batch size value, etc.
 

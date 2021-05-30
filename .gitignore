@@ -7,11 +7,6 @@ __pycache__
 .env.dev
 .env
 .envrc
-*.jpg
-*.wav
-*.png
-*.mp4
-*.mp3
 config_env.yaml
 models.yaml
 .coverage

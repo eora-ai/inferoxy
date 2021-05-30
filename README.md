@@ -65,11 +65,14 @@ To run locally you should use Inferoxy Docker image. The last version you can fi
 ```bash
 docker pull public.registry.visionhub.ru/inferoxy:v1.0.4
 ```
-After image is pulled we need to make basic configuration using .env file
+After image is pulled we need to make basic configuration using `.env` file
 ```env
 # .env
 CLOUD_CLIENT=docker
 TASK_MANAGER_DOCKER_CONFIG_NETWORK=inferoxy
+TASK_MANAGER_DOCKER_CONFIG_ADDRESS=
+TASK_MANAGER_DOCKER_CONFIG_LOGIN=
+TASK_MANAGER_DOCKER_CONFIG_PASSWORD=
 MODEL_STORAGE_DATABASE_HOST=redis
 MODEL_STORAGE_DATABASE_PORT=6379
 MODEL_STORAGE_DATABASE_NUMBER=0
@@ -81,7 +84,7 @@ docker network create inferoxy
 ```
 Now we should run Redis in this network. Redis is needed to store information about your models.
 ```bash
-docker run --network redis --name redis redis:latest 
+docker run --network inferoxy --name redis redis:latest 
 ```
 Create `models.yaml` file with simple set of models. You can read about `models.yaml` in 
 [documentation](https://github.com/eora-ai/inferoxy/wiki)
@@ -95,7 +98,7 @@ stub:
 
 Now we can start Inferoxy:
 ```bash
-docker run --env-file .env.dev 
+docker run --env-file .env 
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	-p 7787:7787 -p 7788:7788 -p 8000:8000 -p 8698:8698\
 	--name inferoxy --rm \

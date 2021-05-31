@@ -110,3 +110,7 @@ docker run --env-file .env
 ## Documentation
 
 You can find the full documentation [here](https://github.com/eora-ai/inferoxy/wiki)
+
+## Discord
+Join our community in [Discord server](https://discord.gg/ASbWzUZuVp) to discuss stuff 
+related to Inferoxy usage and development

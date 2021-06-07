@@ -9,9 +9,9 @@ If you want to create an issue you can use the GitHub issues tab. There are seve
 
 ## Making changes
 
-We are working using (git-flow)[https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow] approach. 
+We are working using [git-flow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) approach. 
 In short:
-1. Create a fork with the topic branch from the base branch:
+1. Create a topic branch from the base branch:
     * If you want to implement a new feature, you should take the "develop" branch
     * If you want to fix a bag, you should take the "master" branch
 
@@ -48,10 +48,12 @@ like so:
 5. Make sure you have added the necessary tests for your changes 
     * we won't merge your pull request if code coverage less than 80%
     * details about tests in the following section.
-7. Make a pull request from your fork project.
+7. Make a pull request.
 
 ## Testing
 
-## Pushing and CI
-
-## Revert policy
+We use [pytest](https://docs.pytest.org/en/6.2.x/) as a library for testing. Tests for each module are running separately. For example:
+```bash
+pytest batch_manager
+```
+Usually, changes have to be in one module of the Inferoxy. Therefore, before pushing, you can run tests for one module, not for all Inferoxy. Nevertheless, CI on pull requests will run all tests.

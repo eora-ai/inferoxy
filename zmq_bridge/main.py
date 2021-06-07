@@ -44,6 +44,7 @@ async def receive_input(
         )
         for request_object in requests_object:
             await output_socket.send_pyobj(request_object)
+            logger.debug(f"RequestObject have been sent to Batch manager {request_object}")
 
 
 async def receive_output(input_socket: zmq.Socket, output_socket: zmq.Socket):

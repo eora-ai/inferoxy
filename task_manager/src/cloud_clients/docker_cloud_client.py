@@ -160,6 +160,7 @@ class DockerCloudClient(BaseCloudClient):
             runtime=runtime,
             environment=environment,
             network=self.docker_config.network,
+            mem_limit="4g",
             hostname=name,
         )
 

@@ -40,4 +40,4 @@ async def adapter_send_to_model(
     batch.status = dm.Status.SENT_TO_MODEL
     batch.started_at = datetime.now()
     await model_instance.sender.send(batch)
-    logger.debug(f"Batch sent {batch}"}
+    logger.debug(f"Batch sent {batch}")

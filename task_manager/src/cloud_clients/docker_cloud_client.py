@@ -22,7 +22,7 @@ from src.health_checker.errors import (
     HealthCheckError,
 )
 
-from shared_modules.utils import uuid4_string_generator
+from shared_modules.utils import id_generator
 
 
 class DockerCloudClient(BaseCloudClient):
@@ -35,7 +35,7 @@ class DockerCloudClient(BaseCloudClient):
         Authorize client
         """
         super().__init__(config)
-        self.uid_generator = uuid4_string_generator()
+        self.uid_generator = id_generator()
         self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
         if isinstance(self.config.cloud_client, dm.DockerConfig):

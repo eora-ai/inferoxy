@@ -33,6 +33,9 @@ push:
 test:
 	make build
 	make run-in COMMAND="./entrypoint.sh TEST"
+mypy:
+	make build
+	make run-in COMMAND="./entrypoint.sh MYPY"
 coverage:
 	make build
 	make run-in COMMAND="./entrypoint.sh COVERAGE"

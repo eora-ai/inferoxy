@@ -13,7 +13,7 @@ We are working using [git-flow](https://www.atlassian.com/git/tutorials/comparin
 In short:
 1. Create a topic branch from the base branch:
     * If you want to implement a new feature, you should take the "develop" branch
-    * If you want to fix a bag, you should take the "master" branch
+    * If you want to fix a bug, you should take the "master" branch
 
 2. Make commits of logical and atomic units.
 3. Check your changes `git diff --check` before committing.

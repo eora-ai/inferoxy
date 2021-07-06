@@ -82,7 +82,7 @@ class DockerCloudClient(BaseCloudClient):
 
         try:
             logger.debug(f"Run container for {model=}")
-            name = f"{model.name}_{next(self.uid_generator)}"
+            name = f"{model.name}-{next(self.uid_generator)}"
             loop = asyncio.get_running_loop()
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 container = await loop.run_in_executor(

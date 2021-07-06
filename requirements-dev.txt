@@ -9,3 +9,6 @@ opencv-python
 aiomonitor
 moviepy
 coverage
+types-PyYAML
+types-setuptools
+types-toml

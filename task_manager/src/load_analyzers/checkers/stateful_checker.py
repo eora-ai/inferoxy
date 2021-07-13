@@ -75,6 +75,9 @@ class StatefulChecker(Checker):
                 time.time() - model_instance.sender.get_time_of_last_sent_batch()
                 > self.config.load_analyzer.stateful_checker.keep_model
             ):
-                triggers += [self.make_decrease_trigger(model_instance=model_instance)]
+                if model_instance.source_id is None:
+                    triggers += [self.make_decrease_trigger(model_instance=model_instance)]
+                else:
+                    model_instance.source_id = None
 
         return triggers

@@ -128,6 +128,11 @@ class ModelInstance:
     num_gpu: Optional[int] = None
     current_processing_batch: Optional[MinimalBatchObject] = None
 
+    def release(self):
+        self.source_id = None
+        self.lock = False
+        self.current_processing_batch = None
+
     def __hash__(self):
         return hash(self.name)
 

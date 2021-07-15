@@ -212,10 +212,4 @@ async def test_free_model_instance_after_some_time():
         model_instances_storage, input_batch_queue, output_batch_queue, config=config
     )
     triggers = checker.make_triggers()
-    assert len(triggers) == 1
-    assert isinstance(triggers[0], IncreaseTrigger)
-    assert triggers[0].model == stub_stateful
-
-    new_triggers = checker.make_triggers()
-    assert len(new_triggers) == 0
-    assert model_instance.source_id == "new_source_id"
+    assert len(triggers) == 0

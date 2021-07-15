@@ -27,7 +27,35 @@ class StatefulChecker(Checker):
             raise ValueError("Config parameter must be set")
         self.config: dm.Config = self.config
 
-    def make_triggers(self) -> List[Trigger]:
+    def __make_decrease_triggers(self) -> List[Trigger]:
+        running_models_with_sources = (
+            self.model_instances_storage.get_running_models_with_source_ids(
+                is_stateless=False
+            )
+        )
+
+        triggers: List[Trigger] = []
+
+        logger.debug(f"Left {running_models_with_sources=}")
+
+        for (source_id, model) in running_models_with_sources:
+            model_instance = self.model_instances_storage.get_model_instance(
+                model=model, source_id=source_id
+            )
+            if model_instance is None:
+                continue
+            if (
+                time.time() - model_instance.sender.get_time_of_last_sent_batch()
+                > self.config.load_analyzer.stateful_checker.keep_model
+            ):
+                if model_instance.source_id is None:
+                    triggers += [self.make_decrease_trigger(model_instance=model_instance)]
+                else:
+                    model_instance.release()
+
+        return triggers
+
+    def __make_increase_triggers(self) -> List[Trigger]:
         requested_models_with_sources = (
             self.input_batch_queue.get_models_with_source_ids(is_stateless=False)
         )
@@ -42,8 +70,8 @@ class StatefulChecker(Checker):
         )
         triggers: List[Trigger] = []
 
-        logger.debug(f"Request models with sources ids {requested_models_with_sources}")
-        logger.debug(f"Running models with sources {running_models_with_sources}")
+        logger.debug(f"Request models with sources ids: {requested_models_with_sources}")
+        logger.debug(f"Running models with sources ids: {running_models_with_sources}")
 
         for source_id, model in requested_models_with_sources:
             logger.debug(
@@ -64,20 +92,12 @@ class StatefulChecker(Checker):
 
             triggers += [self.make_increase_trigger(model)]
 
-        logger.debug(f"Left {running_models_with_sources=}")
-        for (source_id, model) in running_models_with_sources:
-            model_instance = self.model_instances_storage.get_model_instance(
-                model=model, source_id=source_id
-            )
-            if model_instance is None:
-                continue
-            if (
-                time.time() - model_instance.sender.get_time_of_last_sent_batch()
-                > self.config.load_analyzer.stateful_checker.keep_model
-            ):
-                if model_instance.source_id is None:
-                    triggers += [self.make_decrease_trigger(model_instance=model_instance)]
-                else:
-                    model_instance.source_id = None
+        return triggers
+
+    def make_triggers(self) -> List[Trigger]:
+        triggers : List[Trigger] = []
+
+        triggers.extend(self.__make_decrease_triggers())
+        triggers.extend(self.__make_increase_triggers())
 
         return triggers

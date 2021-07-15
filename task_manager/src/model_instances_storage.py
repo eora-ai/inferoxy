@@ -7,6 +7,7 @@ __email__ = "a.chertkov@eora.ru"
 
 from datetime import datetime, timedelta
 from collections import defaultdict
+import time
 from typing import Dict, List, Tuple, Optional
 
 from loguru import logger
@@ -65,6 +66,8 @@ class ModelInstancesStorage:
         if model_instance is None:
             return None
         model_instance.source_id = source_id
+        # reset last_sent_batch
+        model_instance.sender.last_sent_batch = time.time()
 
     def get_running_models_with_source_ids(
         self, is_stateless: Optional[bool] = None

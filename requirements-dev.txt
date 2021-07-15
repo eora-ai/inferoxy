@@ -3,7 +3,7 @@ black
 pylint
 pytest
 pytest-asyncio
-mypy
+mypy==0.812
 Pillow
 opencv-python
 aiomonitor

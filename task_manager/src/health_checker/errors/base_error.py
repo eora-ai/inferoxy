@@ -74,6 +74,5 @@ class RetriableError(HealthCheckError):
         model_instance: dm.ModelInstance,
         alert_manager: "BaseAlertManager",
     ):
-        model_instance.lock = False
-        model_instance.current_processing_batch = None
+        model_instance.release()
         await alert_manager.retry_task(model_instance, self)

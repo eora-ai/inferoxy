@@ -85,8 +85,7 @@ class ReceiverStreamsCombiner:
                 if batch is not None:
                     await self.output_batch_queue.put(batch)
                     model_instance = receiver.get_model_instance()
-                    model_instance.lock = False
-                    model_instance.current_processing_batch = None
+                    model_instance.release()
 
                 if receiver in self.receivers_to_delete:
                     logger.debug("Remove listener")

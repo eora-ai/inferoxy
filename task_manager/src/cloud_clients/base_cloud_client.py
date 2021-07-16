@@ -11,6 +11,7 @@ from typing import List, Optional
 from abc import ABC, abstractmethod
 
 import zmq.asyncio  # type:ignore
+from loguru import logger
 
 import src.data_models as dm
 from src.utils.data_transfers import Receiver, Sender
@@ -90,6 +91,8 @@ class BaseCloudClient(ABC):
         receiver_open_address = f"tcp://{hostname}:{r_open_port}"
 
         # Create sender and receiver
+        logger.debug(f"Sender open address {sender_open_address}")
+        logger.debug(f"Receiver open address {receiver_open_address}")
 
         sender = Sender(
             open_address=sender_open_address,

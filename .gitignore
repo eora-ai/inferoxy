@@ -10,3 +10,5 @@ __pycache__
 config_env.yaml
 models.yaml
 .coverage
+
+.vscode/

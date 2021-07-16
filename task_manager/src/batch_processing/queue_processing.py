@@ -63,6 +63,7 @@ async def send_to_model(
             Tuple[Optional[str], dm.ModelObject]
         ] = model_instances_storage.get_running_models_with_source_ids()
         tasks = []
+
         for (source_id, model) in models_by_sources_ids:
             try:
                 if not model.stateless:
@@ -89,8 +90,8 @@ async def send_to_model(
                     batch, model_instance, input_batch_queue, output_batch_queue
                 )
             )
+
         if tasks:
-            for i in range(0, len(tasks), 4):
-                await asyncio.wait(tasks[i : i + 4])
+            await asyncio.wait(tasks)
         else:
             await asyncio.sleep(5)

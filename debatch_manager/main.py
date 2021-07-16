@@ -16,7 +16,8 @@ from loguru import logger
 import src.sender as snd
 import src.receiver as rc
 import src.data_models as dm
-from src.debatcher import debatch, pull_batch_mapping
+from src.debatcher import debatch 
+from src.db_reader import pull_batch_mapping
 from shared_modules.parse_config import read_config_with_env
 from shared_modules.utils import recreate_logger
 

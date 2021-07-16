@@ -22,10 +22,10 @@ models:
     sender_open_addr: 5556
     receiver_open_addr: 5546
   zmq_config:
-    sndhwm: 10
-    rcvhwm: 10
+    sndhwm: 10000
+    rcvhwm: 10000
     sndtimeo: 3600000 # ms
-    rcvtimeo: 3 # ms
+    rcvtimeo: 60_000 # ms
 
 cloud_client:
   create_timeout: 300

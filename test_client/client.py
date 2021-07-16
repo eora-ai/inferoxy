@@ -17,7 +17,7 @@ def main():
         "http://localhost:8000/models",
         json={
             "name": "stub",
-            "address": "public.registry.visionhub.ru/models/test:v5",
+            "address": "registry.visionhub.ru/models/stub:v5",
             "stateless": True,
             "batch_size": 128,
             "run_on_gpu": False,
@@ -30,14 +30,14 @@ def main():
     input_socket.connect("tcp://localhost:7787")
     logger.info("Connected to receiver")
     output_socket = context.socket(zmq.DEALER)
-    uid = f"test_{uuid.uuid4()}.jpg"
+    uid = f"test_{uuid.uuid4()}.png"
     output_socket.setsockopt(zmq.IDENTITY, uid.encode("utf-8"))
     output_socket.connect("tcp://localhost:7788")
 
     stateless = input("stateless y/n: ") == "y"
     number_of_request = int(input("Number of request: "))
 
-    image = Image.open("test.jpg")
+    image = Image.open("test.png")
     image_array = np.asarray(image)
 
     logger.info("Connected to sender")
@@ -47,7 +47,7 @@ def main():
         input_socket.send_pyobj(
             {
                 "source_id": uid,
-                "model": "test",
+                "model": "stub",
                 "inputs": [
                     {
                         "data": image_array,

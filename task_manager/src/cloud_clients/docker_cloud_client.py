@@ -22,7 +22,7 @@ from src.health_checker.errors import (
     HealthCheckError,
 )
 
-from shared_modules.utils import uuid4_string_generator
+from shared_modules.utils import id_generator
 
 
 class DockerCloudClient(BaseCloudClient):
@@ -35,7 +35,7 @@ class DockerCloudClient(BaseCloudClient):
         Authorize client
         """
         super().__init__(config)
-        self.uid_generator = uuid4_string_generator()
+        self.uid_generator = id_generator()
         self.client = docker.DockerClient(base_url="unix://var/run/docker.sock")
 
         if isinstance(self.config.cloud_client, dm.DockerConfig):
@@ -82,7 +82,7 @@ class DockerCloudClient(BaseCloudClient):
 
         try:
             logger.debug(f"Run container for {model=}")
-            name = f"{model.name}_{next(self.uid_generator)}"
+            name = f"{model.name}-{next(self.uid_generator)}"
             loop = asyncio.get_running_loop()
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 container = await loop.run_in_executor(
@@ -160,6 +160,7 @@ class DockerCloudClient(BaseCloudClient):
             runtime=runtime,
             environment=environment,
             network=self.docker_config.network,
+            mem_limit="4g",
             hostname=name,
         )
 
